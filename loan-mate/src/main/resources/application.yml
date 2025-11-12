@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: bank
+  config:
+    import:
+      - classpath:application-db.yml
+  profiles:
+    active: ${PROFILE}
