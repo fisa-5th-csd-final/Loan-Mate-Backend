@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.7'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'com.diffplug.spotless' version '6.25.0'
 }
 
 group = 'com.fisa.bank'
@@ -19,37 +20,37 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    compileOnly 'org.projectlombok:lombok'
-    runtimeOnly 'com.mysql:mysql-connector-j'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'com.mysql:mysql-connector-j'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 // spotless
 spotless {
-    java {
-        googleJavaFormat('1.17.0')
-        importOrder('', 'java', 'javax', 'org', 'com')
-        removeUnusedImports()
-    }
+	java {
+		googleJavaFormat('1.17.0')
+		importOrder('', 'java', 'javax', 'org', 'com')
+		removeUnusedImports()
+	}
 
-    groovyGradle {
-        target '*.gradle'
-        greclipse()
-    }
+	groovyGradle {
+		target '*.gradle'
+		greclipse()
+	}
 }
 
 tasks.register('installGitHook', Copy) {
-    from file('scripts/pre-commit')
-    into file('.git/hooks')
-    fileMode 0755
+	from file('scripts/pre-commit')
+	into file('.git/hooks')
+	fileMode 0755
 }
 
 tasks.named('build') {
-    dependsOn 'installGitHook'
+	dependsOn 'installGitHook'
 }
 
 tasks.named('test') {
