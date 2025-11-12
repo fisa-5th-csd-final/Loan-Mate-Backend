@@ -28,6 +28,30 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+// spotless
+spotless {
+    java {
+        googleJavaFormat('1.17.0')
+        importOrder('', 'java', 'javax', 'org', 'com')
+        removeUnusedImports()
+    }
+
+    groovyGradle {
+        target '*.gradle'
+        greclipse()
+    }
+}
+
+tasks.register('installGitHook', Copy) {
+    from file('scripts/pre-commit')
+    into file('.git/hooks')
+    fileMode 0755
+}
+
+tasks.named('build') {
+    dependsOn 'installGitHook'
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 }
