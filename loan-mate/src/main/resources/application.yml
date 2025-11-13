@@ -1,11 +1,10 @@
-server:
-  port: 8081
 spring:
   application:
     name: bank
   config:
     import:
       - classpath:application-db.yml
+      - classpath:application-auth.yml
   profiles:
     active: ${PROFILE}
 
@@ -18,6 +17,5 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
 
-# 테스트용 유저 토큰
-corebanking:
-  token: ${COREBANKING_TOKEN}
+server:
+  port: ${PORT:8080}
