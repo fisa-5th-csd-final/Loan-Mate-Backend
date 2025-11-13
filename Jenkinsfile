@@ -15,7 +15,7 @@ pipeline {
                     branches: [[name: "*/${env.BRANCH_NAME}"]],
                     userRemoteConfigs: [[
                         url: 'https://github.com/fisa-5th-csd-final/Loan-Mate-Backend.git',
-                        credentialsId: 'github-access-token'  // 🔗 Jenkins Credentials ID
+                        credentialsId: 'js'  // 🔗 Jenkins Credentials ID
                     ]]
                 ])
             }
@@ -24,7 +24,7 @@ pipeline {
         stage('Spotless Check') {
             steps {
                 echo '✨ Running Spotless format check...'
-                dir('bank') {
+                dir('loan-mate') {
                     sh './gradlew spotlessCheck --no-daemon'
                 }
             }
@@ -33,7 +33,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo '🏗️ Building project (tests skipped)...'
-                dir('bank') {
+                dir('loan-mate') {
                     sh './gradlew build -x test --no-daemon'
                 }
             }
@@ -45,7 +45,7 @@ pipeline {
                     }
                     steps {
                         withSonarQubeEnv('SonarQube') {
-                            dir('bank') {
+                            dir('loan-mate') {
                                 sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner \
                                     -Dsonar.projectKey=Loan-Mate \
                                     -Dsonar.projectName='Loan Mate' \
