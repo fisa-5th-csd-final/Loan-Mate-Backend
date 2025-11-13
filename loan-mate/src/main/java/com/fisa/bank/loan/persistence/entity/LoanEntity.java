@@ -4,15 +4,13 @@ import com.fisa.bank.common.persistence.entity.BaseEntity;
 import com.fisa.bank.loan.application.domain.Loan;
 import com.fisa.bank.loan.persistence.entity.id.LoanId;
 import com.fisa.bank.loan.persistence.entity.id.LoanIdJavaType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import org.hibernate.annotations.JavaType;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 @Entity
+@Table(name = "loan")
 public class LoanEntity{
 
     @Id
@@ -25,9 +23,9 @@ public class LoanEntity{
     private Long userId;
 
     // 가입한 대출 이름
-    private String name;
+    private String loanName;
 
     public Loan toDomain() {
-        return new Loan(name);
+        return new Loan(loanName);
     }
 }

@@ -7,6 +7,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class Loan {
-    private final String name;
+    private final String loanName;
     private RiskLevel riskLevel;
 }

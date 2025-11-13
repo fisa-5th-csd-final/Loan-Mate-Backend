@@ -17,3 +17,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
+
+# 테스트용 유저 토큰
+corebanking:
+  token: ${COREBANKNG_TOKEN}

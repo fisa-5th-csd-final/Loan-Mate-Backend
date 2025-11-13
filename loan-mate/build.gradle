@@ -27,6 +27,8 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // WebClient 사용을 위한 webflux 관련 의존성 추가
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 }
 
 // spotless

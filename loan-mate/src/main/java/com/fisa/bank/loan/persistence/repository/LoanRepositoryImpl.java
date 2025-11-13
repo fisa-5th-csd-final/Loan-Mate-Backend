@@ -16,7 +16,7 @@ public class LoanRepositoryImpl implements LoanRespository {
 
     @Override
     public List<Loan> getLoans(Long userId) {
-        jpaLoanRepository.findAllByUserId(userId).stream().map(LoanEntity::toDomain).toList();
-        return List.of();
+        List<Loan> loans = jpaLoanRepository.findAllByUserId(userId).stream().map(LoanEntity::toDomain).toList();
+        return loans;
     }
 }
