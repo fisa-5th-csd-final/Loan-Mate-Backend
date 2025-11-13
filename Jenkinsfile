@@ -25,6 +25,7 @@ pipeline {
             steps {
                 echo '✨ Running Spotless format check...'
                 dir('loan-mate') {
+                    sh 'chmod +x gradlew'
                     sh './gradlew spotlessCheck --no-daemon'
                 }
             }
@@ -34,6 +35,7 @@ pipeline {
             steps {
                 echo '🏗️ Building project (tests skipped)...'
                 dir('loan-mate') {
+                    sh 'chmod +x gradlew'
                     sh './gradlew build -x test --no-daemon'
                 }
             }
