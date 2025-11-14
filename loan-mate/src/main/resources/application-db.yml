@@ -1,0 +1,14 @@
+## 데이터베이스 관련 설정
+
+spring:
+  config:
+    activate:
+      on-profile:
+        - local
+        - dev
+        - prod
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+

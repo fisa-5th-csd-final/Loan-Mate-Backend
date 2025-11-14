@@ -1,0 +1,68 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.7'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'com.diffplug.spotless' version '6.25.0'
+}
+
+group = 'com.fisa.bank'
+version = '0.0.1-SNAPSHOT'
+description = 'Demo project for Spring Boot'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+	maven {
+		url = uri("https://maven.pkg.github.com/fisa-5th-csd-final/Core-Bank-Persistence")
+		credentials {
+			username = System.getenv("GITHUB_USERNAME")
+			password = System.getenv("GITHUB_TOKEN")
+		}
+	}
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'com.mysql:mysql-connector-j'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	implementation "com.fisa.bank:persistence:0.0.1-SNAPSHOT"
+}
+
+// spotless
+spotless {
+	java {
+		googleJavaFormat('1.17.0')
+		importOrder('', 'java', 'javax', 'org', 'com')
+		removeUnusedImports()
+	}
+
+	groovyGradle {
+		target '*.gradle'
+		greclipse()
+	}
+}
+
+tasks.register('installGitHook', Copy) {
+	from file('scripts/pre-commit')
+	into file('.git/hooks')
+	fileMode 0755
+}
+
+tasks.named('build') {
+	dependsOn 'installGitHook'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
