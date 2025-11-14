@@ -26,4 +26,10 @@ public class LoanService implements ManageLoanUseCase {
     // TODO: 위험도 추가
     return loanledgers;
   }
+
+    @Override
+    public LoanDetail getLoanDetail(Long loanId) {
+        LoanDetail loanDetail = coreBankingClient.fetchLoanDetail(loanId);
+        return loanDetail;
+    }
 }

@@ -15,11 +15,13 @@ import com.fisa.bank.common.presentation.response.code.ResponseCode;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
 
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/loans")
+@Slf4j
 public class LoanController {
-  private final ManageLoanUseCase manageLoanUseCase;
+    private final ManageLoanUseCase manageLoanUseCase;
 
   @GetMapping("/ledgers")
   public ApiResponse<SuccessBody<List<LoanListResponse>>> getLoans() {
@@ -27,4 +29,12 @@ public class LoanController {
     List<LoanListResponse> response = manageLoanUseCase.getLoans(Long.valueOf(1));
     return ApiResponseGenerator.success(ResponseCode.GET, response);
   }
+
+    @GetMapping("/ledger/{loanId:\\d+}")
+    public ApiResponse<SuccessBody<LoanDetail>> getLoanDetail(@PathVariable Long loanId) {
+        log.info("대출 세부 정보 조회");
+        // TODO: SDK
+        LoanDetail loanDetail = manageLoanUseCase.getLoanDetail(loanId);
+        return ApiResponseGenerator.success(ResponseCode.GET, loanDetail);
+    }
 }
