@@ -3,13 +3,17 @@ spring:
     oauth2:
       client:
         registration:
-          myidp:
+          loan-mate:
             client-id: ${OAUTH_CLIENT_ID}
             client-secret: ${OAUTH_CLIENT_SECRET}
             authorization-grant-type: authorization_code
-            redirect-uri: "${BASE_URL}/login/oauth2/code/loan-mate"
-            scope: openid, profile, email
+            client-authentication-method: client_secret_basic
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - profile
+              - email
         provider:
-          myidp:
+          loan-mate:
             authorization-uri: ${AUTHORIZATION_URL}/oauth2/authorize
             token-uri: ${AUTHORIZATION_URL}/oauth2/token
+            user-info-uri: ""
