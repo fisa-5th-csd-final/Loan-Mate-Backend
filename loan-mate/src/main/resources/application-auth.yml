@@ -1,0 +1,15 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          myidp:
+            client-id: ${OAUTH_CLIENT_ID}
+            client-secret: ${OAUTH_CLIENT_SECRET}
+            authorization-grant-type: authorization_code
+            redirect-uri: "${BASE_URL}/login/oauth2/code/loan-mate"
+            scope: openid, profile, email
+        provider:
+          myidp:
+            authorization-uri: ${AUTHORIZATION_URL}/oauth2/authorize
+            token-uri: ${AUTHORIZATION_URL}/oauth2/token
