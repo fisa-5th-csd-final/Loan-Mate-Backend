@@ -7,12 +7,12 @@ import java.util.List;
 import org.springframework.stereotype.Repository;
 
 import com.fisa.bank.loan.application.domain.Loan;
-import com.fisa.bank.loan.application.repository.LoanRespository;
+import com.fisa.bank.loan.application.repository.LoanRepository;
 import com.fisa.bank.loan.persistence.entity.LoanEntity;
 
 @Repository
 @RequiredArgsConstructor
-public class LoanRepositoryImpl implements LoanRespository {
+public class LoanRepositoryImpl implements LoanRepository {
   private final JpaLoanRepository jpaLoanRepository;
 
   @Override

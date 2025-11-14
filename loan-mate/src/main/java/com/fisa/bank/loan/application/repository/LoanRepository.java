@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.fisa.bank.loan.application.domain.Loan;
 
-public interface LoanRespository {
+public interface LoanRepository {
 
   List<Loan> getLoans(Long userId);
 }
