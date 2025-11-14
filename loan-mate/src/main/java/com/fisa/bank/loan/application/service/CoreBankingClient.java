@@ -50,8 +50,6 @@ public class CoreBankingClient {
             .bodyToMono(JsonNode.class)
             .block();
 
-    System.out.println("response = " + root);
-
     if (root == null) {
       throw new IllegalStateException("응답이 null 입니다.");
     }
