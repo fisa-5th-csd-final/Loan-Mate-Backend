@@ -20,4 +20,4 @@ spring:
 
 # 테스트용 유저 토큰
 corebanking:
-  token: ${COREBANKNG_TOKEN}
+  token: ${COREBANKING_TOKEN}
