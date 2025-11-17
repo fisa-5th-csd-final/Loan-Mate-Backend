@@ -1,10 +1,14 @@
 package com.fisa.bank.loan.presentation.controller;
 
+import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
+import com.fisa.bank.loan.application.model.LoanDetail;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,10 +35,10 @@ public class LoanController {
   }
 
     @GetMapping("/ledger/{loanId:\\d+}")
-    public ApiResponse<SuccessBody<LoanDetail>> getLoanDetail(@PathVariable Long loanId) {
+    public ApiResponse<SuccessBody<LoanDetailResponse>> getLoanDetail(@PathVariable Long loanId) {
         log.info("대출 세부 정보 조회");
         // TODO: SDK
-        LoanDetail loanDetail = manageLoanUseCase.getLoanDetail(loanId);
+        LoanDetailResponse loanDetail = manageLoanUseCase.getLoanDetail(loanId);
         return ApiResponseGenerator.success(ResponseCode.GET, loanDetail);
     }
 }
