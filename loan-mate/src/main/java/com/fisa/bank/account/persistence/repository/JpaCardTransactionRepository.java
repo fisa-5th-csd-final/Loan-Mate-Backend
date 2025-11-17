@@ -19,10 +19,10 @@ public interface JpaCardTransactionRepository extends JpaRepository<CardTransact
         )
         FROM CardTransaction t
         WHERE t.account.accountId = :accountId
-          AND YEAR(t.createdAt) = :year
-          AND MONTH(t.createdAt) = :month
+          AND t.createdAt >= :startDate
+          AND t.createdAt < :endDate
         GROUP BY t.category
     """)
   List<CategoryAmount> sumByCategory(
-      @Param("accountId") AccountId accountId, @Param("year") int year, @Param("month") int month);
+          @Param("accountId") AccountId accountId, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
 }

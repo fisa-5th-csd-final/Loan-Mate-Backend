@@ -18,9 +18,9 @@ public interface JpaAccountTransactionRepository
     FROM AccountTransaction a
     WHERE a.account.accountId = :accountId
       AND a.isIncome = false
-      AND YEAR(a.createdAt) = :year
-      AND MONTH(a.createdAt) = :month
+      AND a.createdAt >= :startDate
+      AND a.createdAt < :endDate
 """)
   BigDecimal sumMonthEtc(
-      @Param("accountId") AccountId accountId, @Param("year") int year, @Param("month") int month);
+          @Param("accountId") AccountId accountId, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
 }
