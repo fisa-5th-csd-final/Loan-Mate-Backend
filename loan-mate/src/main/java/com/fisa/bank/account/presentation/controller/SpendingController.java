@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fisa.bank.account.application.domain.MonthlySpending;
+import com.fisa.bank.account.application.model.MonthlySpending;
 import com.fisa.bank.account.application.usecase.GetMonthlySpendingUseCase;
 
 @RestController
@@ -17,9 +17,10 @@ public class SpendingController {
 
   private final GetMonthlySpendingUseCase getMonthlySpendingUseCase;
 
-  @GetMapping("/{accountId}")
+  @GetMapping("/{accountId}/{year}/{month}")
   public MonthlySpending getMonthlySpending(
       @PathVariable Long accountId, @PathVariable int year, @PathVariable int month) {
-    return getMonthlySpendingUseCase.execute(accountId);
+
+    return getMonthlySpendingUseCase.execute(accountId, year, month);
   }
 }

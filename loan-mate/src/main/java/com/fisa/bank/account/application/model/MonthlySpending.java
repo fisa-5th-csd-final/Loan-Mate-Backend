@@ -1,4 +1,4 @@
-package com.fisa.bank.account.application.domain;
+package com.fisa.bank.account.application.model;
 
 import java.math.BigDecimal;
 import java.util.List;

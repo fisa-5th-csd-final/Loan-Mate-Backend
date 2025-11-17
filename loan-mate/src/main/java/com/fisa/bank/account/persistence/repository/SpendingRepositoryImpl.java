@@ -9,8 +9,9 @@ import java.util.Map;
 
 import org.springframework.stereotype.Repository;
 
-import com.fisa.bank.account.application.domain.ConsumptionCategory;
 import com.fisa.bank.account.application.repository.SpendingRepository;
+import com.fisa.bank.persistence.account.entity.id.AccountId;
+import com.fisa.bank.persistence.account.enums.ConsumptionCategory;
 
 @Repository
 @RequiredArgsConstructor
@@ -23,18 +24,20 @@ public class SpendingRepositoryImpl implements SpendingRepository {
   public Map<ConsumptionCategory, BigDecimal> getMonthlySpending(
       Long accountId, int year, int month) {
 
+    AccountId accId = AccountId.of(accountId);
+
     Map<ConsumptionCategory, BigDecimal> result = new HashMap<>();
 
-    List<CategoryAmount> list = cardRepo.sumByCategory(accountId, year, month);
+    List<CategoryAmount> list = cardRepo.sumByCategory(accId, year, month);
 
     for (CategoryAmount p : list) {
       result.put(p.getCategory(), p.getTotal());
     }
 
-    BigDecimal etc = accountRepo.sumMonthEtc(accountId, year, month);
-    if (etc == null) etc = BigDecimal.ZERO;
+    BigDecimal etc = accountRepo.sumMonthEtc(accId, year, month);
+    if (etc == null) etc = BigDecimal.ZERO; // null이면 0으로 대체
 
-    result.put(ConsumptionCategory.ETC, etc);
+    result.merge(ConsumptionCategory.ETC, etc, BigDecimal::add);
 
     return result;
   }

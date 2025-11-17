@@ -6,7 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="f58fba65-f9b3-48b0-9a52-9f5df0d8c0c6" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/fisa/bank/account/application/service/SpendingService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/fisa/bank/account/application/service/SpendingService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/fisa/bank/account/application/usecase/GetMonthlySpendingUseCase.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/fisa/bank/account/application/usecase/GetMonthlySpendingUseCase.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/fisa/bank/account/persistence/repository/JpaAccountTransactionRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/fisa/bank/account/persistence/repository/JpaAccountTransactionRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/fisa/bank/account/persistence/repository/JpaCardTransactionRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/fisa/bank/account/persistence/repository/JpaCardTransactionRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/fisa/bank/account/persistence/repository/SpendingRepositoryImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/fisa/bank/account/persistence/repository/SpendingRepositoryImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/fisa/bank/account/presentation/controller/SpendingController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/fisa/bank/account/presentation/controller/SpendingController.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,19 +57,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Gradle.loan-mate [:com.fisa.bank.LoanMateApplication.main()].executor": "Run",
-    "Gradle.loan-mate.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "HB/feat/account",
-    "kotlin-language-version-configured": "true",
-    "settings.editor.selected.configurable": "preferences.sourceCode.JAVA"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Gradle.loan-mate [:com.fisa.bank.LoanMateApplication.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.loan-mate.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;HB/feat/account&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.sourceCode.JAVA&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\3-19\Desktop\fisa-5th-csd-final-serviceback\Loan-Mate-Backend\loan-mate\gradle\wrapper" />
@@ -79,5 +84,16 @@
       <updated>1763016797258</updated>
     </task>
     <servers />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/build.gradle</url>
+          <line>25</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
