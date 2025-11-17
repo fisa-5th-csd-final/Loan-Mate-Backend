@@ -4,19 +4,23 @@ import java.math.BigDecimal;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-import com.fisa.bank.account.persistence.entity.AccountTransaction;
+import com.fisa.bank.persistence.account.entity.AccountTransaction;
+import com.fisa.bank.persistence.account.entity.id.AccountId;
 
-public interface JpaAccountTransactionRepository extends JpaRepository<AccountTransaction, Long> {
+public interface JpaAccountTransactionRepository
+    extends JpaRepository<AccountTransaction, AccountId> {
 
   @Query(
       """
-        SELECT SUM(a.amount)
-        FROM AccountTransactionEntity a
-        WHERE a.accountId = :accountId
-        AND a.isIncome = false
-        AND YEAR(a.createdAt) = :year
-        AND MONTH(a.createdAt) = :month
-    """)
-  BigDecimal sumMonthEtc(Long accountId, int year, int month);
+    SELECT SUM(a.amount)
+    FROM AccountTransaction a
+    WHERE a.account.accountId = :accountId
+      AND a.isIncome = false
+      AND YEAR(a.createdAt) = :year
+      AND MONTH(a.createdAt) = :month
+""")
+  BigDecimal sumMonthEtc(
+      @Param("accountId") AccountId accountId, @Param("year") int year, @Param("month") int month);
 }

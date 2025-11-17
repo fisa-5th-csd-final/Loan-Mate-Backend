@@ -4,17 +4,17 @@ import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import com.fisa.bank.account.application.domain.CategorySpending;
-import com.fisa.bank.account.application.domain.ConsumptionCategory;
-import com.fisa.bank.account.application.domain.MonthlySpending;
+import com.fisa.bank.account.application.model.CategorySpending;
+import com.fisa.bank.account.application.model.MonthlySpending;
 import com.fisa.bank.account.application.repository.SpendingRepository;
 import com.fisa.bank.account.application.usecase.GetMonthlySpendingUseCase;
+import com.fisa.bank.persistence.account.enums.ConsumptionCategory;
 
 @Service
 @RequiredArgsConstructor
@@ -23,34 +23,38 @@ public class SpendingService implements GetMonthlySpendingUseCase {
   private final SpendingRepository spendingRepository;
 
   @Override
-  public MonthlySpending execute(Long accountId) {
-
-    // 현재 날짜 기준으로
-    LocalDate now = LocalDate.now();
-    int year = now.getYear();
-    int month = now.getMonthValue();
+  public MonthlySpending execute(Long accountId, int year, int month) {
 
     Map<ConsumptionCategory, BigDecimal> categoryMap =
         spendingRepository.getMonthlySpending(accountId, year, month);
 
-    BigDecimal totalSpent = categoryMap.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+    BigDecimal totalSpent =
+        categoryMap.values().stream()
+            .reduce(BigDecimal.ZERO, BigDecimal::add)
+            .setScale(0, RoundingMode.DOWN);
 
     List<CategorySpending> categories =
         categoryMap.entrySet().stream()
             .map(
                 e ->
                     new CategorySpending(
-                        e.getKey(), e.getValue(), calcPercent(e.getValue(), totalSpent)))
+                        e.getKey(),
+                        e.getValue().setScale(0, RoundingMode.DOWN),
+                        calcPercent(e.getValue(), totalSpent)))
+            // enum 정의 순으로 카테고리 정렬
+            .sorted(Comparator.comparing(e -> e.category().ordinal()))
             .toList();
 
     return new MonthlySpending(year, month, totalSpent, categories);
   }
 
-  private int calcPercent(BigDecimal amount, BigDecimal total) {
-    if (total.compareTo(BigDecimal.ZERO) == 0) return 0;
+  private BigDecimal calcPercent(BigDecimal amount, BigDecimal total) {
+    if (total.compareTo(BigDecimal.ZERO) == 0) {
+      return BigDecimal.ZERO;
+    }
+
     return amount
-        .multiply(BigDecimal.valueOf(100))
-        .divide(total, 0, RoundingMode.HALF_UP)
-        .intValue();
+        .multiply(BigDecimal.valueOf(100)) // 100 * amount
+        .divide(total, 1, RoundingMode.HALF_UP); // 소수점 1자리 반올림(BigDecimal 반환)
   }
 }

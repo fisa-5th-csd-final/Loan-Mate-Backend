@@ -2,10 +2,23 @@ package com.fisa.bank.account.persistence.repository;
 
 import java.math.BigDecimal;
 
-import com.fisa.bank.account.application.domain.ConsumptionCategory;
+import com.fisa.bank.persistence.account.enums.ConsumptionCategory;
 
-public interface CategoryAmount {
-  ConsumptionCategory getCategory();
+public class CategoryAmount {
 
-  BigDecimal getTotal();
+  private final ConsumptionCategory category;
+  private final BigDecimal total;
+
+  public CategoryAmount(ConsumptionCategory category, BigDecimal total) {
+    this.category = category;
+    this.total = total;
+  }
+
+  public ConsumptionCategory getCategory() {
+    return category;
+  }
+
+  public BigDecimal getTotal() {
+    return total;
+  }
 }
