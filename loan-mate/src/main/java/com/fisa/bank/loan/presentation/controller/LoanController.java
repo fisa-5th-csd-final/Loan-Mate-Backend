@@ -1,0 +1,30 @@
+package com.fisa.bank.loan.presentation.controller;
+
+import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fisa.bank.common.presentation.response.ApiResponse;
+import com.fisa.bank.common.presentation.response.ApiResponseGenerator;
+import com.fisa.bank.common.presentation.response.body.SuccessBody;
+import com.fisa.bank.common.presentation.response.code.ResponseCode;
+import com.fisa.bank.loan.application.dto.response.LoanListResponse;
+import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/loans")
+public class LoanController {
+  private final ManageLoanUseCase manageLoanUseCase;
+
+  @GetMapping("/ledgers")
+  public ApiResponse<SuccessBody<List<LoanListResponse>>> getLoans() {
+    // TODO: 로그인 완성되면 파라미터 제거
+    List<LoanListResponse> response = manageLoanUseCase.getLoans(Long.valueOf(1));
+    return ApiResponseGenerator.success(ResponseCode.GET, response);
+  }
+}
