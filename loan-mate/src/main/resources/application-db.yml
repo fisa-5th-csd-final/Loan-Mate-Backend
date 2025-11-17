@@ -1,5 +1,4 @@
 ## 데이터베이스 관련 설정
-
 spring:
   config:
     activate:
@@ -12,3 +11,11 @@ spring:
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
 
+  jpa:
+    hibernate:
+      ddl-auto: ${DATABASE_DDL_AUTO}
+    generate-ddl: true
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
