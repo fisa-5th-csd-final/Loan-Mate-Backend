@@ -4,10 +4,13 @@ import java.util.List;
 
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
+import com.fisa.bank.loan.application.dto.response.LoanProgressResponse;
 
 public interface ManageLoanUseCase {
 
   List<LoanListResponse> getLoans(Long userId);
 
   LoanDetailResponse getLoanDetail(Long loanId);
+
+  List<LoanProgressResponse> getLoanProgress(Long userId);
 }

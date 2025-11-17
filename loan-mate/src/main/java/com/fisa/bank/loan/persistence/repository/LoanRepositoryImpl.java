@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.repository.LoanRepository;
 import com.fisa.bank.persistence.loan.entity.LoanLedger;
+import com.fisa.bank.persistence.loan.entity.id.LoanLedgerId;
 import com.fisa.bank.persistence.loan.repository.LoanLedgerRepository;
 import com.fisa.bank.persistence.user.entity.id.UserId;
 
@@ -29,5 +30,12 @@ public class LoanRepositoryImpl implements LoanRepository {
 
   public static Loan toDomain(LoanLedger loanLedger) {
     return new Loan(loanLedger.getLoanLedgerId().getValue(), loanLedger.getLoanProduct().getName());
+  }
+
+  @Override
+  public LoanLedger getLoanLedger(Long loanId) {
+    return loanLedgerRepository
+        .findById(LoanLedgerId.of(loanId))
+        .orElseThrow(() -> new IllegalArgumentException("LoanLedger not found: " + loanId));
   }
 }

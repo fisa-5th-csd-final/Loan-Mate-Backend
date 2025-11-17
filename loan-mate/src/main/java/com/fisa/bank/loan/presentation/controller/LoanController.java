@@ -16,6 +16,7 @@ import com.fisa.bank.common.presentation.response.body.SuccessBody;
 import com.fisa.bank.common.presentation.response.code.ResponseCode;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
+import com.fisa.bank.loan.application.dto.response.LoanProgressResponse;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
 
 @RestController
@@ -35,8 +36,17 @@ public class LoanController {
   @GetMapping("/ledger/{loanId:\\d+}")
   public ApiResponse<SuccessBody<LoanDetailResponse>> getLoanDetail(@PathVariable Long loanId) {
     log.info("대출 세부 정보 조회");
-    // TODO: SDK
     LoanDetailResponse loanDetail = manageLoanUseCase.getLoanDetail(loanId);
     return ApiResponseGenerator.success(ResponseCode.GET, loanDetail);
+  }
+
+  @GetMapping("/progress")
+  public ApiResponse<SuccessBody<List<LoanProgressResponse>>> getLoanProgress() {
+    // TODO: 로그인 완성되면 파라미터 제거
+    log.info("대출 상환 진척률 조회");
+    List<LoanProgressResponse> loanProgressResponse =
+        manageLoanUseCase.getLoanProgress(Long.valueOf(1));
+
+    return ApiResponseGenerator.success(ResponseCode.GET, loanProgressResponse);
   }
 }
