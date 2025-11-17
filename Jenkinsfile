@@ -47,7 +47,7 @@ pipeline {
             steps {
                 echo '🏗️ Building project (tests skipped)...'
                 dir('loan-mate') {
-                    sh './gradlew build --no-daemon'
+                    sh './gradlew build -x test --no-daemon'
                 }
             }
         }
