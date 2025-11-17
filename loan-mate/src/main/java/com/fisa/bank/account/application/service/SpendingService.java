@@ -25,9 +25,9 @@ public class SpendingService implements GetMonthlySpendingUseCase {
   @Override
   public MonthlySpending execute(Long accountId, int year, int month) {
 
-      if (month < 1 || month > 12) {
-          throw new IllegalArgumentException("월(month)은 1에서 12 사이의 값이어야 합니다.");
-      }
+    if (month < 1 || month > 12) {
+      throw new IllegalArgumentException("월(month)은 1에서 12 사이의 값이어야 합니다.");
+    }
     Map<ConsumptionCategory, BigDecimal> categoryMap =
         spendingRepository.getMonthlySpending(accountId, year, month);
 

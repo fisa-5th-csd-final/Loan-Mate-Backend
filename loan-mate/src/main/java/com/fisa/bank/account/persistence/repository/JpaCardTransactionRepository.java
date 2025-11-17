@@ -24,5 +24,7 @@ public interface JpaCardTransactionRepository extends JpaRepository<CardTransact
         GROUP BY t.category
     """)
   List<CategoryAmount> sumByCategory(
-          @Param("accountId") AccountId accountId, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
+      @Param("accountId") AccountId accountId,
+      @Param("startDate") java.time.LocalDateTime startDate,
+      @Param("endDate") java.time.LocalDateTime endDate);
 }

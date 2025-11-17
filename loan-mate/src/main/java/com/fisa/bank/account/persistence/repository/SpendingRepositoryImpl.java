@@ -19,33 +19,33 @@ import com.fisa.bank.persistence.account.enums.ConsumptionCategory;
 @RequiredArgsConstructor
 public class SpendingRepositoryImpl implements SpendingRepository {
 
-    private final JpaCardTransactionRepository cardRepo;
-    private final JpaAccountTransactionRepository accountRepo;
+  private final JpaCardTransactionRepository cardRepo;
+  private final JpaAccountTransactionRepository accountRepo;
 
-    @Override
-    public Map<ConsumptionCategory, BigDecimal> getMonthlySpending(
-            Long accountId, int year, int month) {
+  @Override
+  public Map<ConsumptionCategory, BigDecimal> getMonthlySpending(
+      Long accountId, int year, int month) {
 
-        AccountId accId = AccountId.of(accountId);
+    AccountId accId = AccountId.of(accountId);
 
-        Map<ConsumptionCategory, BigDecimal> result = new HashMap<>();
+    Map<ConsumptionCategory, BigDecimal> result = new HashMap<>();
 
-        LocalDateTime startDate = LocalDate.of(year, month, 1).atStartOfDay();
-        LocalDateTime endDate = startDate.plusMonths(1);
+    LocalDateTime startDate = LocalDate.of(year, month, 1).atStartOfDay();
+    LocalDateTime endDate = startDate.plusMonths(1);
 
-        List<CategoryAmount> list = cardRepo.sumByCategory(accId, startDate, endDate);
+    List<CategoryAmount> list = cardRepo.sumByCategory(accId, startDate, endDate);
 
-        for (CategoryAmount p : list) {
-            result.put(p.getCategory(), p.getTotal());
-        }
-
-        BigDecimal etc = accountRepo.sumMonthEtc(accId, startDate, endDate);
-        if (etc == null) {
-            etc = BigDecimal.ZERO;
-        }
-
-        result.merge(ConsumptionCategory.ETC, etc, BigDecimal::add);
-
-        return result;
+    for (CategoryAmount p : list) {
+      result.put(p.getCategory(), p.getTotal());
     }
+
+    BigDecimal etc = accountRepo.sumMonthEtc(accId, startDate, endDate);
+    if (etc == null) {
+      etc = BigDecimal.ZERO;
+    }
+
+    result.merge(ConsumptionCategory.ETC, etc, BigDecimal::add);
+
+    return result;
+  }
 }
