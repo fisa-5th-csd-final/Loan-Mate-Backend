@@ -9,7 +9,6 @@ import org.hibernate.annotations.JavaType;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import com.fisa.bank.loan.application.domain.Loan;
 import com.fisa.bank.loan.persistence.entity.id.LoanId;
 import com.fisa.bank.loan.persistence.entity.id.LoanIdJavaType;
 
@@ -30,8 +29,4 @@ public class LoanEntity {
 
   // 가입한 대출 이름
   private String loanName;
-
-  public Loan toDomain() {
-    return new Loan(loanName);
-  }
 }

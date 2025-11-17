@@ -12,8 +12,8 @@ import com.fisa.bank.common.presentation.response.ApiResponse;
 import com.fisa.bank.common.presentation.response.ApiResponseGenerator;
 import com.fisa.bank.common.presentation.response.body.SuccessBody;
 import com.fisa.bank.common.presentation.response.code.ResponseCode;
+import com.fisa.bank.loan.application.dto.response.LoanListResponse;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
-import com.fisa.bank.loan.presentation.controller.dto.response.LoanListResponse;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,8 +24,7 @@ public class LoanController {
   @GetMapping("/ledgers")
   public ApiResponse<SuccessBody<List<LoanListResponse>>> getLoans() {
     // TODO: 로그인 완성되면 파라미터 제거
-    List<LoanListResponse> response =
-        manageLoanUseCase.getLoans(Long.valueOf(1)).stream().map(LoanListResponse::from).toList();
+    List<LoanListResponse> response = manageLoanUseCase.getLoans(Long.valueOf(1));
     return ApiResponseGenerator.success(ResponseCode.GET, response);
   }
 }

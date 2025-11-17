@@ -1,10 +1,10 @@
 package com.fisa.bank.loan.application.usecase;
 
-import com.fisa.bank.loan.application.domain.Loan;
-
 import java.util.List;
+
+import com.fisa.bank.loan.application.dto.response.LoanListResponse;
 
 public interface ManageLoanUseCase {
 
-    List<Loan> getLoans(Long userId);
+  List<LoanListResponse> getLoans(Long userId);
 }
