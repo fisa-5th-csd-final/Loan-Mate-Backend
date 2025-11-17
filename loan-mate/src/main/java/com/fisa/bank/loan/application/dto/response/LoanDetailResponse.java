@@ -3,7 +3,6 @@ package com.fisa.bank.loan.application.dto.response;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
 
@@ -13,7 +12,6 @@ import com.fisa.bank.persistence.loan.enums.LoanType;
 import com.fisa.bank.persistence.loan.enums.RepaymentType;
 
 @Getter
-@RequiredArgsConstructor
 @AllArgsConstructor
 @Builder
 public class LoanDetailResponse {

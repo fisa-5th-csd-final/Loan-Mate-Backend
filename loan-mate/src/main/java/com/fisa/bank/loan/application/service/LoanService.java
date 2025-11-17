@@ -19,22 +19,23 @@ import com.fisa.bank.persistence.user.entity.id.UserId;
 @Service
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class LoanService implements ManageLoanUseCase {
-  private final LoanRepository loanRespository;
+  private final LoanRepository loanRepository;
   private final CoreBankingClient coreBankingClient;
+  private static final String LOAN_LEDGER_ENDPOINT_PREFIX = "/loans/ledger/";
 
   @Override
   @Transactional
   public List<LoanListResponse> getLoans(Long userId) {
     List<LoanListResponse> loanledgers =
-        loanRespository.getLoans(UserId.of(userId)).stream().map(LoanListResponse::from).toList();
+        loanRepository.getLoans(UserId.of(userId)).stream().map(LoanListResponse::from).toList();
     // TODO: 위험도 추가
     return loanledgers;
   }
 
   @Override
   public LoanDetailResponse getLoanDetail(Long loanId) {
-    String url = "/loans/ledger/" + loanId;
-    LoanDetail loanDetail = coreBankingClient.fetchOne(url, LoanDetail.class);
+    LoanDetail loanDetail =
+        coreBankingClient.fetchOne(LOAN_LEDGER_ENDPOINT_PREFIX + loanId, LoanDetail.class);
 
     return LoanDetailResponse.from(loanId, loanDetail);
   }
