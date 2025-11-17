@@ -1,12 +1,10 @@
 package com.fisa.bank.loan.presentation.controller;
 
-import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
-import com.fisa.bank.loan.application.model.LoanDetail;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,16 +14,16 @@ import com.fisa.bank.common.presentation.response.ApiResponse;
 import com.fisa.bank.common.presentation.response.ApiResponseGenerator;
 import com.fisa.bank.common.presentation.response.body.SuccessBody;
 import com.fisa.bank.common.presentation.response.code.ResponseCode;
+import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
-
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/loans")
 @Slf4j
 public class LoanController {
-    private final ManageLoanUseCase manageLoanUseCase;
+  private final ManageLoanUseCase manageLoanUseCase;
 
   @GetMapping("/ledgers")
   public ApiResponse<SuccessBody<List<LoanListResponse>>> getLoans() {
@@ -34,11 +32,11 @@ public class LoanController {
     return ApiResponseGenerator.success(ResponseCode.GET, response);
   }
 
-    @GetMapping("/ledger/{loanId:\\d+}")
-    public ApiResponse<SuccessBody<LoanDetailResponse>> getLoanDetail(@PathVariable Long loanId) {
-        log.info("대출 세부 정보 조회");
-        // TODO: SDK
-        LoanDetailResponse loanDetail = manageLoanUseCase.getLoanDetail(loanId);
-        return ApiResponseGenerator.success(ResponseCode.GET, loanDetail);
-    }
+  @GetMapping("/ledger/{loanId:\\d+}")
+  public ApiResponse<SuccessBody<LoanDetailResponse>> getLoanDetail(@PathVariable Long loanId) {
+    log.info("대출 세부 정보 조회");
+    // TODO: SDK
+    LoanDetailResponse loanDetail = manageLoanUseCase.getLoanDetail(loanId);
+    return ApiResponseGenerator.success(ResponseCode.GET, loanDetail);
+  }
 }

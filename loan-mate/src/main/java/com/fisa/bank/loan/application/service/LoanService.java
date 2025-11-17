@@ -1,8 +1,5 @@
 package com.fisa.bank.loan.application.service;
 
-import com.fisa.bank.common.application.service.CoreBankingClient;
-import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
-import com.fisa.bank.loan.application.model.LoanDetail;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -11,7 +8,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fisa.bank.common.application.service.CoreBankingClient;
+import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
+import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.repository.LoanRepository;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
 import com.fisa.bank.persistence.user.entity.id.UserId;
@@ -20,7 +20,7 @@ import com.fisa.bank.persistence.user.entity.id.UserId;
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class LoanService implements ManageLoanUseCase {
   private final LoanRepository loanRespository;
-private final CoreBankingClient coreBankingClient;
+  private final CoreBankingClient coreBankingClient;
 
   @Override
   @Transactional
@@ -31,12 +31,11 @@ private final CoreBankingClient coreBankingClient;
     return loanledgers;
   }
 
-    @Override
-    public LoanDetailResponse getLoanDetail(Long loanId) {
-        String url = "/loans/ledger/" + loanId;
-        LoanDetail loanDetail = coreBankingClient.fetchOne(url, LoanDetail.class);
+  @Override
+  public LoanDetailResponse getLoanDetail(Long loanId) {
+    String url = "/loans/ledger/" + loanId;
+    LoanDetail loanDetail = coreBankingClient.fetchOne(url, LoanDetail.class);
 
-        return LoanDetailResponse.from(loanId, loanDetail);
-    }
-
+    return LoanDetailResponse.from(loanId, loanDetail);
+  }
 }

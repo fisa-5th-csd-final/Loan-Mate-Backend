@@ -9,6 +9,5 @@ public interface ManageLoanUseCase {
 
   List<LoanListResponse> getLoans(Long userId);
 
-    LoanDetailResponse getLoanDetail(Long loanId);
-
+  LoanDetailResponse getLoanDetail(Long loanId);
 }

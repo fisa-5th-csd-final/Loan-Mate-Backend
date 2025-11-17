@@ -19,7 +19,7 @@ public class LoanRepositoryImpl implements LoanRepository {
 
   @Override
   public List<Loan> getLoans(UserId userId) {
-      // TODO: Persistence에서만 값 객체 쓰기, 서비스 서버 유저 id로 조회하기
+    // TODO: Persistence에서만 값 객체 쓰기, 서비스 서버 유저 id로 조회하기
     List<Loan> loans =
         loanLedgerRepository.findAllByUser_UserId(userId).stream()
             .map(LoanRepositoryImpl::toDomain)
