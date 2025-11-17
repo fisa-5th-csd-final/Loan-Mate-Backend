@@ -31,10 +31,7 @@ public class SpendingService implements GetMonthlySpendingUseCase {
     Map<ConsumptionCategory, BigDecimal> categoryMap =
         spendingRepository.getMonthlySpending(accountId, year, month);
 
-    BigDecimal totalSpent =
-        categoryMap.values().stream()
-            .reduce(BigDecimal.ZERO, BigDecimal::add)
-            .setScale(0, RoundingMode.DOWN);
+    BigDecimal totalSpent = categoryMap.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
 
     List<CategorySpending> categories =
         categoryMap.entrySet().stream()
@@ -48,7 +45,7 @@ public class SpendingService implements GetMonthlySpendingUseCase {
             .sorted(Comparator.comparing(e -> e.category().ordinal()))
             .toList();
 
-    return new MonthlySpending(year, month, totalSpent, categories);
+    return new MonthlySpending(year, month, totalSpent.setScale(0, RoundingMode.DOWN), categories);
   }
 
   private BigDecimal calcPercent(BigDecimal amount, BigDecimal total) {
