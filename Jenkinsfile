@@ -1,6 +1,19 @@
 pipeline {
     agent any
 
+    parameters {
+        string(
+            name: 'GIT_URL',
+            defaultValue: 'https://github.com/fisa-5th-csd-final/Loan-Mate-Backend.git',
+            description: 'Git 저장소 URL'
+        )
+        string(
+            name: 'GIT_CREDENTIAL',
+            defaultValue: 'js',
+            description: 'Git Credentials ID'
+        )
+    }
+
     environment {
         // Gradle 캐시 디렉토리 (속도 향상)
         GRADLE_USER_HOME = "${WORKSPACE}/.gradle"
@@ -14,8 +27,8 @@ pipeline {
                     $class: 'GitSCM',
                     branches: [[name: "*/${env.BRANCH_NAME}"]],
                     userRemoteConfigs: [[
-                        url: 'https://github.com/fisa-5th-csd-final/Loan-Mate-Backend.git',
-                        credentialsId: credentialsId('js')  // 🔗 Jenkins Credentials ID
+                        url: params.GIT_URL,
+                        credentialsId: params.GIT_CREDENTIAL  // 🔗 Jenkins Credentials ID
                     ]]
                 ])
             }
