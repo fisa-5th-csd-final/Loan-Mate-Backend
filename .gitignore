@@ -140,6 +140,10 @@ fabric.properties
 *.tar.gz
 *.rar
 
+# gradle-wrapper 예외
+!**/gradle-wrapper.jar
+!**/gradle/wrapper/
+
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
