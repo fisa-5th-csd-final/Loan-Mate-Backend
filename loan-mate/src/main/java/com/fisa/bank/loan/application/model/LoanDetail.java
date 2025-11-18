@@ -2,6 +2,7 @@ package com.fisa.bank.loan.application.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
@@ -15,6 +16,7 @@ import com.fisa.bank.persistence.loan.enums.RepaymentType;
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
 @AllArgsConstructor
+@NoArgsConstructor
 public class LoanDetail {
   private String name;
   private BigDecimal remainPrincipal;

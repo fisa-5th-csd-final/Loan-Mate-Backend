@@ -20,6 +20,7 @@ public class CoreBankingClient {
   private String token;
 
   private final WebClient.Builder builder;
+  private final JsonNodeMapper jsonNodeMapper;
 
   private WebClient getClient() {
     return builder.defaultHeader("Authorization", "Bearer " + token).build();
@@ -44,7 +45,7 @@ public class CoreBankingClient {
     }
 
     JsonNode dataNode = root.path("data");
-    return JsonNodeMapper.map(dataNode, clazz);
+    return jsonNodeMapper.map(dataNode, clazz);
   }
 
   /**
@@ -69,7 +70,7 @@ public class CoreBankingClient {
     }
 
     return StreamSupport.stream(dataNode.spliterator(), false)
-        .map(node -> JsonNodeMapper.map(node, clazz))
+        .map(node -> jsonNodeMapper.map(node, clazz))
         .collect(Collectors.toList());
   }
 }

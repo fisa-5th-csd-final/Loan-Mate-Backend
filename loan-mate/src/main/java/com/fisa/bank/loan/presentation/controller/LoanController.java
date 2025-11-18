@@ -38,14 +38,4 @@ public class LoanController {
     LoanDetailResponse loanDetail = manageLoanUseCase.getLoanDetail(loanId);
     return ApiResponseGenerator.success(ResponseCode.GET, loanDetail);
   }
-
-  //  @GetMapping("/progress")
-  //  public ApiResponse<SuccessBody<List<LoanProgressResponse>>> getLoanProgress() {
-  //    // TODO: 로그인 완성되면 파라미터 제거
-  //    log.info("대출 상환 진척률 조회");
-  //    List<LoanProgressResponse> loanProgressResponse =
-  //        manageLoanUseCase.getLoanProgress(Long.valueOf(1));
-  //
-  //    return ApiResponseGenerator.success(ResponseCode.GET, loanProgressResponse);
-  //  }
 }
