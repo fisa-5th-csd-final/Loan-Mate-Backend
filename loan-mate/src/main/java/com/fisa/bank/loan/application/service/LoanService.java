@@ -8,7 +8,9 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,9 +24,7 @@ import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.repository.LoanRepository;
 import com.fisa.bank.loan.application.service.reader.LoanReader;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
-import com.fisa.bank.persistence.loan.entity.LoanLedger;
 import com.fisa.bank.persistence.loan.enums.RepaymentStatus;
-import com.fisa.bank.persistence.user.entity.id.UserId;
 
 @Service
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
@@ -38,7 +38,7 @@ public class LoanService implements ManageLoanUseCase {
   @Transactional
   public List<LoanListResponse> getLoans(Long userId) {
     List<LoanListResponse> loanledgers =
-        loanRepository.getLoans(UserId.of(userId)).stream().map(LoanListResponse::from).toList();
+        loanReader.findLoans(userId).stream().map(LoanListResponse::from).toList();
     // TODO: 위험도 추가
     return loanledgers;
   }
@@ -52,38 +52,35 @@ public class LoanService implements ManageLoanUseCase {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<LoanProgressResponse> getLoanProgress(Long userId) {
     List<LoanProgressResponse> progressList = new ArrayList<>();
+    EnumSet<RepaymentStatus> skipped =
+        EnumSet.of(RepaymentStatus.COMPLETED, RepaymentStatus.TERMINATED);
 
-    // TODO: 유저 id로 대출 리스트를 조회하고,
-    List<Loan> loanledgers = loanRespository.getLoans(UserId.of(userId));
+    List<Loan> loans = loanReader.findLoans(userId);
 
-    // TODO: 각 대출 리스트 순회하면서 ID를 가지고 디테일을 조회
-    for (Loan loan : loanledgers) {
-      Long id = loan.getLoanId();
-      LoanLedger loanLedger = loanReader.findLoanLedgerById(id);
+    for (Loan loan : loans) {
 
       // 이미 상환 완료된 대출은 스킵
-      if (loanLedger.getRepaymentStatus().equals(RepaymentStatus.COMPLETED)
-          || loanLedger.getRepaymentStatus().equals(RepaymentStatus.TERMINATED)) {
+      if (skipped.contains(loan.getRepaymentStatus())) {
         continue;
       }
 
-      // TODO: 상환 진척률 계산
-      // 현재 납부한 개월 수 -> loan_end_date - last_repayment_date = 개월
-      LocalDateTime loanEndDate = loanLedger.getLoanEndDate();
-      LocalDateTime lastRepaymentDate = loanLedger.getLastRepaymentDate();
-      long paidMonth = 0;
+      // 상환 진척률 계산 로직
+      // 현재 납부한 개월 수 -> last_repayment_date(마지막 상환일) - createdAt(생성 날짜) = 개월
+      LocalDateTime lastRepaymentDate = loan.getLastRepaymentDate();
 
-      if (lastRepaymentDate != null) {
-        paidMonth =
-            ChronoUnit.MONTHS.between(
-                lastRepaymentDate.withDayOfMonth(1), loanEndDate.withDayOfMonth(1));
-      }
+      long paidMonth =
+          Optional.ofNullable(lastRepaymentDate)
+              .map(
+                  d ->
+                      ChronoUnit.MONTHS.between(
+                          loan.getCreatedAt().withDayOfMonth(1), d.withDayOfMonth(1)))
+              .orElse(0L);
 
       // 총 개월 수 -> 원장성 테이블에서 조회
-      int totalTerm = loanLedger.getTerm();
+      int totalTerm = loan.getTerm();
 
       // 상환 진척률 계산
       BigDecimal progress =
@@ -92,7 +89,7 @@ public class LoanService implements ManageLoanUseCase {
               .multiply(BigDecimal.valueOf(100));
 
       LoanProgressResponse loanProgress =
-          LoanProgressResponse.from(id, loanLedger.getLoanProduct().getName(), progress);
+          LoanProgressResponse.from(loan.getLoanId(), loan.getLoanName(), progress);
       progressList.add(loanProgress);
     }
     return progressList;

@@ -2,20 +2,24 @@ package com.fisa.bank.loan.application.service.reader;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fisa.bank.common.application.service.CoreBankingClient;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
+import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.repository.LoanRepository;
 import com.fisa.bank.persistence.loan.entity.LoanLedger;
+import com.fisa.bank.persistence.user.entity.id.UserId;
 
 @Component
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class LoanReader {
-  private final LoanRepository loanRespository;
+  private final LoanRepository loanRepository;
   private final CoreBankingClient coreBankingClient;
 
   public LoanDetailResponse findLoanDetail(Long loanId) {
@@ -25,7 +29,11 @@ public class LoanReader {
     return LoanDetailResponse.from(loanId, loanDetail);
   }
 
-  public LoanLedger findLoanLedgerById(Long loanLedgerId) {
-    return loanRespository.getLoanLedger(loanLedgerId);
+  public List<Loan> findLoans(Long userId) {
+    return loanRepository.getLoans(UserId.of(userId));
+  }
+
+  public List<LoanLedger> findLoanLedgers(Long loanLedgerId) {
+    return loanRepository.getLoanLedgers(loanLedgerId);
   }
 }
