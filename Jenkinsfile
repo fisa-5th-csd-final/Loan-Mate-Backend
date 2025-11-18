@@ -21,14 +21,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Checking out source code...'
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: "*/${env.BRANCH_NAME}"]],
-                    userRemoteConfigs: [[
-                        url: params.GIT_URL,
-                        credentialsId: params.GIT_CREDENTIAL  // 🔗 Jenkins Credentials ID
-                    ]]
-                ])
+                checkout scm
             }
         }
 
