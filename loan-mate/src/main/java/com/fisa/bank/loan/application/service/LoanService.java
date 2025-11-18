@@ -85,8 +85,8 @@ public class LoanService implements ManageLoanUseCase {
       // 상환 진척률 계산
       BigDecimal progress =
           BigDecimal.valueOf(paidMonth)
-              .divide(BigDecimal.valueOf(totalTerm), 0, RoundingMode.HALF_UP)
-              .multiply(BigDecimal.valueOf(100));
+              .multiply(BigDecimal.valueOf(100))
+              .divide(BigDecimal.valueOf(totalTerm), 0, RoundingMode.HALF_UP);
 
       LoanProgressResponse loanProgress =
           LoanProgressResponse.from(loan.getLoanId(), loan.getLoanName(), progress);
