@@ -1,22 +1,8 @@
 pipeline {
     agent any
 
-    parameters {
-        string(
-            name: 'GIT_URL',
-            description: 'Git 저장소 URL'
-        )
-        string(
-            name: 'GIT_CREDENTIAL',
-            description: 'Git Credentials ID'
-        )
-    }
-
     environment {
-        // Gradle 캐시 디렉토리 (속도 향상)
         GRADLE_USER_HOME = "${WORKSPACE}/.gradle"
-        GITHUB_USERNAME = credentials('js-packages')
-        GITHUB_TOKEN = credentials('js-packages')
     }
 
     stages {
@@ -39,24 +25,37 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building project (tests skipped)...'
-                dir('loan-mate') {
-                    sh './gradlew build -x test --no-daemon'
+
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'js-packages',
+                        usernameVariable: 'GITHUB_USERNAME',
+                        passwordVariable: 'GITHUB_TOKEN'
+                    )
+                ]) {
+                    dir('loan-mate') {
+                        sh """
+                        ./gradlew build -x test --no-daemon \
+                        -PGITHUB_USERNAME=${GITHUB_USERNAME} \
+                        -PGITHUB_TOKEN=${GITHUB_TOKEN}
+                        """
+                    }
                 }
             }
         }
 
         stage('SonarQube Analysis') {
-                    environment {
-                        SONAR_SCANNER_HOME = tool 'SonarScanner'
-                    }
-                    steps {
-                        withSonarQubeEnv('SonarQube') {
-                            dir('loan-mate') {
-                                sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner"
-                            }
-                        }
+            environment {
+                SONAR_SCANNER_HOME = tool 'SonarScanner'
+            }
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    dir('loan-mate') {
+                        sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner"
                     }
                 }
+            }
+        }
     }
 
     post {
