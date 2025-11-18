@@ -10,6 +10,4 @@ public interface ManageLoanUseCase {
   List<LoanListResponse> getLoans(Long userId);
 
   LoanDetailResponse getLoanDetail(Long loanId);
-
-  //  List<LoanProgressResponse> getLoanProgress(Long userId);
 }
