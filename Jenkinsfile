@@ -4,12 +4,10 @@ pipeline {
     parameters {
         string(
             name: 'GIT_URL',
-            defaultValue: 'https://github.com/fisa-5th-csd-final/Loan-Mate-Backend.git',
             description: 'Git 저장소 URL'
         )
         string(
             name: 'GIT_CREDENTIAL',
-            defaultValue: 'js',
             description: 'Git Credentials ID'
         )
     }
@@ -22,7 +20,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo '📦 Checking out source code...'
+                echo 'Checking out source code...'
                 checkout([
                     $class: 'GitSCM',
                     branches: [[name: "*/${env.BRANCH_NAME}"]],
@@ -36,7 +34,7 @@ pipeline {
 
         stage('Spotless Check') {
             steps {
-                echo '✨ Running Spotless format check...'
+                echo 'Running Spotless format check...'
                 dir('loan-mate') {
                     sh './gradlew spotlessCheck --no-daemon'
                 }
@@ -45,7 +43,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo '🏗️ Building project (tests skipped)...'
+                echo 'Building project (tests skipped)...'
                 dir('loan-mate') {
                     sh './gradlew build -x test --no-daemon'
                 }
