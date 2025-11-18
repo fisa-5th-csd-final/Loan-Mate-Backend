@@ -26,7 +26,7 @@ pipeline {
                     branches: [[name: "*/${env.BRANCH_NAME}"]],
                     userRemoteConfigs: [[
                         url: params.GIT_URL,
-                        credentialsId: params.GIT_CREDENTIAL  // 🔗 Jenkins Credentials ID
+                        credentialsId: params.GIT_CREDENTIAL
                     ]]
                 ])
             }
