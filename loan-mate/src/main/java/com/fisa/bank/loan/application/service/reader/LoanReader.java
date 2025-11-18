@@ -12,7 +12,6 @@ import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.repository.LoanRepository;
-import com.fisa.bank.persistence.loan.entity.LoanLedger;
 import com.fisa.bank.persistence.user.entity.id.UserId;
 
 @Component
@@ -31,9 +30,5 @@ public class LoanReader {
 
   public List<Loan> findLoans(Long userId) {
     return loanRepository.getLoans(UserId.of(userId));
-  }
-
-  public List<LoanLedger> findLoanLedgers(Long loanLedgerId) {
-    return loanRepository.getLoanLedgers(loanLedgerId);
   }
 }
