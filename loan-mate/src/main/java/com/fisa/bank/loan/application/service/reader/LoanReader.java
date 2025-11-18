@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fisa.bank.common.application.service.CoreBankingClient;
-import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.repository.LoanRepository;
@@ -21,11 +20,10 @@ public class LoanReader {
   private final LoanRepository loanRepository;
   private final CoreBankingClient coreBankingClient;
 
-  public LoanDetailResponse findLoanDetail(Long loanId) {
+  public LoanDetail findLoanDetail(Long loanId) {
     String url = "/loans/ledger/" + loanId;
-    LoanDetail loanDetail = coreBankingClient.fetchOne(url, LoanDetail.class);
 
-    return LoanDetailResponse.from(loanId, loanDetail);
+    return coreBankingClient.fetchOne(url, LoanDetail.class);
   }
 
   public List<Loan> findLoans(Long userId) {

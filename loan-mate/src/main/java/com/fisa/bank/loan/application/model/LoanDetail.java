@@ -1,15 +1,20 @@
 package com.fisa.bank.loan.application.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fisa.bank.persistence.loan.enums.LoanType;
+import com.fisa.bank.persistence.loan.enums.RepaymentStatus;
 import com.fisa.bank.persistence.loan.enums.RepaymentType;
 
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
+@AllArgsConstructor
 public class LoanDetail {
   private String name;
   private BigDecimal remainPrincipal;
@@ -18,4 +23,10 @@ public class LoanDetail {
   private String accountNumber;
   private LoanType loanType;
   private RepaymentType repaymentType;
+  private LocalDateTime lastRepaymentDate;
+  private LocalDateTime createdAt;
+  private int term;
+  private RepaymentStatus repaymentStatus;
+
+  @Setter private Integer progress;
 }
