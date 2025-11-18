@@ -7,7 +7,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
@@ -18,8 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fisa.bank.common.application.service.CoreBankingClient;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
-import com.fisa.bank.loan.application.dto.response.LoanProgressResponse;
-import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.repository.LoanRepository;
 import com.fisa.bank.loan.application.service.reader.LoanReader;
@@ -45,53 +42,87 @@ public class LoanService implements ManageLoanUseCase {
 
   @Override
   public LoanDetailResponse getLoanDetail(Long loanId) {
-    LoanDetail loanDetail =
-        coreBankingClient.fetchOne(LOAN_LEDGER_ENDPOINT_PREFIX + loanId, LoanDetail.class);
+    LoanDetail loanDetail = loanReader.findLoanDetail(loanId);
+    Integer progress = calculateProgressRate(loanDetail).intValueExact();
 
+    loanDetail.setProgress(progress);
     return LoanDetailResponse.from(loanId, loanDetail);
   }
 
-  @Override
-  @Transactional(readOnly = true)
-  public List<LoanProgressResponse> getLoanProgress(Long userId) {
-    List<LoanProgressResponse> progressList = new ArrayList<>();
+  private BigDecimal calculateProgressRate(LoanDetail loan) {
     EnumSet<RepaymentStatus> skipped =
         EnumSet.of(RepaymentStatus.COMPLETED, RepaymentStatus.TERMINATED);
 
-    List<Loan> loans = loanReader.findLoans(userId);
+    // 1. 현재 납부한 개월 수 계산
+    LocalDateTime lastRepaymentDate = loan.getLastRepaymentDate();
 
-    for (Loan loan : loans) {
+    long paidMonth =
+        Optional.ofNullable(lastRepaymentDate)
+            .map(
+                d ->
+                    ChronoUnit.MONTHS.between(
+                        loan.getCreatedAt().withDayOfMonth(1), d.withDayOfMonth(1)))
+            .orElse(0L);
 
-      // 이미 상환 완료된 대출은 스킵
-      if (skipped.contains(loan.getRepaymentStatus())) {
-        continue;
-      }
+    // 2. 총 개월 수 조회
+    int totalTerm = loan.getTerm();
 
-      // 상환 진척률 계산 로직
-      // 현재 납부한 개월 수 -> last_repayment_date(마지막 상환일) - createdAt(생성 날짜) = 개월
-      LocalDateTime lastRepaymentDate = loan.getLastRepaymentDate();
-
-      long paidMonth =
-          Optional.ofNullable(lastRepaymentDate)
-              .map(
-                  d ->
-                      ChronoUnit.MONTHS.between(
-                          loan.getCreatedAt().withDayOfMonth(1), d.withDayOfMonth(1)))
-              .orElse(0L);
-
-      // 총 개월 수 -> 원장성 테이블에서 조회
-      int totalTerm = loan.getTerm();
-
-      // 상환 진척률 계산
-      BigDecimal progress =
-          BigDecimal.valueOf(paidMonth)
-              .multiply(BigDecimal.valueOf(100))
-              .divide(BigDecimal.valueOf(totalTerm), 0, RoundingMode.HALF_UP);
-
-      LoanProgressResponse loanProgress =
-          LoanProgressResponse.from(loan.getLoanId(), loan.getLoanName(), progress);
-      progressList.add(loanProgress);
+    // totalTerm이 0이거나 음수인 경우 DivideByZero 방지 (0% 반환)
+    if (totalTerm <= 0) {
+      return BigDecimal.ZERO;
     }
-    return progressList;
+
+    // 3. 상환 진척률 계산 (paidMonth / totalTerm * 100)
+    // Scale 0으로 설정하여 항상 정수 퍼센트(예: 33)로 반올림하여 반환합니다.
+    BigDecimal progressRate =
+        BigDecimal.valueOf(paidMonth)
+            .multiply(BigDecimal.valueOf(100))
+            .divide(BigDecimal.valueOf(totalTerm), 0, RoundingMode.HALF_UP);
+
+    return progressRate;
   }
+
+  //  @Override
+  //  @Transactional(readOnly = true)
+  //  public List<LoanProgressResponse> getLoanProgress(Long userId) {
+  //    List<LoanProgressResponse> progressList = new ArrayList<>();
+  //    EnumSet<RepaymentStatus> skipped =
+  //        EnumSet.of(RepaymentStatus.COMPLETED, RepaymentStatus.TERMINATED);
+  //
+  //    List<Loan> loans = loanReader.findLoans(userId);
+  //
+  //    for (Loan loan : loans) {
+  //
+  //      // 이미 상환 완료된 대출은 스킵
+  //      if (skipped.contains(loan.getRepaymentStatus())) {
+  //        continue;
+  //      }
+  //
+  //      // 상환 진척률 계산 로직
+  //      // 현재 납부한 개월 수 -> last_repayment_date(마지막 상환일) - createdAt(생성 날짜) = 개월
+  //      LocalDateTime lastRepaymentDate = loan.getLastRepaymentDate();
+  //
+  //      long paidMonth =
+  //          Optional.ofNullable(lastRepaymentDate)
+  //              .map(
+  //                  d ->
+  //                      ChronoUnit.MONTHS.between(
+  //                          loan.getCreatedAt().withDayOfMonth(1), d.withDayOfMonth(1)))
+  //              .orElse(0L);
+  //
+  //      // 총 개월 수 -> 원장성 테이블에서 조회
+  //      int totalTerm = loan.getTerm();
+  //
+  //      // 상환 진척률 계산
+  //      BigDecimal progress =
+  //          BigDecimal.valueOf(paidMonth)
+  //              .multiply(BigDecimal.valueOf(100))
+  //              .divide(BigDecimal.valueOf(totalTerm), 0, RoundingMode.HALF_UP);
+  //
+  //      LoanProgressResponse loanProgress =
+  //          LoanProgressResponse.from(loan.getLoanId(), loan.getLoanName(), progress);
+  //      progressList.add(loanProgress);
+  //    }
+  //    return progressList;
+  //  }
 }

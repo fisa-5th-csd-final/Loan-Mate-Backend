@@ -28,12 +28,10 @@ public class LoanRepositoryImpl implements LoanRepository {
   }
 
   public static Loan toDomain(LoanLedger loanLedger) {
-    return new Loan(
-        loanLedger.getLoanLedgerId().getValue(),
-        loanLedger.getLoanProduct().getName(),
-        loanLedger.getCreatedAt(),
-        loanLedger.getLastRepaymentDate(),
-        loanLedger.getTerm(),
-        loanLedger.getRepaymentStatus());
+    return new Loan(loanLedger.getLoanLedgerId().getValue(), loanLedger.getLoanProduct().getName());
+    //        loanLedger.getCreatedAt(),
+    //        loanLedger.getLastRepaymentDate(),
+    //        loanLedger.getTerm(),
+    //        loanLedger.getRepaymentStatus());
   }
 }

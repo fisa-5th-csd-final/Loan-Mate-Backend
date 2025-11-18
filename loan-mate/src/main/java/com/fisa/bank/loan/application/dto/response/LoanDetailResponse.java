@@ -23,6 +23,7 @@ public class LoanDetailResponse {
   private final String accountNumber;
   private final LoanType loanType;
   private final RepaymentType repaymentType;
+  private final int progress;
 
   // TODO: 나중에 위험도 계산 가능하면 final로 변경
   private RiskLevel riskLevel;
@@ -38,6 +39,7 @@ public class LoanDetailResponse {
         .accountNumber(loanDetail.getAccountNumber())
         .remainPrincipal(loanDetail.getRemainPrincipal())
         .principal(loanDetail.getPrincipal())
+        .progress(loanDetail.getProgress())
         .build();
   }
 }
