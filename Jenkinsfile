@@ -15,6 +15,8 @@ pipeline {
     environment {
         // Gradle 캐시 디렉토리 (속도 향상)
         GRADLE_USER_HOME = "${WORKSPACE}/.gradle"
+        GITHUB_USERNAME = credentials('js-packages')
+        GITHUB_TOKEN = credentials('js-packages')
     }
 
     stages {
