@@ -9,10 +9,13 @@ import java.util.stream.StreamSupport;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,7 +25,7 @@ import com.fisa.bank.common.application.util.JsonNodeMapper;
 @RequiredArgsConstructor
 public class CoreBankingClient {
 
-  private final OAuth2AuthorizedClientService authorizedClientService;
+  private final OAuth2AuthorizedClientManager authorizedClientManager;
   private final WebClient.Builder builder;
 
   @Value("${AUTHORIZATION_URL}")
@@ -36,16 +39,28 @@ public class CoreBankingClient {
     return SecurityContextHolder.getContext().getAuthentication();
   }
 
-  /** OAuth2 AccessToken을 Spring OAuth2 Client에서 꺼낸다. */
+  /** OAuth2 AccessToken 만료 시 자동 갱신. */
   private String getAccessToken(Authentication authentication) {
 
     if (!(authentication instanceof OAuth2AuthenticationToken oauthToken)) {
       throw new IllegalStateException("OAuth2AuthenticationToken 이 존재하지 않습니다. 인증되지 않은 요청입니다.");
     }
 
-    OAuth2AuthorizedClient client =
-        authorizedClientService.loadAuthorizedClient(
-            oauthToken.getAuthorizedClientRegistrationId(), oauthToken.getName());
+    ServletRequestAttributes attrs =
+        (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+    if (attrs == null) {
+      throw new IllegalStateException("Request attributes를 찾을 수 없습니다.");
+    }
+
+    OAuth2AuthorizeRequest authorizeRequest =
+        OAuth2AuthorizeRequest.withClientRegistrationId(
+                oauthToken.getAuthorizedClientRegistrationId())
+            .principal(oauthToken)
+            .attribute("jakarta.servlet.http.HttpServletRequest", attrs.getRequest())
+            .attribute("jakarta.servlet.http.HttpServletResponse", attrs.getResponse())
+            .build();
+
+    OAuth2AuthorizedClient client = authorizedClientManager.authorize(authorizeRequest);
 
     if (client == null) {
       throw new IllegalStateException("AuthorizedClient 를 찾을 수 없습니다.");
