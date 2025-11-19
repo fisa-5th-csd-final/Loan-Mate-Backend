@@ -78,7 +78,7 @@ public class TableReplicatingCdcConsumer implements CdcEventConsumer {
     } catch (DataAccessException ex) {
       log.error(
           "CDC 이벤트를 DB 에 반영하는 데 실패했습니다. table={} op={} before={} after={}",
-          String.format("%s.%s", table.schema(), table.table()),
+          table.qualifiedName(),
           operation,
           before,
           after,
@@ -120,7 +120,7 @@ public class TableReplicatingCdcConsumer implements CdcEventConsumer {
             + updateSetClause;
 
     jdbcTemplate.update(sql, values.toArray());
-    log.debug("CDC {} 이벤트를 {} 테이블에 반영했습니다.", operation, String.format("%s.%s", table.schema, table.table));
+    log.debug("CDC {} 이벤트를 {} 테이블에 반영했습니다.", operation, table.qualifiedName());
   }
 
   private void delete(TableRef table, Map<String, Object> before) {
