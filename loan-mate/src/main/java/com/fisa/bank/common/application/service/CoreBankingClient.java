@@ -28,7 +28,7 @@ public class CoreBankingClient {
   private final OAuth2AuthorizedClientManager authorizedClientManager;
   private final WebClient.Builder builder;
 
-  @Value("${AUTHORIZATION_URL}")
+  @Value("${CORE_BANKING_API_URL}")
   private String BASE_URL;
 
   private WebClient getClient(String token) {
@@ -76,7 +76,7 @@ public class CoreBankingClient {
     JsonNode root =
         getClient(token)
             .get()
-            .uri(BASE_URL + "/api/" + endpoint)
+            .uri(BASE_URL + endpoint)
             .retrieve()
             .bodyToMono(JsonNode.class)
             .block();
@@ -96,7 +96,7 @@ public class CoreBankingClient {
     JsonNode root =
         getClient(token)
             .get()
-            .uri(BASE_URL + "/api/" + endpoint)
+            .uri(BASE_URL + endpoint)
             .retrieve()
             .bodyToMono(JsonNode.class)
             .block();
