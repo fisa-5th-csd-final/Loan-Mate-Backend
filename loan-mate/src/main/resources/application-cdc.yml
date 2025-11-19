@@ -15,4 +15,4 @@ cdc:
         - user_id
 logging:
   level:
-    com.fisa.bank.infrastructure.cdc: ${CDC_LOGGING_LEVEL:info};
+    com.fisa.bank.infrastructure.cdc: ${CDC_LOGGING_LEVEL:info}
