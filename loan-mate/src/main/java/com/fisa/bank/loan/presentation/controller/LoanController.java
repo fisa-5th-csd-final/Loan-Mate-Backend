@@ -5,10 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.fisa.bank.common.presentation.response.ApiResponse;
 import com.fisa.bank.common.presentation.response.ApiResponseGenerator;
@@ -37,5 +34,13 @@ public class LoanController {
     log.info("대출 세부 정보 조회");
     LoanDetailResponse loanDetail = manageLoanUseCase.getLoanDetail(loanId);
     return ApiResponseGenerator.success(ResponseCode.GET, loanDetail);
+  }
+
+  @DeleteMapping("{loanId:\\d+}")
+  public ApiResponse<SuccessBody<Void>> deleteLoan(@PathVariable("loanId") Long loanId) {
+    log.info("대출 해지");
+    manageLoanUseCase.cancelLoan(loanId);
+
+    return ApiResponseGenerator.success(ResponseCode.DELETE);
   }
 }
