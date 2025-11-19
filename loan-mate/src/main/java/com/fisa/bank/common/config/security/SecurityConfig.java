@@ -21,6 +21,12 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+  private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
+
+  public SecurityConfig(CustomOAuth2SuccessHandler customOAuth2SuccessHandler) {
+    this.customOAuth2SuccessHandler = customOAuth2SuccessHandler;
+  }
+
   @Bean
   @Order(1)
   public SecurityFilterChain oauth2SecurityFilterChain(
@@ -60,7 +66,8 @@ public class SecurityConfig {
                     .authorizationEndpoint(
                         ep ->
                             ep.authorizationRequestRepository(repo) // 세션 저장
-                                .authorizationRequestResolver(resolver)));
+                                .authorizationRequestResolver(resolver))
+                    .successHandler(customOAuth2SuccessHandler));
     return http.build();
   }
 }
