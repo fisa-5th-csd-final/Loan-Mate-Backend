@@ -44,7 +44,7 @@ public class LoanServiceTest {
   private static LoanDetail activeRepaymentLoan; // 케이스 3: 최소 1회 상환 (정상 계산 대상)
   private static LoanDetail fullyRepaidLoan; // 케이스 4: 만기 상환 직후
 
-  private static final int TOTAL_TERM = 12;
+  private static final int TOTAL_TERM = 1;
 
   @BeforeAll
   static void setup() {
