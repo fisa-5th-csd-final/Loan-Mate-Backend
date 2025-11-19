@@ -1,5 +1,6 @@
 package com.fisa.bank.user.persistence.entity.id;
 
+import org.hibernate.type.descriptor.java.LongJavaType;
 import org.hibernate.type.descriptor.jdbc.BigIntJdbcType;
 import org.hibernate.type.descriptor.jdbc.JdbcType;
 
@@ -12,10 +13,6 @@ public class UserIdJavaType extends BaseIdJavaType<Long, UserId> {
   private static final JdbcType BIGINT_JDBC_TYPE = BigIntJdbcType.INSTANCE;
 
   public UserIdJavaType() {
-    super(
-        UserId.class,
-        UserId::of,
-        org.hibernate.type.descriptor.java.LongJavaType.INSTANCE,
-        BIGINT_JDBC_TYPE);
+    super(UserId.class, UserId::of, LongJavaType.INSTANCE, BIGINT_JDBC_TYPE);
   }
 }
