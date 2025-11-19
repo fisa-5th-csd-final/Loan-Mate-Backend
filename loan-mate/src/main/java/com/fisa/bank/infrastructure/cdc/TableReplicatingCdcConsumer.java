@@ -71,9 +71,8 @@ public class TableReplicatingCdcConsumer implements CdcEventConsumer {
         filterColumns(table, normalizeByMetadata(table, toMap(event.after())));
     try {
       switch (operation) {
-        case CREATE, READ -> upsert(table, after, operation);
-        case UPDATE -> upsert(table, after, operation);
-        case DELETE -> delete(table, before);
+        case CREATE, READ, UPDATE -> upsert(table, after, operation);
+          case DELETE -> delete(table, before);
         default -> {}
       }
     } catch (DataAccessException ex) {
