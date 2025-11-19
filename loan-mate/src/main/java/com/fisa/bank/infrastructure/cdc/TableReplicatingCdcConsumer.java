@@ -79,7 +79,7 @@ public class TableReplicatingCdcConsumer implements CdcEventConsumer {
     } catch (DataAccessException ex) {
       log.error(
           "CDC 이벤트를 DB 에 반영하는 데 실패했습니다. table={} op={} before={} after={}",
-          table.qualifiedName(),
+          String.format("%s.%s", table.schema(), table.table()),
           operation,
           before,
           after,
