@@ -1,6 +1,5 @@
 package com.fisa.bank.infrastructure.cdc;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,6 +20,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fisa.bank.cdc.listener.event.CdcEvent;
 import com.fisa.bank.cdc.listener.event.CdcEventConsumer;
 
@@ -72,7 +72,7 @@ public class TableReplicatingCdcConsumer implements CdcEventConsumer {
     try {
       switch (operation) {
         case CREATE, READ, UPDATE -> upsert(table, after, operation);
-          case DELETE -> delete(table, before);
+        case DELETE -> delete(table, before);
         default -> {}
       }
     } catch (DataAccessException ex) {
@@ -101,12 +101,7 @@ public class TableReplicatingCdcConsumer implements CdcEventConsumer {
     String placeholders = columns.stream().map(column -> "?").collect(Collectors.joining(", "));
     String updateSetClause =
         columns.stream()
-            .map(
-                column ->
-                    quoteIdentifier(column)
-                        + " = VALUES("
-                        + quoteIdentifier(column)
-                        + ")")
+            .map(column -> quoteIdentifier(column) + " = VALUES(" + quoteIdentifier(column) + ")")
             .collect(Collectors.joining(", "));
 
     String sql =
@@ -129,11 +124,9 @@ public class TableReplicatingCdcConsumer implements CdcEventConsumer {
       return;
     }
 
-    List<String> primaryKeys =
-        metadataProvider.getPrimaryKeys(table.schema(), table.table());
+    List<String> primaryKeys = metadataProvider.getPrimaryKeys(table.schema(), table.table());
     if (primaryKeys.isEmpty()) {
-      log.warn(
-          "PK 정보를 찾을 수 없어 CDC 삭제 이벤트를 건너뜁니다. table={}", table.qualifiedName());
+      log.warn("PK 정보를 찾을 수 없어 CDC 삭제 이벤트를 건너뜁니다. table={}", table.qualifiedName());
       return;
     }
 
@@ -142,10 +135,7 @@ public class TableReplicatingCdcConsumer implements CdcEventConsumer {
 
     for (String pk : primaryKeys) {
       if (!before.containsKey(pk)) {
-        log.warn(
-            "삭제 이벤트에 PK {} 컬럼 값이 포함되지 않아 CDC 이벤트를 건너뜁니다. table={}",
-            pk,
-            table.qualifiedName());
+        log.warn("삭제 이벤트에 PK {} 컬럼 값이 포함되지 않아 CDC 이벤트를 건너뜁니다. table={}", pk, table.qualifiedName());
         return;
       }
       clauses.add(quoteIdentifier(pk) + " = ?");
@@ -160,8 +150,7 @@ public class TableReplicatingCdcConsumer implements CdcEventConsumer {
 
   private String buildMissingPayloadMessage(TableRef table, Operation operation) {
     return String.format(
-        "CDC %s 이벤트에 반영할 데이터가 없어 건너뜁니다. table=%s",
-        operation, table.qualifiedName());
+        "CDC %s 이벤트에 반영할 데이터가 없어 건너뜁니다. table=%s", operation, table.qualifiedName());
   }
 
   private Map<String, Object> normalizeByMetadata(
@@ -178,7 +167,8 @@ public class TableReplicatingCdcConsumer implements CdcEventConsumer {
     Map<String, Object> normalized = new LinkedHashMap<>(originalValues.size());
     for (Entry<String, Object> entry : originalValues.entrySet()) {
       TableColumnMetadataProvider.ColumnMetadata columnMetadata = metadata.get(entry.getKey());
-      normalized.put(entry.getKey(), columnValueConverter.convert(columnMetadata, entry.getValue()));
+      normalized.put(
+          entry.getKey(), columnValueConverter.convert(columnMetadata, entry.getValue()));
     }
     return normalized;
   }

@@ -10,9 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-/**
- * 대상 테이블의 PK 정보를 Information Schema 에서 조회하고 캐싱한다.
- */
+/** 대상 테이블의 PK 정보를 Information Schema 에서 조회하고 캐싱한다. */
 @Component
 @RequiredArgsConstructor
 class TablePrimaryKeyMetadataProvider {

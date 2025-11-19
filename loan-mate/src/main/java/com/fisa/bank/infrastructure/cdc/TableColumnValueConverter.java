@@ -12,9 +12,7 @@ import java.time.format.DateTimeParseException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-/**
- * CDC payload 에 들어있는 값을 대상 테이블의 컬럼 타입에 맞게 변환한다.
- */
+/** CDC payload 에 들어있는 값을 대상 테이블의 컬럼 타입에 맞게 변환한다. */
 @Component
 class TableColumnValueConverter {
 

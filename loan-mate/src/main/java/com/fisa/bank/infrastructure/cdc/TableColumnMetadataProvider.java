@@ -1,8 +1,8 @@
 package com.fisa.bank.infrastructure.cdc;
 
-import java.math.BigDecimal;
 import lombok.RequiredArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -12,9 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-/**
- * 대상 테이블의 컬럼 타입 메타데이터를 캐싱해서 제공한다.
- */
+/** 대상 테이블의 컬럼 타입 메타데이터를 캐싱해서 제공한다. */
 @Component
 @RequiredArgsConstructor
 class TableColumnMetadataProvider {
@@ -51,7 +49,8 @@ class TableColumnMetadataProvider {
           String columnName = rs.getString("COLUMN_NAME");
           String dataType = rs.getString("DATA_TYPE");
           BigDecimal datetimePrecisionValue = rs.getBigDecimal("DATETIME_PRECISION");
-          Integer datetimePrecision = datetimePrecisionValue != null ? datetimePrecisionValue.intValue() : null;
+          Integer datetimePrecision =
+              datetimePrecisionValue != null ? datetimePrecisionValue.intValue() : null;
           BigDecimal numericScaleValue = rs.getBigDecimal("NUMERIC_SCALE");
           Integer numericScale = numericScaleValue != null ? numericScaleValue.intValue() : null;
           result.put(

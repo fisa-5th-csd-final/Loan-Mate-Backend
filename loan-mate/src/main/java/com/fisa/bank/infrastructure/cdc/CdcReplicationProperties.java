@@ -58,7 +58,8 @@ public class CdcReplicationProperties {
             : normalizedTable;
 
     List<String> columns =
-        tableColumnFilters.getOrDefault(schemaQualifiedKey, tableColumnFilters.get(normalizedTable));
+        tableColumnFilters.getOrDefault(
+            schemaQualifiedKey, tableColumnFilters.get(normalizedTable));
     if (columns == null) {
       return List.of();
     }
@@ -79,8 +80,7 @@ public class CdcReplicationProperties {
     return normalized;
   }
 
-  private Map<String, List<String>> normalizeTableColumnFilters(
-      Map<String, List<String>> source) {
+  private Map<String, List<String>> normalizeTableColumnFilters(Map<String, List<String>> source) {
     Map<String, List<String>> normalized = new HashMap<>();
     if (source == null) {
       return normalized;
