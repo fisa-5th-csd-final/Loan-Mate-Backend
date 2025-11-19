@@ -2,6 +2,7 @@ package com.fisa.bank.common.application.service;
 
 import lombok.RequiredArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fisa.bank.account.application.dto.AccountDetail;
+import com.fisa.bank.common.application.dto.LoanLedgerDetailResponse;
 import com.fisa.bank.common.application.util.JsonNodeMapper;
 
 @Component
@@ -71,5 +74,34 @@ public class CoreBankingClient {
     return StreamSupport.stream(dataNode.spliterator(), false)
         .map(node -> JsonNodeMapper.map(node, clazz))
         .collect(Collectors.toList());
+  }
+
+  public BigDecimal getBalance(String accountNumber) {
+    AccountDetail dto = fetchOne("/accounts/" + accountNumber, AccountDetail.class);
+    return dto.getBalance();
+  }
+
+  public void withdraw(String accountNumber, BigDecimal amount) {
+    getClient()
+        .post()
+        .uri(BASE_URL + "/accounts/" + accountNumber + "/withdraw")
+        .bodyValue(new WithdrawRequest(amount))
+        .retrieve()
+        .bodyToMono(Void.class)
+        .block();
+  }
+
+  public void transfer(String from, String to, BigDecimal amount) {
+    getClient()
+        .post()
+        .uri(BASE_URL + "/accounts/transfer")
+        .bodyValue(new TransferRequest(from, to, amount))
+        .retrieve()
+        .bodyToMono(Void.class)
+        .block();
+  }
+
+  public LoanLedgerDetailResponse getLoanLedgerDetail(Long loanLedgerId) {
+    return fetchOne("/loans/ledger/" + loanLedgerId, LoanLedgerDetailResponse.class);
   }
 }

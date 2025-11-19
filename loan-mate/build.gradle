@@ -38,7 +38,7 @@ dependencies {
 	// WebClient 사용을 위한 webflux 관련 의존성 추가
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	// corebanking sdk
-	implementation "com.fisa.bank:persistence:0.0.1-SNAPSHOT"
+	implementation "com.fisa.bank:persistence:0.0.3-SNAPSHOT"
 }
 
 // spotless
