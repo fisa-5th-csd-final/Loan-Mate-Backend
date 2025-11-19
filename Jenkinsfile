@@ -28,7 +28,7 @@ pipeline {
 
                 withCredentials([
                     usernamePassword(
-                        credentialsId: 'js-packages',
+                        credentialsId: 'js-package',
                         usernameVariable: 'GITHUB_USERNAME',
                         passwordVariable: 'GITHUB_TOKEN'
                     )
