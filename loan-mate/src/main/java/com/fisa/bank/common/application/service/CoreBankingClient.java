@@ -27,6 +27,7 @@ public class CoreBankingClient {
 
   private final OAuth2AuthorizedClientManager authorizedClientManager;
   private final WebClient.Builder builder;
+  private final JsonNodeMapper jsonNodeMapper;
 
   @Value("${CORE_BANKING_API_URL}")
   private String BASE_URL;
@@ -86,7 +87,7 @@ public class CoreBankingClient {
     }
 
     JsonNode dataNode = root.path("data");
-    return JsonNodeMapper.map(dataNode, clazz);
+    return jsonNodeMapper.map(dataNode, clazz);
   }
 
   public <T> List<T> fetchList(String endpoint, Class<T> clazz) {
@@ -112,7 +113,7 @@ public class CoreBankingClient {
     }
 
     return StreamSupport.stream(dataNode.spliterator(), false)
-        .map(node -> JsonNodeMapper.map(node, clazz))
+        .map(node -> jsonNodeMapper.map(node, clazz))
         .collect(Collectors.toList());
   }
 }
