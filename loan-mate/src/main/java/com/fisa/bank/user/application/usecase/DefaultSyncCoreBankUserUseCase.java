@@ -60,8 +60,8 @@ public class DefaultSyncCoreBankUserUseCase implements SyncCoreBankUserUseCase {
     userAuthRepository.save(
         new UserAuth(
             null, // authId 자동
-            newUser.getUserId(), // 서비스 user PK
-            info.userId() // 코어뱅킹 user PK
+            info.userId(), // 코어뱅킹 user PK
+            newUser.getUserId() // 서비스 user PK
             ));
 
     return LoginResult.REGISTER;
