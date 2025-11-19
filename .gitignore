@@ -182,6 +182,7 @@ Temporary Items
 ### env
 env.properties
 laon-mate/src/main/resources/env.properties
+
 .env
 
 ### !!!!!!!!!keys!!!!!!! ###
