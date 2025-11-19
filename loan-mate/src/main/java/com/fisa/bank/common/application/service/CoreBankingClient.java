@@ -7,7 +7,15 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,60 +24,96 @@ import com.fisa.bank.common.application.util.JsonNodeMapper;
 @Component
 @RequiredArgsConstructor
 public class CoreBankingClient {
-  @Value("${corebanking.token}")
-  private String token;
 
+  private final OAuth2AuthorizedClientManager authorizedClientManager;
   private final WebClient.Builder builder;
+  private final JsonNodeMapper jsonNodeMapper;
 
-  private WebClient getClient() {
+  @Value("${CORE_BANKING_API_URL}")
+  private String BASE_URL;
+
+  private WebClient getClient(String token) {
     return builder.defaultHeader("Authorization", "Bearer " + token).build();
   }
 
-  private static final String BASE_URL = "http://localhost:8080/api";
-
-  /**
-   * 단일 데이터 조회 및 변환
-   *
-   * @param endpoint 요청 URL
-   * @param clazz 변환하고자 하는 DTO 클래스
-   * @param <T> 리턴 타입
-   * @return 변환된 객체
-   */
-  public <T> T fetchOne(String endpoint, Class<T> clazz) {
-    JsonNode root =
-        getClient().get().uri(BASE_URL + endpoint).retrieve().bodyToMono(JsonNode.class).block();
-
-    if (root == null || root.isNull()) {
-      throw new IllegalStateException("응답이 null 입니다.");
-    }
-
-    JsonNode dataNode = root.path("data");
-    return JsonNodeMapper.map(dataNode, clazz);
+  private Authentication getAuth() {
+    return SecurityContextHolder.getContext().getAuthentication();
   }
 
-  /**
-   * 리스트 데이터 조회 및 변환
-   *
-   * @param endpoint 요청 URL
-   * @param clazz 리스트 원소 타입 DTO 클래스
-   * @param <T> 리스트 원소 타입
-   * @return 변환된 객체 리스트
-   */
-  public <T> List<T> fetchList(String endpoint, Class<T> clazz) {
+  /** OAuth2 AccessToken 만료 시 자동 갱신. */
+  private String getAccessToken(Authentication authentication) {
+
+    if (!(authentication instanceof OAuth2AuthenticationToken oauthToken)) {
+      throw new IllegalStateException("OAuth2AuthenticationToken 이 존재하지 않습니다. 인증되지 않은 요청입니다.");
+    }
+
+    ServletRequestAttributes attrs =
+        (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+    if (attrs == null) {
+      throw new IllegalStateException("Request attributes를 찾을 수 없습니다.");
+    }
+
+    OAuth2AuthorizeRequest authorizeRequest =
+        OAuth2AuthorizeRequest.withClientRegistrationId(
+                oauthToken.getAuthorizedClientRegistrationId())
+            .principal(oauthToken)
+            .attribute("jakarta.servlet.http.HttpServletRequest", attrs.getRequest())
+            .attribute("jakarta.servlet.http.HttpServletResponse", attrs.getResponse())
+            .build();
+
+    OAuth2AuthorizedClient client = authorizedClientManager.authorize(authorizeRequest);
+
+    if (client == null) {
+      throw new IllegalStateException("AuthorizedClient 를 찾을 수 없습니다.");
+    }
+
+    return client.getAccessToken().getTokenValue();
+  }
+
+  public <T> T fetchOne(String endpoint, Class<T> clazz) {
+    Authentication auth = getAuth();
+    String token = getAccessToken(auth);
+
     JsonNode root =
-        getClient().get().uri(BASE_URL + endpoint).retrieve().bodyToMono(JsonNode.class).block();
+        getClient(token)
+            .get()
+            .uri(BASE_URL + endpoint)
+            .retrieve()
+            .bodyToMono(JsonNode.class)
+            .block();
 
     if (root == null || root.isNull()) {
       throw new IllegalStateException("응답이 null 입니다.");
     }
 
     JsonNode dataNode = root.path("data");
+    return jsonNodeMapper.map(dataNode, clazz);
+  }
+
+  public <T> List<T> fetchList(String endpoint, Class<T> clazz) {
+    Authentication auth = getAuth();
+    String token = getAccessToken(auth);
+
+    JsonNode root =
+        getClient(token)
+            .get()
+            .uri(BASE_URL + endpoint)
+            .retrieve()
+            .bodyToMono(JsonNode.class)
+            .block();
+
+    if (root == null || root.isNull()) {
+      throw new IllegalStateException("응답이 null 입니다.");
+    }
+
+    JsonNode dataNode = root.path("data");
+
     if (!dataNode.isArray()) {
       throw new IllegalStateException("data 노드가 배열이 아닙니다.");
     }
 
     return StreamSupport.stream(dataNode.spliterator(), false)
-        .map(node -> JsonNodeMapper.map(node, clazz))
+        .map(node -> jsonNodeMapper.map(node, clazz))
         .collect(Collectors.toList());
   }
 }

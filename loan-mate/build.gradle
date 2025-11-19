@@ -21,8 +21,8 @@ repositories {
 	maven {
 		url = uri("https://maven.pkg.github.com/fisa-5th-csd-final/*")
 		credentials {
-			username = System.getenv("GITHUB_USERNAME")
-			password = System.getenv("GITHUB_TOKEN")
+			username = project.findProperty("gpr.user") ?: System.getenv("GPR_USERNAME")
+			password = project.findProperty("gpr.key") ?: System.getenv("GPR_TOKEN")
 		}
 	}
 }
@@ -41,6 +41,11 @@ dependencies {
 	implementation 'com.fisa.bank:persistence:0.0.4-SNAPSHOT'
 	// corebanking cdc listener sdk
 	implementation 'com.fisa.bank.cdc:listener:0.0.1-SNAPSHOT'
+    // oauth2
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    // flyway
+    implementation 'org.flywaydb:flyway-core'
+    implementation "org.flywaydb:flyway-mysql"
 }
 
 // spotless

@@ -2,11 +2,12 @@ server:
   port: 8081
 spring:
   application:
-    name: bank
+    name: loan-mate
   config:
     import:
       - classpath:application-db.yml
-      - classpath:application-cdc.yml
+      - classpath:application-auth.yml
+      - classpath:env.properties
   profiles:
     active: ${PROFILE}
 
