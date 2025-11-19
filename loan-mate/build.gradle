@@ -41,6 +41,9 @@ dependencies {
 	implementation "com.fisa.bank:persistence:0.0.1-SNAPSHOT"
 	// oauth2
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+	// flyway
+	implementation 'org.flywaydb:flyway-core'
+	implementation "org.flywaydb:flyway-mysql"
 }
 
 // spotless
