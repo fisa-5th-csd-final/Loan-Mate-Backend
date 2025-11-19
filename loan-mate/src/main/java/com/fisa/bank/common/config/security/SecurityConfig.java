@@ -10,10 +10,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestCustomizers;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -21,16 +23,14 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-  private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
-
-  public SecurityConfig(CustomOAuth2SuccessHandler customOAuth2SuccessHandler) {
-    this.customOAuth2SuccessHandler = customOAuth2SuccessHandler;
-  }
-
   @Bean
   @Order(1)
   public SecurityFilterChain oauth2SecurityFilterChain(
-      HttpSecurity http, ClientRegistrationRepository clientRegistrationRepository)
+      HttpSecurity http,
+      ClientRegistrationRepository clientRegistrationRepository,
+      OAuth2AuthorizedClientRepository authorizedClientRepository,
+      OAuth2AuthorizedClientService authorizedClientService,
+      CustomOAuth2SuccessHandler customOAuth2SuccessHandler)
       throws Exception {
     var repo = new HttpSessionOAuth2AuthorizationRequestRepository();
 
@@ -54,6 +54,9 @@ public class SecurityConfig {
         .oauth2Login(
             oauth ->
                 oauth
+                    .authorizedClientRepository(authorizedClientRepository)
+                    .authorizedClientService(authorizedClientService)
+
                     // /userinfo 호출 안함
                     .userInfoEndpoint(
                         userInfo ->
