@@ -14,6 +14,7 @@ import com.fisa.bank.common.presentation.response.ApiResponse;
 import com.fisa.bank.common.presentation.response.ApiResponseGenerator;
 import com.fisa.bank.common.presentation.response.body.SuccessBody;
 import com.fisa.bank.common.presentation.response.code.ResponseCode;
+import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
@@ -37,5 +38,14 @@ public class LoanController {
     log.info("대출 세부 정보 조회");
     LoanDetailResponse loanDetail = manageLoanUseCase.getLoanDetail(loanId);
     return ApiResponseGenerator.success(ResponseCode.GET, loanDetail);
+  }
+
+  @GetMapping("/{loanLedgerId}/auto-deposit")
+  public ApiResponse<SuccessBody<LoanAutoDepositResponse>> getAutoDeposit(
+      @PathVariable Long loanLedgerId) {
+    log.info("자동 예치 여부 조회");
+    LoanAutoDepositResponse response = manageLoanUseCase.getAutoDeposit(loanLedgerId);
+
+    return ApiResponseGenerator.success(ResponseCode.GET, response);
   }
 }
