@@ -28,15 +28,9 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
       HttpServletRequest request, HttpServletResponse response, Authentication authentication)
       throws IOException {
 
-    // 코어뱅킹 /me API 호출
     UserInfoResponse me = coreBankingClient.fetchOne("users/me", UserInfoResponse.class);
+    syncCoreBankUserUseCase.sync(me);
 
-    // 로그인/회원가입 처리
-    var result = syncCoreBankUserUseCase.sync(me);
-    log.info("Login result: {}", result);
-
-    // 끝! (리디렉션, 쿠키 설정 등 없음)
     response.getWriter().write("OK");
-    response.getWriter().flush();
   }
 }
