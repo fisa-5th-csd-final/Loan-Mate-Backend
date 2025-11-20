@@ -10,9 +10,6 @@ services:
       dockerfile: docker/Dockerfile
       secrets:
         - github_credentials
-      args:
-        GITHUB_USERNAME: ${GITHUB_USERNAME}
-        GITHUB_TOKEN: ${GITHUB_TOKEN}
     image: ${IMAGE_NAME:-loan-mate-app}:${IMAGE_TAG:-latest}
     depends_on:
       mysql:
@@ -27,18 +24,23 @@ services:
 
   mysql:
     container_name: loan-mate-mysql
-    image: mysql:8.0
+    image: mysql:8.0.36
     command: >
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci
     env_file:
       - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "${MYSQL_PORT}:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root --silent"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
       interval: 10s
       timeout: 5s
       retries: 5
