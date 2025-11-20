@@ -118,4 +118,15 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
         .map(node -> jsonNodeMapper.map(node, clazz))
         .collect(Collectors.toList());
   }
+
+  /**
+   * 단일 데이터 삭제
+   *
+   * @param endpoint 요청 URL
+   */
+  public void fetchOneDelete(String endpoint) {
+    Authentication auth = getAuth();
+    String token = getAccessToken(auth);
+    getClient(token).delete().uri(BASE_URL + endpoint).retrieve().bodyToMono(Void.class).block();
+  }
 }

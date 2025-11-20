@@ -92,4 +92,14 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
         .map(n -> jsonNodeMapper.map(n, clazz))
         .collect(Collectors.toList());
   }
+
+  /**
+   * 단일 데이터 삭제
+   *
+   * @param endpoint 요청 URL
+   */
+  public void fetchOneDelete(String endpoint) {
+
+    callApi(endpoint);
+  }
 }
