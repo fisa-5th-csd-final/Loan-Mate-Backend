@@ -1,5 +1,3 @@
-version: "3.9"
-
 secrets:
   github_credentials:
     file: ./.github_credentials
@@ -9,7 +7,7 @@ services:
     container_name: loan-mate-server
     build:
       context: ..
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
       secrets:
         - github_credentials
       args:
@@ -30,11 +28,11 @@ services:
   mysql:
     container_name: loan-mate-mysql
     image: mysql:8.0
-    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
     env_file:
       - .env
-    environment:
-      MYSQL_PWD: ${MYSQL_ROOT_PASSWORD}
     ports:
       - "${MYSQL_PORT}:3306"
     volumes:
