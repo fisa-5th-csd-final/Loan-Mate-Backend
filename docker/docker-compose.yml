@@ -5,7 +5,7 @@ secrets:
     file: ./.github_credentials
 
 services:
-  loan-mate-app:
+  loan-mate-server:
     container_name: loan-mate-server
     build:
       context: ..
