@@ -1,5 +1,3 @@
-server:
-  port: 8081
 spring:
   application:
     name: loan-mate
@@ -11,6 +9,9 @@ spring:
   profiles:
     active: ${PROFILE}
 
-# 테스트용 유저 토큰
-corebanking:
-  token: ${COREBANKING_TOKEN}
+server:
+  port: ${PORT:8080}
+  servlet:
+    session:
+      cookie:
+        name: LOANMATESESSION
