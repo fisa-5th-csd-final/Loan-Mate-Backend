@@ -65,10 +65,12 @@ public class LoanController {
     return ApiResponseGenerator.success(ResponseCode.GET, loansWithPrepaymentBenefit);
   }
 
-  @PatchMapping("/{loanId}/auto-deposit")
+  @PatchMapping("/ledgers/{loanId}/auto-deposit")
   public ApiResponse<SuccessBody<Void>> updateAutoDeposit(
       @PathVariable Long loanId, @RequestBody AutoDepositUpdateRequest request) {
+    log.info("자동 예치 여부 수정");
     manageLoanUseCase.updateAutoDepositEnabled(loanId, request.isAutoDepositEnabled());
+
     return ApiResponseGenerator.success(ResponseCode.UPDATE);
   }
 }
