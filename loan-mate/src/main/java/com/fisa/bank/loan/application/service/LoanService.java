@@ -78,10 +78,6 @@ public class LoanService implements ManageLoanUseCase {
 
     LoanLedger loanLedger = loanReader.findLoanLedgerById(loanId);
 
-    return LoanAutoDepositResponse.builder()
-        .loanLedgerId(loanLedger.getLoanLedgerId().getValue())
-        .nextRepaymentDate(loanLedger.getNextRepaymentDate())
-        .autoDepositEnabled(loanLedger.isAutoDepositEnabled())
-        .build();
+    return LoanAutoDepositResponse.from(loanLedger);
   }
 }
