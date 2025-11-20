@@ -21,6 +21,7 @@ services:
     restart: unless-stopped
     networks:
       - loan-mate-net
+      - kafka-net
 
   mysql:
     container_name: loan-mate-mysql
@@ -51,6 +52,8 @@ services:
 networks:
   loan-mate-net:
     driver: bridge
+  kafka-net:
+    external: true
 
 volumes:
   mysql-data:
