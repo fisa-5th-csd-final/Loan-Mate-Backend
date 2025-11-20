@@ -29,22 +29,25 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
   @Value("${CORE_BANKING_API_URL}")
   private String baseUrl;
 
-  /** WebClient 생성 */
   private WebClient client(String token) {
     return builder.defaultHeader("Authorization", "Bearer " + token).build();
   }
 
-  /** CoreBanking GET 호출 */
+  private JsonNode executeRequest(String endpoint, String token) {
+    return client(token)
+        .get()
+        .uri(baseUrl + endpoint)
+        .retrieve()
+        .bodyToMono(JsonNode.class)
+        .block();
+  }
+
+  /** API 호출 + 토큰 만료 시 자동 재발급 */
   private JsonNode callApi(String endpoint) {
     String token = tokenManager.getAccessToken();
 
     try {
-      return client(token)
-          .get()
-          .uri(baseUrl + endpoint)
-          .retrieve()
-          .bodyToMono(JsonNode.class)
-          .block();
+      return executeRequest(endpoint, token);
 
     } catch (WebClientResponseException e) {
 
@@ -52,21 +55,14 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
         log.warn("AccessToken 재발급 후 재요청");
 
         String newToken = tokenManager.refreshAndGetNewToken();
-
-        return client(newToken)
-            .get()
-            .uri(baseUrl + endpoint)
-            .retrieve()
-            .bodyToMono(JsonNode.class)
-            .block();
+        return executeRequest(endpoint, newToken);
       }
 
       log.error("CoreBanking 호출 실패: {} {}", e.getStatusCode(), e.getMessage());
       throw e;
 
     } catch (Exception e) {
-
-      log.error("알 수없는 예외");
+      log.error("알 수 없는 예외", e);
       throw new IllegalStateException("CoreBanking API 호출 중 예외 발생", e);
     }
   }
