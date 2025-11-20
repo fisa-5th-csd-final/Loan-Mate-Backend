@@ -6,4 +6,6 @@ public interface CoreBankingClient {
   <T> T fetchOne(String endpoint, Class<T> clazz);
 
   <T> List<T> fetchList(String endpoint, Class<T> clazz);
+
+  public void fetchOneDelete(String endpoint);
 }
