@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fisa.bank.common.application.util.JsonNodeMapper;
@@ -45,19 +46,28 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
           .bodyToMono(JsonNode.class)
           .block();
 
-    } catch (Exception ex) {
-      log.warn("CoreBanking 요청 실패, 재발급 시도: " + ex.getMessage());
+    } catch (WebClientResponseException e) {
 
-      // 토큰 재발급
-      String newToken = tokenManager.refreshAndGetNewToken();
+      if (e.getStatusCode().value() == 401) {
+        log.warn("AccessToken 재발급 후 재요청");
 
-      // 재시도
-      return client(newToken)
-          .get()
-          .uri(baseUrl + endpoint)
-          .retrieve()
-          .bodyToMono(JsonNode.class)
-          .block();
+        String newToken = tokenManager.refreshAndGetNewToken();
+
+        return client(newToken)
+            .get()
+            .uri(baseUrl + endpoint)
+            .retrieve()
+            .bodyToMono(JsonNode.class)
+            .block();
+      }
+
+      log.error("CoreBanking 호출 실패: {} {}", e.getStatusCode(), e.getMessage());
+      throw e;
+
+    } catch (Exception e) {
+
+      log.error("알 수없는 예외");
+      throw new IllegalStateException("CoreBanking API 호출 중 예외 발생", e);
     }
   }
 
