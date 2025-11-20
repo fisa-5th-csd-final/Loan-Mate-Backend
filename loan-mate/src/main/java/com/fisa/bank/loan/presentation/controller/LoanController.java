@@ -40,11 +40,11 @@ public class LoanController {
     return ApiResponseGenerator.success(ResponseCode.GET, loanDetail);
   }
 
-  @GetMapping("/{loanLedgerId}/auto-deposit")
+  @GetMapping("/ledgers/{loanId}/auto-deposit")
   public ApiResponse<SuccessBody<LoanAutoDepositResponse>> getAutoDeposit(
-      @PathVariable Long loanLedgerId) {
-    log.info("자동 예치 여부 조회");
-    LoanAutoDepositResponse response = manageLoanUseCase.getAutoDeposit(loanLedgerId);
+      @PathVariable Long loanId) {
+    log.info("자동 예치 여부 조회. loanId={}", loanId);
+    LoanAutoDepositResponse response = manageLoanUseCase.getAutoDeposit(loanId);
 
     return ApiResponseGenerator.success(ResponseCode.GET, response);
   }
