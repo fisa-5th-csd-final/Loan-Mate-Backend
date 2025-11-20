@@ -5,15 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.fisa.bank.common.presentation.response.ApiResponse;
 import com.fisa.bank.common.presentation.response.ApiResponseGenerator;
 import com.fisa.bank.common.presentation.response.body.SuccessBody;
 import com.fisa.bank.common.presentation.response.code.ResponseCode;
+import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
 import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
@@ -47,5 +45,12 @@ public class LoanController {
     LoanAutoDepositResponse response = manageLoanUseCase.getAutoDeposit(loanId);
 
     return ApiResponseGenerator.success(ResponseCode.GET, response);
+  }
+
+  @PatchMapping("/{loanId}/auto-deposit")
+  public ApiResponse<SuccessBody<Void>> updateAutoDeposit(
+      @PathVariable Long loanId, @RequestBody AutoDepositUpdateRequest request) {
+    manageLoanUseCase.updateAutoDepositEnabled(loanId, request.isAutoDepositEnabled());
+    return ApiResponseGenerator.success(ResponseCode.UPDATE);
   }
 }

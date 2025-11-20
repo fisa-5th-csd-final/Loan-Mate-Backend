@@ -13,6 +13,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fisa.bank.common.application.service.CoreBankingClient;
 import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
@@ -26,6 +27,7 @@ import com.fisa.bank.persistence.loan.entity.LoanLedger;
 public class LoanService implements ManageLoanUseCase {
 
   private final LoanReader loanReader;
+  private final CoreBankingClient coreBankingClient;
 
   @Override
   @Transactional
@@ -79,5 +81,13 @@ public class LoanService implements ManageLoanUseCase {
     LoanLedger loanLedger = loanReader.findLoanLedgerById(loanId);
 
     return LoanAutoDepositResponse.from(loanLedger);
+  }
+
+  @Override
+  @Transactional
+  public void updateAutoDepositEnabled(Long loanId, boolean autoDepositEnabled) {
+
+    // CoreBanking Server에 반영
+    coreBankingClient.updateAutoDepositEnabled(loanId, autoDepositEnabled);
   }
 }

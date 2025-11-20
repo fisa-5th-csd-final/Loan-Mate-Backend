@@ -15,6 +15,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fisa.bank.common.application.util.JsonNodeMapper;
+import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
 
 @Slf4j
 @Component
@@ -91,5 +92,43 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
     return StreamSupport.stream(arr.spliterator(), false)
         .map(n -> jsonNodeMapper.map(n, clazz))
         .collect(Collectors.toList());
+  }
+
+  @Override
+  public void updateAutoDepositEnabled(Long loanLedgerId, boolean autoDepositEnabled) {
+
+    String endpoint = "/loans/" + loanLedgerId + "/auto-deposit";
+
+    String token = tokenManager.getAccessToken();
+
+    try {
+      client(token)
+          .patch()
+          .uri(baseUrl + endpoint)
+          .bodyValue(new AutoDepositUpdateRequest(autoDepositEnabled))
+          .retrieve()
+          .bodyToMono(Void.class)
+          .block();
+
+    } catch (WebClientResponseException e) {
+
+      // 401 → 토큰 재발급 후 재요청
+      if (e.getStatusCode().value() == 401) {
+
+        String newToken = tokenManager.refreshAndGetNewToken();
+
+        client(newToken)
+            .patch()
+            .uri(baseUrl + endpoint)
+            .bodyValue(new AutoDepositUpdateRequest(autoDepositEnabled))
+            .retrieve()
+            .bodyToMono(Void.class)
+            .block();
+
+        return;
+      }
+
+      throw e;
+    }
   }
 }
