@@ -1,0 +1,18 @@
+
+cdc:
+  enabled: ${CDC_ENABLED}
+  kafka:
+    bootstrap-servers: ${CDC_KAFKA_BOOTSTRAP_SERVERS}
+    topic: ${CDC_KAFKA_TOPIC}
+    consumer-group-id: ${CDC_KAFKA_CONSUMER_GROUP}
+    consumer-auto-start: ${CDC_KAFKA_CONSUMER_AUTO_START}
+  replication:
+    default-schema: ${CDC_TARGET_SCHEMA:loan_mate}
+    schema-mapping:
+      core_bank: ${CDC_SCHEMA_MAPPING_CORE_BANK:loan_mate}
+    table-column-filters:
+      loan_mate.user:
+        - user_id
+logging:
+  level:
+    com.fisa.bank.infrastructure.cdc: ${CDC_LOGGING_LEVEL:info}

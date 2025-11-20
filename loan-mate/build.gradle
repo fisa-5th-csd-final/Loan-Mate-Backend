@@ -19,7 +19,7 @@ repositories {
 	mavenLocal()
 	mavenCentral()
 	maven {
-		url = uri("https://maven.pkg.github.com/fisa-5th-csd-final/Core-Bank-Persistence")
+		url = uri("https://maven.pkg.github.com/fisa-5th-csd-final/*")
 		credentials {
 			username = System.getenv("GITHUB_USERNAME")
 			password = System.getenv("GITHUB_TOKEN")
@@ -38,7 +38,9 @@ dependencies {
 	// WebClient 사용을 위한 webflux 관련 의존성 추가
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	// corebanking sdk
-	implementation "com.fisa.bank:persistence:0.0.1-SNAPSHOT"
+	implementation 'com.fisa.bank:persistence:0.0.4-SNAPSHOT'
+	// corebanking cdc listener sdk
+	implementation 'com.fisa.bank.cdc:listener:0.0.1-SNAPSHOT'
 	// oauth2
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 	// flyway
