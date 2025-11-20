@@ -36,8 +36,8 @@ pipeline {
                     dir('loan-mate') {
                         sh """
                         ./gradlew build -x test --no-daemon \
-                        -PGITHUB_USERNAME=${GITHUB_USERNAME} \
-                        -PGITHUB_TOKEN=${GITHUB_TOKEN}
+                        -PGITHUB_USERNAME=$GITHUB_USERNAME \
+                        -PGITHUB_TOKEN=$GITHUB_TOKEN
                         """
                     }
                 }
