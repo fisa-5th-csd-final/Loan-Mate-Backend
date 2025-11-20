@@ -12,6 +12,7 @@ import com.fisa.bank.common.presentation.response.ApiResponse;
 import com.fisa.bank.common.presentation.response.ApiResponseGenerator;
 import com.fisa.bank.common.presentation.response.body.SuccessBody;
 import com.fisa.bank.common.presentation.response.code.ResponseCode;
+import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
 import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
@@ -62,5 +63,12 @@ public class LoanController {
     List<LoansWithPrepaymentBenefitResponse> loansWithPrepaymentBenefit =
         manageLoanUseCase.getLoansWithPrepaymentBenefit();
     return ApiResponseGenerator.success(ResponseCode.GET, loansWithPrepaymentBenefit);
+  }
+
+  @PatchMapping("/{loanId}/auto-deposit")
+  public ApiResponse<SuccessBody<Void>> updateAutoDeposit(
+      @PathVariable Long loanId, @RequestBody AutoDepositUpdateRequest request) {
+    manageLoanUseCase.updateAutoDepositEnabled(loanId, request.isAutoDepositEnabled());
+    return ApiResponseGenerator.success(ResponseCode.UPDATE);
   }
 }

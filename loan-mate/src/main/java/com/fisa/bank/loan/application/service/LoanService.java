@@ -118,4 +118,12 @@ public class LoanService implements ManageLoanUseCase {
     }
     return loansWithPrepaymentBenefitResponses;
   }
+
+  @Override
+  @Transactional
+  public void updateAutoDepositEnabled(Long loanId, boolean autoDepositEnabled) {
+
+    // CoreBanking Server에 반영
+    coreBankingClient.updateAutoDepositEnabled(loanId, autoDepositEnabled);
+  }
 }

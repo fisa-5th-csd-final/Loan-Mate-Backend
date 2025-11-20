@@ -23,6 +23,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fisa.bank.common.application.util.JsonNodeMapper;
 import com.fisa.bank.common.config.security.ServiceUserAuthentication;
+import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
 
 @Component
 @Profile("prod")
@@ -147,5 +148,22 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
     Authentication auth = getAuth();
     String token = getAccessToken(auth);
     getClient(token).delete().uri(BASE_URL + endpoint).retrieve().bodyToMono(Void.class).block();
+  }
+
+  @Override
+  public void updateAutoDepositEnabled(Long loanLedgerId, boolean autoDepositEnabled) {
+
+    Authentication auth = getAuth();
+    String token = getAccessToken(auth);
+
+    String endpoint = "/loans/" + loanLedgerId + "/auto-deposit";
+
+    getClient(token)
+        .patch()
+        .uri(BASE_URL + endpoint)
+        .bodyValue(new AutoDepositUpdateRequest(autoDepositEnabled))
+        .retrieve()
+        .bodyToMono(Void.class)
+        .block();
   }
 }

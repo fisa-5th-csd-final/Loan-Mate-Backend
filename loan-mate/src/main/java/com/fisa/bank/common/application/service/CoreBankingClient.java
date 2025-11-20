@@ -8,4 +8,6 @@ public interface CoreBankingClient {
   <T> List<T> fetchList(String endpoint, Class<T> clazz);
 
   public void fetchOneDelete(String endpoint);
+
+  void updateAutoDepositEnabled(Long loanLedgerId, boolean autoDepositEnabled);
 }
