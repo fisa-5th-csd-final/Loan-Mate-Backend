@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  loan-mate-app:
+    container_name: loan-mate-server
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        GITHUB_USERNAME: ${GITHUB_USERNAME}
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+    image: ${IMAGE_NAME}:${IMAGE_TAG}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - "${APP_PORT}:8081"
+    restart: unless-stopped
+    networks:
+      - loan-mate-net
+
+  mysql:
+    container_name: loan-mate-mysql
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    env_file:
+      - .env
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - loan-mate-net
+
+networks:
+  loan-mate-net:
+    driver: bridge
+
+volumes:
+  mysql-data:
