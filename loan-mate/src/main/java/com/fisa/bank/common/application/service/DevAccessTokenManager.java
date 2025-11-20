@@ -60,7 +60,7 @@ public class DevAccessTokenManager {
   }
 
   /** 토큰 가져오기 (없으면 자동발급) */
-  public String getAccessToken() {
+  public synchronized String getAccessToken() {
     if (cachedToken == null) {
       cachedToken = requestNewToken();
     }
@@ -68,7 +68,7 @@ public class DevAccessTokenManager {
   }
 
   /** 토큰 만료 시 재발급 */
-  public String refreshAndGetNewToken() {
+  public synchronized String refreshAndGetNewToken() {
     cachedToken = requestNewToken();
     return cachedToken;
   }
