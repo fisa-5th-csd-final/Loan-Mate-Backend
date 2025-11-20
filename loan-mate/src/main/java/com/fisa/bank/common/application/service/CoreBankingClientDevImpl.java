@@ -88,6 +88,10 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
 
     JsonNode arr = root.path("data");
 
+    if (!arr.isArray()) {
+      throw new IllegalStateException("data 노드가 배열이 아닙니다.");
+    }
+
     return StreamSupport.stream(arr.spliterator(), false)
         .map(n -> jsonNodeMapper.map(n, clazz))
         .collect(Collectors.toList());
