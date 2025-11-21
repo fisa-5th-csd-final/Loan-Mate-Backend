@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.util.Collections;
 
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -40,11 +39,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     if (token != null) {
       try {
-        Claims claims = jwtTokenValidator.validateToken(token);
-        String userId = claims.getSubject();
+        Claims claims = jwtTokenValidator.validateAccessToken(token);
+        Long userId = Long.valueOf(claims.getSubject());
 
-        UsernamePasswordAuthenticationToken authentication =
-            new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
+        ServiceUserAuthentication authentication =
+            new ServiceUserAuthentication(userId, Collections.emptyList());
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
