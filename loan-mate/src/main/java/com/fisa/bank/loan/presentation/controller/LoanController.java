@@ -15,6 +15,7 @@ import com.fisa.bank.common.presentation.response.code.ResponseCode;
 import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
+import com.fisa.bank.loan.application.dto.response.LoansWithPrepaymentBenefitResponse;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
 
 @RestController
@@ -52,5 +53,14 @@ public class LoanController {
   public void deleteLoan(@PathVariable("loanId") Long loanId) {
     log.info("대출 해지");
     manageLoanUseCase.cancelLoan(loanId);
+  }
+
+  @GetMapping("/prepayment-infos")
+  public ApiResponse<SuccessBody<List<LoansWithPrepaymentBenefitResponse>>>
+      getLoansWithPrepaymentBenefit() {
+    log.info("선납 이득인 대출 조회");
+    List<LoansWithPrepaymentBenefitResponse> loansWithPrepaymentBenefit =
+        manageLoanUseCase.getLoansWithPrepaymentBenefit();
+    return ApiResponseGenerator.success(ResponseCode.GET, loansWithPrepaymentBenefit);
   }
 }
