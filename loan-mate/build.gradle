@@ -38,11 +38,15 @@ dependencies {
 	// WebClient 사용을 위한 webflux 관련 의존성 추가
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	// corebanking sdk
-	implementation 'com.fisa.bank:persistence:0.0.4-SNAPSHOT'
+	implementation 'com.fisa.bank:persistence:0.0.5-SNAPSHOT'
 	// corebanking cdc listener sdk
 	implementation 'com.fisa.bank.cdc:listener:0.0.1-SNAPSHOT'
 	// oauth2
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+	// JWT
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 	// flyway
 	implementation 'org.flywaydb:flyway-core'
 	implementation "org.flywaydb:flyway-mysql"

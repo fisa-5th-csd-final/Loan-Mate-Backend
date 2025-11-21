@@ -194,6 +194,7 @@ laon-mate/src/main/resources/env.properties
 
 ### !!!!!!!!!keys!!!!!!! ###
 *.pem
+docker/.github_credentials
 
 ### build
 loan-mate/build/**

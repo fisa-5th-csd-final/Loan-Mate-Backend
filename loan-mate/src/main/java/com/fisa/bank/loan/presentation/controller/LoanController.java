@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import com.fisa.bank.common.presentation.response.ApiResponse;
@@ -45,6 +46,13 @@ public class LoanController {
     LoanAutoDepositResponse response = manageLoanUseCase.getAutoDeposit(loanId);
 
     return ApiResponseGenerator.success(ResponseCode.GET, response);
+  }
+
+  @DeleteMapping("{loanId:\\d+}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteLoan(@PathVariable("loanId") Long loanId) {
+    log.info("대출 해지");
+    manageLoanUseCase.cancelLoan(loanId);
   }
 
   @PatchMapping("/ledgers/{loanId}/auto-deposit")

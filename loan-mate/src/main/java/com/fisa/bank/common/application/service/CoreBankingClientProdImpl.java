@@ -32,7 +32,7 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
   private final WebClient.Builder builder;
   private final JsonNodeMapper jsonNodeMapper;
 
-  @Value("${CORE_BANKING_API_URL}")
+  @Value("${core-bank.api-url}")
   private String BASE_URL;
 
   private WebClient getClient(String token) {
@@ -118,6 +118,17 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
     return StreamSupport.stream(dataNode.spliterator(), false)
         .map(node -> jsonNodeMapper.map(node, clazz))
         .collect(Collectors.toList());
+  }
+
+  /**
+   * 단일 데이터 삭제
+   *
+   * @param endpoint 요청 URL
+   */
+  public void fetchOneDelete(String endpoint) {
+    Authentication auth = getAuth();
+    String token = getAccessToken(auth);
+    getClient(token).delete().uri(BASE_URL + endpoint).retrieve().bodyToMono(Void.class).block();
   }
 
   @Override

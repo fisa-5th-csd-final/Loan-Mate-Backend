@@ -1,5 +1,3 @@
-server:
-  port: 8081
 spring:
   application:
     name: loan-mate
@@ -7,10 +5,13 @@ spring:
     import:
       - classpath:application-db.yml
       - classpath:application-auth.yml
-      - classpath:env.properties
+      - classpath:application-cdc.yml
   profiles:
     active: ${PROFILE}
 
-# 테스트용 유저 토큰
-corebanking:
-  token: ${COREBANKING_TOKEN}
+server:
+  port: ${PORT:8080}
+  servlet:
+    session:
+      cookie:
+        name: LOANMATESESSION
