@@ -1,0 +1,59 @@
+secrets:
+  github_credentials:
+    file: ./.github_credentials
+
+services:
+  loan-mate-server:
+    container_name: loan-mate-server
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      secrets:
+        - github_credentials
+    image: ${IMAGE_NAME:-loan-mate-app}:${IMAGE_TAG:-latest}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - "${APP_PORT}:8081"
+    restart: unless-stopped
+    networks:
+      - loan-mate-net
+      - kafka-net
+
+  mysql:
+    container_name: loan-mate-mysql
+    image: mysql:8.0.36
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - loan-mate-net
+
+networks:
+  loan-mate-net:
+    driver: bridge
+  kafka-net:
+    external: true
+
+volumes:
+  mysql-data:
