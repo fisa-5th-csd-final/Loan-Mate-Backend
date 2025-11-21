@@ -8,7 +8,6 @@ import java.util.stream.StreamSupport;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
@@ -23,6 +22,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fisa.bank.common.application.util.JsonNodeMapper;
+import com.fisa.bank.common.config.security.ServiceUserAuthentication;
 
 @Component
 @Profile("prod")
@@ -48,13 +48,13 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
   /** OAuth2 AccessToken 만료 시 자동 갱신. */
   private String getAccessToken(Authentication authentication) {
 
-    // JWT 인증인 경우 - 서비스 서버 인증
-    if (authentication instanceof UsernamePasswordAuthenticationToken) {
-      String userId = (String) authentication.getPrincipal();
+    // 서비스 서버 id로 저장된 인증 객체 가져오기
+    if (authentication instanceof ServiceUserAuthentication serviceUserAuth) {
+      Long userId = serviceUserAuth.getUserId();
 
       // OAuth2AuthorizedClientService에서 저장된 OAuth2 토큰 가져오기
       OAuth2AuthorizedClient client =
-          authorizedClientService.loadAuthorizedClient("loan-mate", userId);
+          authorizedClientService.loadAuthorizedClient("loan-mate", String.valueOf(userId));
 
       if (client == null) {
         throw new IllegalStateException("저장된 OAuth2 클라이언트를 찾을 수 없습니다. userId: " + userId);
@@ -63,11 +63,11 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
       return client.getAccessToken().getTokenValue();
     }
 
-    // OAuth2 인증인 경우 - 코어 뱅킹 인증
     if (!(authentication instanceof OAuth2AuthenticationToken oauthToken)) {
       throw new IllegalStateException("지원하지 않는 인증 타입입니다: " + authentication.getClass());
     }
 
+    // 자동으로 코어뱅킹 액세스 토큰 갱신
     ServletRequestAttributes attrs =
         (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
     if (attrs == null) {
