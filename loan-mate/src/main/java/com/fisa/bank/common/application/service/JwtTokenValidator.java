@@ -12,7 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigInteger;
 import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.time.Duration;
 import java.util.Base64;
@@ -122,7 +124,8 @@ public class JwtTokenValidator {
 
       return kid.toString();
 
-    } catch (IllegalArgumentException | com.fasterxml.jackson.core.JsonProcessingException e) {
+    } catch (IllegalArgumentException // Base64 decode 실패
+        | java.io.IOException e) {
       throw new JwtException("JWT 헤더에서 kid 추출 실패", e);
     }
   }
@@ -177,35 +180,44 @@ public class JwtTokenValidator {
 
   /** JWKS 전체 키 로딩 */
   @SuppressWarnings("unchecked")
-  private Map<String, PublicKey> loadAllKeysFromJwks(String uri) throws Exception {
-    Map<String, Object> jwks = webClient.get().uri(uri).retrieve().bodyToMono(Map.class).block();
+  private Map<String, PublicKey> loadAllKeysFromJwks(String uri) {
+    try {
+      Map<String, Object> jwks = webClient.get().uri(uri).retrieve().bodyToMono(Map.class).block();
 
-    if (jwks == null || !jwks.containsKey("keys")) {
-      throw new IllegalStateException("JWKS 응답 형식 오류");
-    }
-
-    List<Map<String, Object>> keys = (List<Map<String, Object>>) jwks.get("keys");
-    Map<String, PublicKey> result = new ConcurrentHashMap<>();
-
-    for (Map<String, Object> k : keys) {
-      if (!"RSA".equals(k.get("kty"))) continue;
-
-      String kid = (String) k.get("kid");
-      String n = (String) k.get("n");
-      String e = (String) k.get("e");
-
-      if (kid == null || n == null || e == null) {
-        log.warn("JWKS 키 정보 부족. skip. kid={}", kid);
-        continue;
+      if (jwks == null || !jwks.containsKey("keys")) {
+        throw new IllegalStateException("JWKS 응답 형식 오류");
       }
 
-      result.put(kid, createRsaPublicKey(n, e));
-    }
+      List<Map<String, Object>> keys = (List<Map<String, Object>>) jwks.get("keys");
+      Map<String, PublicKey> result = new ConcurrentHashMap<>();
 
-    return result;
+      for (Map<String, Object> k : keys) {
+        if (!"RSA".equals(k.get("kty"))) continue;
+
+        String kid = (String) k.get("kid");
+        String n = (String) k.get("n");
+        String e = (String) k.get("e");
+
+        if (kid == null || n == null || e == null) {
+          log.warn("JWKS 키 정보 부족. skip. kid={}", kid);
+          continue;
+        }
+
+        // 여기서 checked exception 발생 → try/catch로 처리됨
+        PublicKey pk = createRsaPublicKey(n, e);
+        result.put(kid, pk);
+      }
+
+      return result;
+
+    } catch (Exception ex) {
+      // RSA 키 생성 실패, WebClient 오류 등 모든 checked exception 런타임으로 래핑
+      throw new IllegalStateException("JWKS 로딩 및 RSA 키 생성 중 오류 발생: " + ex.getMessage(), ex);
+    }
   }
 
-  private PublicKey createRsaPublicKey(String n, String e) throws Exception {
+  private PublicKey createRsaPublicKey(String n, String e)
+      throws NoSuchAlgorithmException, InvalidKeySpecException {
     BigInteger modulus = new BigInteger(1, Base64.getUrlDecoder().decode(n));
     BigInteger exponent = new BigInteger(1, Base64.getUrlDecoder().decode(e));
     return KeyFactory.getInstance("RSA").generatePublic(new RSAPublicKeySpec(modulus, exponent));
