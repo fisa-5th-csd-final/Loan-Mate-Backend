@@ -8,11 +8,13 @@ import java.util.stream.StreamSupport;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -28,6 +30,7 @@ import com.fisa.bank.common.application.util.JsonNodeMapper;
 public class CoreBankingClientProdImpl implements CoreBankingClient {
 
   private final OAuth2AuthorizedClientManager authorizedClientManager;
+  private final OAuth2AuthorizedClientService authorizedClientService;
   private final WebClient.Builder builder;
   private final JsonNodeMapper jsonNodeMapper;
 
@@ -45,8 +48,24 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
   /** OAuth2 AccessToken 만료 시 자동 갱신. */
   private String getAccessToken(Authentication authentication) {
 
+    // JWT 인증인 경우 - 서비스 서버 인증
+    if (authentication instanceof UsernamePasswordAuthenticationToken) {
+      String userId = (String) authentication.getPrincipal();
+
+      // OAuth2AuthorizedClientService에서 저장된 OAuth2 토큰 가져오기
+      OAuth2AuthorizedClient client =
+          authorizedClientService.loadAuthorizedClient("loan-mate", userId);
+
+      if (client == null) {
+        throw new IllegalStateException("저장된 OAuth2 클라이언트를 찾을 수 없습니다. userId: " + userId);
+      }
+
+      return client.getAccessToken().getTokenValue();
+    }
+
+    // OAuth2 인증인 경우 - 코어 뱅킹 인증
     if (!(authentication instanceof OAuth2AuthenticationToken oauthToken)) {
-      throw new IllegalStateException("OAuth2AuthenticationToken 이 존재하지 않습니다. 인증되지 않은 요청입니다.");
+      throw new IllegalStateException("지원하지 않는 인증 타입입니다: " + authentication.getClass());
     }
 
     ServletRequestAttributes attrs =
