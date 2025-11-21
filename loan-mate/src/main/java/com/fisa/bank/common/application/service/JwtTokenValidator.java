@@ -169,7 +169,7 @@ public class JwtTokenValidator {
             .block();
 
     if (config == null || config.get("jwks_uri") == null) {
-      throw new RuntimeException("issuer에서 jwks_uri 가져오기 실패");
+      throw new IllegalStateException("issuer에서 jwks_uri 가져오기 실패");
     }
 
     return config.get("jwks_uri").toString();
@@ -181,7 +181,7 @@ public class JwtTokenValidator {
     Map<String, Object> jwks = webClient.get().uri(uri).retrieve().bodyToMono(Map.class).block();
 
     if (jwks == null || !jwks.containsKey("keys")) {
-      throw new RuntimeException("JWKS 응답 형식 오류");
+      throw new IllegalStateException("JWKS 응답 형식 오류");
     }
 
     List<Map<String, Object>> keys = (List<Map<String, Object>>) jwks.get("keys");
