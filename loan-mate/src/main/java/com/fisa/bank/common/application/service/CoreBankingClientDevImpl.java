@@ -9,6 +9,7 @@ import java.util.stream.StreamSupport;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -33,21 +34,22 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
     return builder.defaultHeader("Authorization", "Bearer " + token).build();
   }
 
-  private JsonNode executeRequest(String endpoint, String token) {
+  private <T> T executeRequest(
+      String endpoint, String token, HttpMethod method, Class<T> responseType) {
     return client(token)
-        .get()
+        .method(method)
         .uri(baseUrl + endpoint)
         .retrieve()
-        .bodyToMono(JsonNode.class)
+        .bodyToMono(responseType)
         .block();
   }
 
   /** API 호출 + 토큰 만료 시 자동 재발급 */
-  private JsonNode callApi(String endpoint) {
+  private <T> T callApi(String endpoint, HttpMethod method, Class<T> responseType) {
     String token = tokenManager.getAccessToken();
 
     try {
-      return executeRequest(endpoint, token);
+      return executeRequest(endpoint, token, method, responseType);
 
     } catch (WebClientResponseException e) {
 
@@ -55,7 +57,7 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
         log.warn("AccessToken 재발급 후 재요청");
 
         String newToken = tokenManager.refreshAndGetNewToken();
-        return executeRequest(endpoint, newToken);
+        return executeRequest(endpoint, newToken, method, responseType);
       }
 
       log.error("CoreBanking 호출 실패: {} {}", e.getStatusCode(), e.getMessage());
@@ -69,7 +71,7 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
 
   @Override
   public <T> T fetchOne(String endpoint, Class<T> clazz) {
-    JsonNode root = callApi(endpoint);
+    JsonNode root = callApi(endpoint, HttpMethod.GET, JsonNode.class);
 
     if (root == null || root.isNull()) {
       throw new IllegalStateException("응답이 null 입니다.");
@@ -80,7 +82,7 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
 
   @Override
   public <T> List<T> fetchList(String endpoint, Class<T> clazz) {
-    JsonNode root = callApi(endpoint);
+    JsonNode root = callApi(endpoint, HttpMethod.GET, JsonNode.class);
 
     JsonNode arr = root.path("data");
 
@@ -91,5 +93,15 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
     return StreamSupport.stream(arr.spliterator(), false)
         .map(n -> jsonNodeMapper.map(n, clazz))
         .collect(Collectors.toList());
+  }
+
+  /**
+   * 단일 데이터 삭제
+   *
+   * @param endpoint 요청 URL
+   */
+  public void fetchOneDelete(String endpoint) {
+
+    callApi(endpoint, HttpMethod.DELETE, Void.class);
   }
 }

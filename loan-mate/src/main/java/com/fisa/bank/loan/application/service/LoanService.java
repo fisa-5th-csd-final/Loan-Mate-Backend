@@ -13,17 +13,21 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fisa.bank.common.application.service.CoreBankingClient;
+import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.service.reader.LoanReader;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
+import com.fisa.bank.persistence.loan.entity.LoanLedger;
 
 @Service
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public class LoanService implements ManageLoanUseCase {
 
   private final LoanReader loanReader;
+  private final CoreBankingClient coreBankingClient;
 
   @Override
   @Transactional
@@ -68,5 +72,20 @@ public class LoanService implements ManageLoanUseCase {
             .divide(BigDecimal.valueOf(totalTerm), 0, RoundingMode.HALF_UP);
 
     return progressRate;
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public LoanAutoDepositResponse getAutoDeposit(Long loanId) {
+
+    LoanLedger loanLedger = loanReader.findLoanLedgerById(loanId);
+
+    return LoanAutoDepositResponse.from(loanLedger);
+  }
+
+  @Override
+  public void cancelLoan(Long loanId) {
+    String url = "/loans/" + loanId;
+    coreBankingClient.fetchOneDelete(url);
   }
 }

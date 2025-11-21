@@ -5,15 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
 import com.fisa.bank.common.presentation.response.ApiResponse;
 import com.fisa.bank.common.presentation.response.ApiResponseGenerator;
 import com.fisa.bank.common.presentation.response.body.SuccessBody;
 import com.fisa.bank.common.presentation.response.code.ResponseCode;
+import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
@@ -37,5 +36,21 @@ public class LoanController {
     log.info("대출 세부 정보 조회");
     LoanDetailResponse loanDetail = manageLoanUseCase.getLoanDetail(loanId);
     return ApiResponseGenerator.success(ResponseCode.GET, loanDetail);
+  }
+
+  @GetMapping("/ledgers/{loanId}/auto-deposit")
+  public ApiResponse<SuccessBody<LoanAutoDepositResponse>> getAutoDeposit(
+      @PathVariable Long loanId) {
+    log.info("자동 예치 여부 조회");
+    LoanAutoDepositResponse response = manageLoanUseCase.getAutoDeposit(loanId);
+
+    return ApiResponseGenerator.success(ResponseCode.GET, response);
+  }
+
+  @DeleteMapping("{loanId:\\d+}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteLoan(@PathVariable("loanId") Long loanId) {
+    log.info("대출 해지");
+    manageLoanUseCase.cancelLoan(loanId);
   }
 }
