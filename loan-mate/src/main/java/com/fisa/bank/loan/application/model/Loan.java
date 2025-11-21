@@ -3,6 +3,8 @@ package com.fisa.bank.loan.application.model;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
+
 import com.fisa.bank.loan.persistence.enums.RiskLevel;
 
 @Getter
@@ -12,4 +14,6 @@ public class Loan {
   private final String loanName;
   private RiskLevel riskLevel;
   private LoanDetail loanDetail;
+  private final LocalDateTime nextRepaymentDate;
+  private final Boolean autoDepositEnabled;
 }
