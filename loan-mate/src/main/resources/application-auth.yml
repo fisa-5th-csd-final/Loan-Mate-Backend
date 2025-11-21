@@ -2,6 +2,15 @@ jwt:
   issuer-uri: ${ISSUER_URL}
   jwk-set-uri: ${JWKS_URI}
 
+core-bank:
+  api-url: ${CORE_BANKING_API_URL}
+
+dev:
+  login:
+    url: ${DEV_LOGIN_URL}
+    id: ${DEV_LOGIN_ID}
+    password: ${DEV_LOGIN_PASSWORD}
+
 spring:
   security:
     oauth2:
@@ -21,3 +30,4 @@ spring:
             authorization-uri: ${AUTHORIZATION_URL}/oauth2/authorize
             token-uri: ${AUTHORIZATION_URL}/oauth2/token
             user-info-uri: ""
+
