@@ -40,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     if (token != null) {
       try {
-        Claims claims = jwtTokenValidator.validateToken(token);
+        Claims claims = jwtTokenValidator.validateAccessToken(token);
         String userId = claims.getSubject();
 
         UsernamePasswordAuthenticationToken authentication =
