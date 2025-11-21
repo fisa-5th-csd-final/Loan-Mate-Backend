@@ -3,12 +3,14 @@ package com.fisa.bank.loan.persistence.repository;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
 import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.repository.LoanRepository;
 import com.fisa.bank.persistence.loan.entity.LoanLedger;
+import com.fisa.bank.persistence.loan.entity.id.LoanLedgerId;
 import com.fisa.bank.persistence.loan.repository.LoanLedgerRepository;
 import com.fisa.bank.persistence.user.entity.id.UserId;
 
@@ -37,5 +39,10 @@ public class LoanRepositoryImpl implements LoanRepository {
     //        loanLedger.getLastRepaymentDate(),
     //        loanLedger.getTerm(),
     //        loanLedger.getRepaymentStatus());
+  }
+
+  @Override
+  public Optional<Loan> findById(Long loanId) {
+    return loanLedgerRepository.findById(LoanLedgerId.of(loanId)).map(LoanRepositoryImpl::toDomain);
   }
 }

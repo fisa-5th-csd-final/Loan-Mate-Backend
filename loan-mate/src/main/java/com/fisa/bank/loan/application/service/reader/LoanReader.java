@@ -12,9 +12,6 @@ import com.fisa.bank.loan.application.exception.LoanLedgerNotFoundException;
 import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.repository.LoanRepository;
-import com.fisa.bank.loan.persistence.repository.LoanRepositoryImpl;
-import com.fisa.bank.persistence.loan.entity.LoanLedger;
-import com.fisa.bank.persistence.loan.entity.id.LoanLedgerId;
 import com.fisa.bank.persistence.loan.repository.LoanLedgerRepository;
 import com.fisa.bank.persistence.user.entity.id.UserId;
 
@@ -37,11 +34,8 @@ public class LoanReader {
   }
 
   public Loan findLoanById(Long loanId) {
-    LoanLedger ledger =
-        loanLedgerRepository
-            .findById(LoanLedgerId.of(loanId))
-            .orElseThrow(() -> new LoanLedgerNotFoundException(loanId));
-
-    return LoanRepositoryImpl.toDomain(ledger);
+    return loanRepository
+        .findById(loanId)
+        .orElseThrow(() -> new LoanLedgerNotFoundException(loanId));
   }
 }
