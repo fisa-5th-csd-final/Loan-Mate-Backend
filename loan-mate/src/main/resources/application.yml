@@ -5,7 +5,6 @@ spring:
     import:
       - classpath:application-db.yml
       - classpath:application-auth.yml
-      - classpath:env.properties
   profiles:
     active: ${PROFILE}
 
