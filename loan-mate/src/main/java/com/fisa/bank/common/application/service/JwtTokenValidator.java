@@ -107,16 +107,22 @@ public class JwtTokenValidator {
   /** JWT 헤더에서 kid 추출 */
   private String extractKid(String token) {
     try {
-      String headerPart = token.split("\\.")[0];
+      String[] parts = token.split("\\.");
+      if (parts.length != 3) {
+        throw new MalformedJwtException("JWT 토큰은 세 부분으로 구성되어야 합니다.");
+      }
+      String headerPart = parts[0];
       byte[] decoded = Base64.getUrlDecoder().decode(headerPart);
       Map<String, Object> header = mapper.readValue(decoded, Map.class);
 
       Object kid = header.get("kid");
-      if (kid == null) throw new JwtException("JWT 헤더에 kid 없음");
+      if (kid == null) {
+        throw new JwtException("JWT 헤더에 kid가 없습니다.");
+      }
 
       return kid.toString();
 
-    } catch (Exception e) {
+    } catch (IllegalArgumentException | com.fasterxml.jackson.core.JsonProcessingException e) {
       throw new JwtException("JWT 헤더에서 kid 추출 실패", e);
     }
   }
