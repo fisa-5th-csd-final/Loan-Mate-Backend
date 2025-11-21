@@ -1,5 +1,7 @@
 package com.fisa.bank.common.config.security;
 
+import lombok.RequiredArgsConstructor;
+
 import java.util.Collections;
 import java.util.Map;
 
@@ -18,10 +20,14 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequest
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+  private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
   @Bean
   @Order(1)
@@ -42,11 +48,11 @@ public class SecurityConfig {
         OAuth2AuthorizationRequestCustomizers.withPkce() // code challenge 추가
         );
 
-    http.securityMatcher("/oauth2/**", "/login/**")
+    http.securityMatcher("/oauth2/**", "/login/**", "/api/login/**")
         .csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers("/login/**", "/oauth2/**")
+                auth.requestMatchers("/api/login/**", "/login/**", "/oauth2/**")
                     .permitAll()
                     .anyRequest()
                     .authenticated())
@@ -71,6 +77,17 @@ public class SecurityConfig {
                             ep.authorizationRequestRepository(repo) // 세션 저장
                                 .authorizationRequestResolver(resolver))
                     .successHandler(customOAuth2SuccessHandler));
+    return http.build();
+  }
+
+  @Bean
+  @Order(2)
+  public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
+    http.securityMatcher("/api/**")
+        .csrf(AbstractHttpConfigurer::disable)
+        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     return http.build();
   }
 }

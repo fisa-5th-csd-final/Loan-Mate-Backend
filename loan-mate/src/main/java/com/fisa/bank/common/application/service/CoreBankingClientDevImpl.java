@@ -27,7 +27,7 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
   private final WebClient.Builder builder;
   private final JsonNodeMapper jsonNodeMapper;
 
-  @Value("${CORE_BANKING_API_URL}")
+  @Value("${core-bank.api-url}")
   private String baseUrl;
 
   private WebClient client(String token) {
