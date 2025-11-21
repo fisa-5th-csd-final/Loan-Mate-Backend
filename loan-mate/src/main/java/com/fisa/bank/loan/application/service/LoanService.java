@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,8 +18,11 @@ import com.fisa.bank.common.application.service.CoreBankingClient;
 import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
+import com.fisa.bank.loan.application.dto.response.LoansWithPrepaymentBenefitResponse;
+import com.fisa.bank.loan.application.model.InterestDetail;
 import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.model.LoanDetail;
+import com.fisa.bank.loan.application.model.PrepaymentInfo;
 import com.fisa.bank.loan.application.service.reader.LoanReader;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
 
@@ -87,5 +91,31 @@ public class LoanService implements ManageLoanUseCase {
   public void cancelLoan(Long loanId) {
     String url = "/loans/" + loanId;
     coreBankingClient.fetchOneDelete(url);
+  }
+
+  @Override
+  public List<LoansWithPrepaymentBenefitResponse> getLoansWithPrepaymentBenefit() {
+    List<LoansWithPrepaymentBenefitResponse> loansWithPrepaymentBenefitResponses =
+        new ArrayList<>();
+
+    List<PrepaymentInfo> prepaymentInfos = loanReader.findPrepaymentInfos();
+
+    for (PrepaymentInfo prepaymentInfo : prepaymentInfos) {
+      List<InterestDetail> interestDetails = prepaymentInfo.getInterestDetails();
+      BigDecimal earlyRepayment = prepaymentInfo.getEarlyRepayment();
+
+      BigDecimal remainInterests =
+          interestDetails.stream()
+              .map(InterestDetail::getInterest)
+              .reduce(BigDecimal.ZERO, BigDecimal::add); // 초기값, 합산 연산
+
+      // 선납 이득인지 확인 - 중도 상환 수수료가 남은 이자 합보다 더 적다면 리스트에 추가
+      if (earlyRepayment.compareTo(remainInterests) < 0) {
+        BigDecimal benefit = remainInterests.subtract(earlyRepayment);
+        loansWithPrepaymentBenefitResponses.add(
+            LoansWithPrepaymentBenefitResponse.from(prepaymentInfo.getLoanProductName(), benefit));
+      }
+    }
+    return loansWithPrepaymentBenefitResponses;
   }
 }
