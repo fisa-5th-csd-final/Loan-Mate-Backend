@@ -1,5 +1,6 @@
 jwt:
   issuer-uri: ${ISSUER_URL}
+  jwk-set-uri: ${JWKS_URI}
 
 spring:
   security:
