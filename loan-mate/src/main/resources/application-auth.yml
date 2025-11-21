@@ -1,6 +1,9 @@
 jwt:
   issuer-uri: ${ISSUER_URL}
   jwk-set-uri: ${JWKS_URI}
+  secret: ${JWT_SECRET}
+  access-token-expiration: 900000 # 15분 (밀리초)
+  refresh-token-expiration: 604800000 # 7일 (밀리초)
 
 core-bank:
   api-url: ${CORE_BANKING_API_URL}
