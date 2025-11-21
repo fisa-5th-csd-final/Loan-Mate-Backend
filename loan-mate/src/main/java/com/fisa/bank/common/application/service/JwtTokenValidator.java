@@ -50,7 +50,7 @@ public class JwtTokenValidator {
   /** 마지막 JWKS 성공 로딩 시간 */
   private volatile long lastJwksLoadedAt = 0L;
 
-  /** JWKS 재로딩 간격 (10분) */
+  /** JWKS 재로딩 간격 (100분) */
   private static final long JWKS_RELOAD_INTERVAL = Duration.ofMinutes(100).toMillis();
 
   @PostConstruct
