@@ -17,10 +17,13 @@ import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Service
@@ -29,36 +32,46 @@ public class JwtTokenValidator {
   @Value("${jwt.issuer-uri}")
   private String issuerUri;
 
-  private PublicKey publicKey;
-
   private final WebClient webClient = WebClient.create();
+  private final ObjectMapper mapper = new ObjectMapper();
+
+  /** kid → PublicKey 매핑 */
+  private final Map<String, PublicKey> keyCache = new ConcurrentHashMap<>();
+
+  /** JWKS URL */
+  private String jwksUri;
 
   @PostConstruct
   public void init() {
-    try {
-      if (issuerUri == null || issuerUri.isBlank()) {
-        throw new RuntimeException("issuerUri 설정 없음");
-      }
-
-      // openid-configuration 조회 → jwks_uri 얻기
-      String jwksUri = fetchJwksUri(issuerUri);
-
-      // jwks_uri로 JWKS 조회 → public key 추출
-      this.publicKey = loadPublicKeyFromJwks(jwksUri);
-
-    } catch (Exception e) {
-      throw new RuntimeException("JWT key 초기화 실패", e);
+    if (issuerUri == null || issuerUri.isBlank()) {
+      throw new RuntimeException("issuerUri 설정 없음");
     }
+
+    // openid-config → jwks_uri
+    this.jwksUri = fetchJwksUri(issuerUri);
+
+    // 첫 로딩
+    reloadJwks();
   }
 
   /** JWT 검증 */
   public Claims validateToken(String token) {
-    if (publicKey == null) {
-      throw new JwtException("Public key not configured");
-    }
-
     try {
-      return Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token).getPayload();
+      String kid = extractKid(token);
+
+      PublicKey key = keyCache.get(kid);
+      if (key == null) {
+        log.warn("kid={} 키 없음. JWKS 재로딩 시도.", kid);
+        reloadJwks();
+        key = keyCache.get(kid);
+      }
+
+      if (key == null) {
+        throw new JwtException("JWKS에서 kid=" + kid + " 키를 찾을 수 없습니다.");
+      }
+
+      return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+
     } catch (ExpiredJwtException e) {
       log.debug("토큰 만료: {}", e.getMessage());
       throw e;
@@ -83,7 +96,34 @@ public class JwtTokenValidator {
     }
   }
 
-  // openid-configuration에서 jwks_uri 획득
+  /** JWKS 재로드 */
+  @SuppressWarnings("unchecked")
+  private synchronized void reloadJwks() {
+    try {
+      Map<String, Object> jwks =
+          webClient.get().uri(jwksUri).retrieve().bodyToMono(Map.class).block();
+
+      List<Map<String, Object>> keys = (List<Map<String, Object>>) jwks.get("keys");
+
+      keyCache.clear();
+
+      for (Map<String, Object> k : keys) {
+        if (!"RSA".equals(k.get("kty"))) continue;
+
+        String kid = (String) k.get("kid");
+        String n = (String) k.get("n");
+        String e = (String) k.get("e");
+
+        PublicKey publicKey = createRsaPublicKey(n, e);
+        keyCache.put(kid, publicKey);
+      }
+
+    } catch (Exception e) {
+      throw new RuntimeException("JWKS 키 재로딩 실패", e);
+    }
+  }
+
+  /** openid-config 에서 jwks_uri 얻기 */
   private String fetchJwksUri(String issuer) {
     Map<String, Object> config =
         webClient
@@ -94,41 +134,28 @@ public class JwtTokenValidator {
             .block();
 
     if (config == null || config.get("jwks_uri") == null) {
-      throw new RuntimeException("openid-configuration에서 jwks_uri를 가져올 수 없음");
+      throw new RuntimeException("jwks_uri를 openid-config에서 가져올 수 없음");
     }
 
     return config.get("jwks_uri").toString();
   }
 
-  // JWKS에서 RSA 공개키 하나 읽기
-  @SuppressWarnings("unchecked")
-  private PublicKey loadPublicKeyFromJwks(String jwksUri) {
+  /** JWT header에서 kid 추출 */
+  private String extractKid(String token) {
     try {
-      Map<String, Object> jwks =
-          webClient.get().uri(jwksUri).retrieve().bodyToMono(Map.class).block();
-
-      if (jwks == null || !jwks.containsKey("keys")) {
-        throw new RuntimeException("JWKS 응답이 유효하지 않음");
-      }
-
-      List<Map<String, Object>> keys = (List<Map<String, Object>>) jwks.get("keys");
-
-      Map<String, Object> rsaKey =
-          keys.stream()
-              .filter(k -> "RSA".equals(k.get("kty")))
-              .findFirst()
-              .orElseThrow(() -> new RuntimeException("JWKS에 RSA key가 없음"));
-
-      String n = (String) rsaKey.get("n");
-      String e = (String) rsaKey.get("e");
-
-      BigInteger modulus = new BigInteger(1, Base64.getUrlDecoder().decode(n));
-      BigInteger exponent = new BigInteger(1, Base64.getUrlDecoder().decode(e));
-
-      return KeyFactory.getInstance("RSA").generatePublic(new RSAPublicKeySpec(modulus, exponent));
-
-    } catch (Exception ex) {
-      throw new RuntimeException("JWKS에서 공개키 로딩 실패", ex);
+      String headerPart = token.split("\\.")[0];
+      byte[] decoded = Base64.getUrlDecoder().decode(headerPart);
+      Map<String, Object> header = mapper.readValue(decoded, Map.class);
+      return (String) header.get("kid");
+    } catch (Exception e) {
+      throw new JwtException("JWT 헤더에서 kid 추출 실패", e);
     }
+  }
+
+  /** RSA 공개키 생성 */
+  private PublicKey createRsaPublicKey(String n, String e) throws Exception {
+    BigInteger modulus = new BigInteger(1, Base64.getUrlDecoder().decode(n));
+    BigInteger exponent = new BigInteger(1, Base64.getUrlDecoder().decode(e));
+    return KeyFactory.getInstance("RSA").generatePublic(new RSAPublicKeySpec(modulus, exponent));
   }
 }
