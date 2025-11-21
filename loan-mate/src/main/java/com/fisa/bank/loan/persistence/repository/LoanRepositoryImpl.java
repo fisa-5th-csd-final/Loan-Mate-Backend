@@ -3,12 +3,14 @@ package com.fisa.bank.loan.persistence.repository;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
 import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.repository.LoanRepository;
 import com.fisa.bank.persistence.loan.entity.LoanLedger;
+import com.fisa.bank.persistence.loan.entity.id.LoanLedgerId;
 import com.fisa.bank.persistence.loan.repository.LoanLedgerRepository;
 import com.fisa.bank.persistence.user.entity.id.UserId;
 
@@ -28,10 +30,19 @@ public class LoanRepositoryImpl implements LoanRepository {
   }
 
   public static Loan toDomain(LoanLedger loanLedger) {
-    return new Loan(loanLedger.getLoanLedgerId().getValue(), loanLedger.getLoanProduct().getName());
+    return new Loan(
+        loanLedger.getLoanLedgerId().getValue(),
+        loanLedger.getLoanProduct().getName(),
+        loanLedger.getNextRepaymentDate(),
+        loanLedger.isAutoDepositEnabled());
     //        loanLedger.getCreatedAt(),
     //        loanLedger.getLastRepaymentDate(),
     //        loanLedger.getTerm(),
     //        loanLedger.getRepaymentStatus());
+  }
+
+  @Override
+  public Optional<Loan> findById(Long loanId) {
+    return loanLedgerRepository.findById(LoanLedgerId.of(loanId)).map(LoanRepositoryImpl::toDomain);
   }
 }

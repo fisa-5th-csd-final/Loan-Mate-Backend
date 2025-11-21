@@ -5,7 +5,7 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 
-import com.fisa.bank.persistence.loan.entity.LoanLedger;
+import com.fisa.bank.loan.application.model.Loan;
 
 @Getter
 @Builder
@@ -14,11 +14,11 @@ public class LoanAutoDepositResponse {
   private LocalDateTime nextRepaymentDate;
   private Boolean autoDepositEnabled;
 
-  public static LoanAutoDepositResponse from(LoanLedger loanLedger) {
+  public static LoanAutoDepositResponse from(Loan loan) {
     return LoanAutoDepositResponse.builder()
-        .loanLedgerId(loanLedger.getLoanLedgerId().getValue())
-        .nextRepaymentDate(loanLedger.getNextRepaymentDate())
-        .autoDepositEnabled(loanLedger.isAutoDepositEnabled())
+        .loanLedgerId(loan.getLoanId())
+        .nextRepaymentDate(loan.getNextRepaymentDate())
+        .autoDepositEnabled(loan.getAutoDepositEnabled())
         .build();
   }
 }

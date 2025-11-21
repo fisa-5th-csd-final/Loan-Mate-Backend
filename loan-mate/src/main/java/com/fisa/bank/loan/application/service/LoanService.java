@@ -17,10 +17,10 @@ import com.fisa.bank.common.application.service.CoreBankingClient;
 import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
+import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.service.reader.LoanReader;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
-import com.fisa.bank.persistence.loan.entity.LoanLedger;
 
 @Service
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
@@ -78,9 +78,9 @@ public class LoanService implements ManageLoanUseCase {
   @Transactional(readOnly = true)
   public LoanAutoDepositResponse getAutoDeposit(Long loanId) {
 
-    LoanLedger loanLedger = loanReader.findLoanLedgerById(loanId);
+    Loan loan = loanReader.findLoanById(loanId);
 
-    return LoanAutoDepositResponse.from(loanLedger);
+    return LoanAutoDepositResponse.from(loan);
   }
 
   @Override
