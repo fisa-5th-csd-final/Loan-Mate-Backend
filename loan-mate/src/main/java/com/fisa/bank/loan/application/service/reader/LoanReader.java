@@ -22,6 +22,8 @@ public class LoanReader {
   private final LoanRepository loanRepository;
   private final CoreBankingClient coreBankingClient;
 
+  private static final String PREPAYMENT_INFOS_URL = "/loans/prepayment-infos";
+
   public LoanDetail findLoanDetail(Long loanId) {
     String url = "/loans/ledger/" + loanId;
 
@@ -39,8 +41,6 @@ public class LoanReader {
   }
 
   public List<PrepaymentInfo> findPrepaymentInfos() {
-    String url = "/loans/prepayment-infos";
-
-    return coreBankingClient.fetchList(url, PrepaymentInfo.class);
+    return coreBankingClient.fetchList(PREPAYMENT_INFOS_URL, PrepaymentInfo.class);
   }
 }
