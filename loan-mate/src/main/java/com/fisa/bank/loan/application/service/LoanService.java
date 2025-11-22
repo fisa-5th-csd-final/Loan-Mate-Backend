@@ -88,4 +88,12 @@ public class LoanService implements ManageLoanUseCase {
     String url = "/loans/" + loanId;
     coreBankingClient.fetchOneDelete(url);
   }
+
+  @Override
+  @Transactional
+  public void updateAutoDepositEnabled(Long loanId, boolean autoDepositEnabled) {
+
+    // CoreBanking Server에 반영
+    coreBankingClient.updateAutoDepositEnabled(loanId, autoDepositEnabled);
+  }
 }

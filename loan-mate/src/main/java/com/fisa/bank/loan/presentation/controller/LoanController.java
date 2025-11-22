@@ -12,6 +12,7 @@ import com.fisa.bank.common.presentation.response.ApiResponse;
 import com.fisa.bank.common.presentation.response.ApiResponseGenerator;
 import com.fisa.bank.common.presentation.response.body.SuccessBody;
 import com.fisa.bank.common.presentation.response.code.ResponseCode;
+import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
 import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
@@ -52,5 +53,14 @@ public class LoanController {
   public void deleteLoan(@PathVariable("loanId") Long loanId) {
     log.info("대출 해지");
     manageLoanUseCase.cancelLoan(loanId);
+  }
+
+  @PatchMapping("/ledgers/{loanId}/auto-deposit")
+  public ApiResponse<SuccessBody<Void>> updateAutoDeposit(
+      @PathVariable Long loanId, @RequestBody AutoDepositUpdateRequest request) {
+    log.info("자동 예치 여부 수정");
+    manageLoanUseCase.updateAutoDepositEnabled(loanId, request.isAutoDepositEnabled());
+
+    return ApiResponseGenerator.success(ResponseCode.UPDATE);
   }
 }

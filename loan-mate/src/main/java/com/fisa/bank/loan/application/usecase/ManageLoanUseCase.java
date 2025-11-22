@@ -15,4 +15,6 @@ public interface ManageLoanUseCase {
   LoanAutoDepositResponse getAutoDeposit(Long loanId);
 
   void cancelLoan(Long loanId);
+
+  void updateAutoDepositEnabled(Long loanId, boolean autoDepositEnabled);
 }
