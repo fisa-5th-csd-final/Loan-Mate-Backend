@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Collections;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -39,6 +40,9 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
   private final JwtTokenGenerator jwtTokenGenerator;
   private final RefreshTokenRepository refreshTokenRepository;
   private final UserAuthRepository userAuthRepository;
+
+  @Value("${jwt.refresh-token-expiration}")
+  private Long refreshTokenTime;
 
   @Override
   public void onAuthenticationSuccess(
@@ -78,9 +82,8 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     // 우리 서버의 JWT 토큰 생성
     String accessToken = jwtTokenGenerator.generateAccessToken(serviceUserId);
     String refreshToken = jwtTokenGenerator.generateRefreshToken(serviceUserId);
-
     // Refresh Token DB에 저장 (7일 후 만료)
-    Instant refreshTokenExpiry = Instant.now().plusMillis(604800000L);
+    Instant refreshTokenExpiry = Instant.now().plusMillis(refreshTokenTime);
     refreshTokenRepository.save(serviceUserId, refreshToken, refreshTokenExpiry);
 
     // 응답 생성
