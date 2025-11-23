@@ -67,10 +67,10 @@ public class AuthController {
       return ResponseEntity.ok(new RefreshTokenResponse(newAccessToken, newRefreshToken));
 
     } catch (IllegalArgumentException e) {
-      log.error("Refresh Token 검증 실패: {}", e.getMessage());
+      log.warn("Refresh Token 검증 실패: {}", e.getMessage());
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     } catch (Exception e) {
-      log.error("토큰 갱신 중 예외 발생: {}", e.getMessage(), e);
+      log.warn("토큰 갱신 중 예외 발생: {}", e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
   }

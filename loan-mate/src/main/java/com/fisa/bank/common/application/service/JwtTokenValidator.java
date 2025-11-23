@@ -37,7 +37,7 @@ public class JwtTokenValidator {
       return claims;
 
     } catch (Exception e) {
-      log.error("Access Token 검증 실패: {}", e.getMessage());
+      log.warn("Access Token 검증 실패: {}", e.getMessage());
       throw new IllegalArgumentException("유효하지 않은 Access Token", e);
     }
   }
@@ -70,7 +70,7 @@ public class JwtTokenValidator {
       return ((Number) userIdObj).longValue();
 
     } catch (Exception e) {
-      log.error("Refresh Token 검증 실패: {}", e.getMessage());
+      log.warn("Refresh Token 검증 실패: {}", e.getMessage());
       throw new IllegalArgumentException("유효하지 않은 Refresh Token", e);
     }
   }
