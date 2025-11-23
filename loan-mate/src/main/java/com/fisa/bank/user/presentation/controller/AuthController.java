@@ -41,7 +41,7 @@ public class AuthController {
   @PostMapping("/api/auth/refresh")
   public ResponseEntity<RefreshTokenResponse> refresh(@RequestBody RefreshTokenRequest request) {
     try {
-      log.info("토큰 갱신 요청. refreshToken: {}", request.refreshToken());
+      log.info("토큰 갱신 요청");
 
       // Refresh Token 검증 및 userId 추출
       Long userId = jwtTokenValidator.validateRefreshTokenAndGetUserId(request.refreshToken());
