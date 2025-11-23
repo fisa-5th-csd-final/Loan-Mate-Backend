@@ -5,7 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.time.Instant;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +30,9 @@ public class AuthController {
   private final JwtTokenValidator jwtTokenValidator;
   private final RefreshTokenRepository refreshTokenRepository;
 
+  @Value("${jwt.refresh-token-expiration:604800000}")
+  private long refreshTokenExpiration;
+
   @GetMapping("/api/login")
   public void login(HttpServletResponse response) throws IOException {
     response.sendRedirect("/oauth2/authorization/loan-mate");
@@ -48,11 +53,18 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
       }
 
-      // 새로운 Access Token 발급
-      String newAccessToken = jwtTokenGenerator.generateAccessToken(userId);
-      log.info("새로운 Access Token 발급 완료. userId: {}", userId);
+      // 기존 Refresh Token 제거 (rotation)
+      refreshTokenRepository.deleteByUserId(userId);
+      log.info("기존 Refresh Token 삭제 완료. userId: {}", userId);
 
-      return ResponseEntity.ok(new RefreshTokenResponse(newAccessToken));
+      // 새로운 Access/Refresh Token 발급
+      String newAccessToken = jwtTokenGenerator.generateAccessToken(userId);
+      String newRefreshToken = jwtTokenGenerator.generateRefreshToken(userId);
+      Instant refreshTokenExpiry = Instant.now().plusMillis(refreshTokenExpiration);
+      refreshTokenRepository.save(userId, newRefreshToken, refreshTokenExpiry);
+      log.info("새로운 Access/Refresh Token 발급 및 저장 완료. userId: {}", userId);
+
+      return ResponseEntity.ok(new RefreshTokenResponse(newAccessToken, newRefreshToken));
 
     } catch (IllegalArgumentException e) {
       log.error("Refresh Token 검증 실패: {}", e.getMessage());
