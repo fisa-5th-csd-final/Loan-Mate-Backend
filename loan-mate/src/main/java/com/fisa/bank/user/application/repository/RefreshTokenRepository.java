@@ -11,7 +11,7 @@ public interface RefreshTokenRepository {
 
   Optional<Long> findUserIdByToken(String token);
 
-  void deleteByUserId(Long userId);
+  void deleteByToken(String refreshToken);
 
   boolean existsByToken(String token);
 }

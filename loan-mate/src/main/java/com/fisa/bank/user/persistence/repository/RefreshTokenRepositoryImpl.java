@@ -46,9 +46,8 @@ public class RefreshTokenRepositoryImpl implements RefreshTokenRepository {
   }
 
   @Override
-  @Transactional
-  public void deleteByUserId(Long userId) {
-    jpaRepository.deleteByUserId(userId);
+  public void deleteByToken(String refreshToken) {
+    jpaRepository.deleteByToken(refreshToken);
   }
 
   @Override
