@@ -67,7 +67,7 @@ public class JwtTokenGenerator {
         .compact();
   }
 
-  private SecretKey getSigningKey() {
+  public SecretKey getSigningKey() {
     return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
   }
 }

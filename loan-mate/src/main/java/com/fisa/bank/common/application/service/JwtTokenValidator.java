@@ -2,22 +2,17 @@ package com.fisa.bank.common.application.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.charset.StandardCharsets;
-
-import javax.crypto.SecretKey;
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class JwtTokenValidator {
 
-  @Value("${jwt.secret}")
-  private String jwtSecret;
+  private final JwtTokenGenerator jwtTokenGenerator;
 
   /**
    * Access Token 검증
@@ -29,7 +24,7 @@ public class JwtTokenValidator {
     try {
       Claims claims =
           Jwts.parser()
-              .verifyWith(getSigningKey())
+              .verifyWith(jwtTokenGenerator.getSigningKey())
               .build()
               .parseSignedClaims(accessToken)
               .getPayload();
@@ -57,7 +52,7 @@ public class JwtTokenValidator {
     try {
       Claims claims =
           Jwts.parser()
-              .verifyWith(getSigningKey())
+              .verifyWith(jwtTokenGenerator.getSigningKey())
               .build()
               .parseSignedClaims(refreshToken)
               .getPayload();
@@ -78,9 +73,5 @@ public class JwtTokenValidator {
       log.error("Refresh Token 검증 실패: {}", e.getMessage());
       throw new IllegalArgumentException("유효하지 않은 Refresh Token", e);
     }
-  }
-
-  private SecretKey getSigningKey() {
-    return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
   }
 }
