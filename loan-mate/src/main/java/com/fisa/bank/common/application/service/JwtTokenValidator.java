@@ -1,6 +1,7 @@
 package com.fisa.bank.common.application.service;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +37,7 @@ public class JwtTokenValidator {
 
       return claims;
 
-    } catch (Exception e) {
+    } catch (JwtException e) {
       log.warn("Access Token 검증 실패: {}", e.getMessage());
       throw new IllegalArgumentException("유효하지 않은 Access Token", e);
     }
@@ -69,7 +70,7 @@ public class JwtTokenValidator {
 
       return ((Number) userIdObj).longValue();
 
-    } catch (Exception e) {
+    } catch (JwtException e) {
       log.warn("Refresh Token 검증 실패: {}", e.getMessage());
       throw new IllegalArgumentException("유효하지 않은 Refresh Token", e);
     }
