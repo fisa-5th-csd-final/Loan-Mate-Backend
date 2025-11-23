@@ -29,7 +29,7 @@ public class DefaultUpdateTokenUseCase implements UpdateTokenUseCase {
 
   @Override
   public RefreshTokenResponse execute(String refreshToken) {
-    log.info("토큰 갱신 요청. refreshToken: {}", refreshToken);
+    log.info("토큰 갱신 요청");
 
     Long userId = jwtTokenValidator.validateRefreshTokenAndGetUserId(refreshToken);
     log.info("Refresh Token 검증 성공. userId: {}", userId);
