@@ -94,7 +94,6 @@ public class LoanService implements ManageLoanUseCase {
     coreBankingClient.fetchOneDelete(url);
   }
 
-  @Override
   public List<LoansWithPrepaymentBenefitResponse> getLoansWithPrepaymentBenefit() {
     List<LoansWithPrepaymentBenefitResponse> loansWithPrepaymentBenefitResponses =
         new ArrayList<>();

@@ -163,10 +163,6 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
     }
   }
 
-  // =====================================================
-  // 공통 기능 구현
-  // =====================================================
-
   @Override
   public <T> T fetchOne(String endpoint, Class<T> clazz) {
     JsonNode root = callApi(endpoint, HttpMethod.GET, JsonNode.class);
