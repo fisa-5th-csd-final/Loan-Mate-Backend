@@ -45,7 +45,12 @@ public class AuthController {
 
   @PostMapping("/logout")
   public ResponseEntity<Void> logout() {
-    logoutUseCase.execute();
-    return ResponseEntity.noContent().build();
+    try {
+      logoutUseCase.execute();
+      return ResponseEntity.noContent().build();
+    } catch (Exception e) {
+      log.error("로그아웃 처리 중 예외가 발생했습니다.", e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
   }
 }
