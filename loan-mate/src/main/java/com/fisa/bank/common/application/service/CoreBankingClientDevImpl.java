@@ -16,7 +16,6 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fisa.bank.common.application.util.JsonNodeMapper;
-import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
 
 @Slf4j
 @Component
@@ -107,40 +106,42 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
   }
 
   @Override
-  public void updateAutoDepositEnabled(Long loanLedgerId, boolean autoDepositEnabled) {
+  public void patch(String endpoint, Object body) {
+    callApi(endpoint, HttpMethod.PATCH, body, Void.class);
+  }
 
-    String endpoint = "/loans/" + loanLedgerId + "/auto-deposit";
-
+  // requestBody 버전 callAPi 오버로딩
+  private <T, B> T callApi(String endpoint, HttpMethod method, B body, Class<T> responseType) {
     String token = tokenManager.getAccessToken();
 
     try {
-      client(token)
-          .patch()
-          .uri(baseUrl + endpoint)
-          .bodyValue(new AutoDepositUpdateRequest(autoDepositEnabled))
-          .retrieve()
-          .bodyToMono(Void.class)
-          .block();
+      return executeRequest(endpoint, token, method, body, responseType);
 
     } catch (WebClientResponseException e) {
 
-      // 401 → 토큰 재발급 후 재요청
       if (e.getStatusCode().value() == 401) {
+        log.warn("AccessToken 재발급 후 재요청");
 
         String newToken = tokenManager.refreshAndGetNewToken();
-
-        client(newToken)
-            .patch()
-            .uri(baseUrl + endpoint)
-            .bodyValue(new AutoDepositUpdateRequest(autoDepositEnabled))
-            .retrieve()
-            .bodyToMono(Void.class)
-            .block();
-
-        return;
+        return executeRequest(endpoint, newToken, method, body, responseType);
       }
 
+      log.error("CoreBanking 호출 실패: {} {}", e.getStatusCode(), e.getMessage());
       throw e;
+    } catch (Exception e) {
+      log.error("알 수 없는 예외", e);
+      throw new IllegalStateException("CoreBanking API 호출 중 예외 발생", e);
     }
+  }
+
+  private <T, B> T executeRequest(
+      String endpoint, String token, HttpMethod method, B body, Class<T> responseType) {
+    return client(token)
+        .method(method)
+        .uri(baseUrl + endpoint)
+        .bodyValue(body)
+        .retrieve()
+        .bodyToMono(responseType)
+        .block();
   }
 }

@@ -9,5 +9,5 @@ public interface CoreBankingClient {
 
   public void fetchOneDelete(String endpoint);
 
-  void updateAutoDepositEnabled(Long loanLedgerId, boolean autoDepositEnabled);
+  void patch(String endpoint, Object body);
 }

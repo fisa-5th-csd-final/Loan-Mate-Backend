@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fisa.bank.common.application.service.CoreBankingClient;
+import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
 import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
@@ -120,10 +121,11 @@ public class LoanService implements ManageLoanUseCase {
   }
 
   @Override
-  @Transactional
   public void updateAutoDepositEnabled(Long loanId, boolean autoDepositEnabled) {
 
-    // CoreBanking Server에 반영
-    coreBankingClient.updateAutoDepositEnabled(loanId, autoDepositEnabled);
+    String endpoint = "/loans/" + loanId + "/auto-deposit";
+    AutoDepositUpdateRequest body = new AutoDepositUpdateRequest(autoDepositEnabled);
+
+    coreBankingClient.patch(endpoint, body);
   }
 }
