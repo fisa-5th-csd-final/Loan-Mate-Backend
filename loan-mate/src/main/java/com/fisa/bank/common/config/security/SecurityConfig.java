@@ -86,8 +86,14 @@ public class SecurityConfig {
     http.securityMatcher("/api/**")
         .csrf(AbstractHttpConfigurer::disable)
         .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+        .authorizeHttpRequests(
+            auth ->
+                auth.requestMatchers("/api/auth/refresh", "/api/login/**")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
     return http.build();
   }
 }
