@@ -5,6 +5,7 @@ import java.util.List;
 import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
+import com.fisa.bank.loan.application.dto.response.LoansWithPrepaymentBenefitResponse;
 
 public interface ManageLoanUseCase {
 
@@ -15,4 +16,6 @@ public interface ManageLoanUseCase {
   LoanAutoDepositResponse getAutoDeposit(Long loanId);
 
   void cancelLoan(Long loanId);
+
+  List<LoansWithPrepaymentBenefitResponse> getLoansWithPrepaymentBenefit();
 }
