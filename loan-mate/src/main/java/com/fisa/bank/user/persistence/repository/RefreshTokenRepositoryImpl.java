@@ -33,21 +33,13 @@ public class RefreshTokenRepositoryImpl implements RefreshTokenRepository {
   }
 
   @Override
-  public Optional<String> findByUserId(Long userId) {
-    return jpaRepository.findByUserId(userId).map(RefreshTokenEntity::getToken);
-  }
-
-  @Override
-  public Optional<Long> findUserIdByToken(String token) {
-    return jpaRepository
-        .findByToken(token)
-        .filter(entity -> !entity.isExpired())
-        .map(RefreshTokenEntity::getUserId);
-  }
-
-  @Override
   public void deleteByToken(String refreshToken) {
     jpaRepository.deleteByToken(refreshToken);
+  }
+
+  @Override
+  public void deleteByUserId(Long UserId) {
+    jpaRepository.deleteByUserId(UserId);
   }
 
   @Override

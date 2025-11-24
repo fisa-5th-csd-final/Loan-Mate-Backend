@@ -29,16 +29,7 @@ public class DefaultLogoutUseCase implements LogoutUseCase {
       return;
     }
 
-    log.info("로그아웃 진행 userId={}", userId);
-
-    // 해당 유저의 Refresh Token 삭제
-    String refreshToken = refreshTokenRepository.findByUserId(userId).orElse(null);
-    if (refreshToken == null) {
-      log.info("삭제할 RefreshToken 없음");
-      return;
-    }
-
-    refreshTokenRepository.deleteByToken(refreshToken);
+    refreshTokenRepository.deleteByUserId(userId);
 
     log.info("유저 {}의 RefreshToken 삭제 완료", userId);
   }
