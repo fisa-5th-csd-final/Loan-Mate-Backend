@@ -28,8 +28,7 @@ public class LoanController {
 
   @GetMapping("/ledgers")
   public ApiResponse<SuccessBody<List<LoanListResponse>>> getLoans() {
-    // TODO: 로그인 완성되면 파라미터 제거
-    List<LoanListResponse> response = manageLoanUseCase.getLoans(Long.valueOf(1));
+    List<LoanListResponse> response = manageLoanUseCase.getLoans();
     return ApiResponseGenerator.success(ResponseCode.GET, response);
   }
 

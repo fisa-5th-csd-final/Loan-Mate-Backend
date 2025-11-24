@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fisa.bank.common.application.service.CoreBankingClient;
+import com.fisa.bank.common.application.util.RequesterInfo;
 import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
 import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
@@ -33,12 +34,14 @@ public class LoanService implements ManageLoanUseCase {
 
   private final LoanReader loanReader;
   private final CoreBankingClient coreBankingClient;
+  private final RequesterInfo requesterInfo;
 
   @Override
   @Transactional
-  public List<LoanListResponse> getLoans(Long userId) {
+  public List<LoanListResponse> getLoans() {
+    Long serviceUserId = requesterInfo.getCoreBankingUserId();
     List<LoanListResponse> loanLedgers =
-        loanReader.findLoans(userId).stream().map(LoanListResponse::from).toList();
+        loanReader.findLoans(serviceUserId).stream().map(LoanListResponse::from).toList();
     // TODO: 위험도 추가
     return loanLedgers;
   }
@@ -94,6 +97,7 @@ public class LoanService implements ManageLoanUseCase {
     coreBankingClient.fetchOneDelete(url);
   }
 
+  @Override
   public List<LoansWithPrepaymentBenefitResponse> getLoansWithPrepaymentBenefit() {
     List<LoansWithPrepaymentBenefitResponse> loansWithPrepaymentBenefitResponses =
         new ArrayList<>();
