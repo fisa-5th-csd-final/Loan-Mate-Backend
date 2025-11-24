@@ -6,19 +6,26 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.util.Collections;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fisa.bank.common.application.service.CoreBankingClient;
+import com.fisa.bank.common.application.service.JwtTokenGenerator;
 import com.fisa.bank.user.application.dto.LoginResponse;
 import com.fisa.bank.user.application.dto.UserInfoResponse;
+import com.fisa.bank.user.application.repository.RefreshTokenRepository;
+import com.fisa.bank.user.application.repository.UserAuthRepository;
 import com.fisa.bank.user.application.usecase.SyncCoreBankUserUseCase;
 
 @Slf4j
@@ -30,32 +37,61 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
   private final SyncCoreBankUserUseCase syncCoreBankUserUseCase;
   private final OAuth2AuthorizedClientService authorizedClientService;
   private final ObjectMapper objectMapper;
+  private final JwtTokenGenerator jwtTokenGenerator;
+  private final RefreshTokenRepository refreshTokenRepository;
+  private final UserAuthRepository userAuthRepository;
+
+  @Value("${jwt.refresh-token-expiration}")
+  private Long refreshTokenTime;
 
   @Override
   public void onAuthenticationSuccess(
       HttpServletRequest request, HttpServletResponse response, Authentication authentication)
       throws IOException {
 
-    UserInfoResponse me = coreBankingClient.fetchOne("users/me", UserInfoResponse.class);
+    // 코어 뱅킹 사용자 정보 조회 및 동기화
+    UserInfoResponse me = coreBankingClient.fetchOne("/users/me", UserInfoResponse.class);
     syncCoreBankUserUseCase.sync(me);
 
-    // OAuth2 토큰 가져오기
+    // serviceUserId 조회
+    Long serviceUserId =
+        userAuthRepository
+            .findByCoreBankingUserId(me.userId())
+            .orElseThrow(() -> new IllegalStateException("사용자 동기화 후 매핑 정보를 찾을 수 없습니다."))
+            .getServiceUserId();
+
+    // OAuth2 토큰 저장 (코어 뱅킹 서버용)
     OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
     OAuth2AuthorizedClient authorizedClient =
         authorizedClientService.loadAuthorizedClient(
             oauthToken.getAuthorizedClientRegistrationId(), oauthToken.getName());
 
-    String accessToken = authorizedClient.getAccessToken().getTokenValue();
-    String refreshToken =
-        authorizedClient.getRefreshToken() != null
-            ? authorizedClient.getRefreshToken().getTokenValue()
-            : null;
+    // serviceUserId를 principal name으로 사용하도록 새로운 OAuth2User와 인증 객체 생성
+    DefaultOAuth2User newPrincipal =
+        new DefaultOAuth2User(
+            Collections.emptyList(),
+            Collections.singletonMap("sub", serviceUserId.toString()),
+            "sub");
+
+    OAuth2AuthenticationToken newAuthToken =
+        new OAuth2AuthenticationToken(
+            newPrincipal, Collections.emptyList(), oauthToken.getAuthorizedClientRegistrationId());
+
+    authorizedClientService.saveAuthorizedClient(authorizedClient, newAuthToken);
+
+    // 우리 서버의 JWT 토큰 생성
+    String accessToken = jwtTokenGenerator.generateAccessToken(serviceUserId);
+    String refreshToken = jwtTokenGenerator.generateRefreshToken(serviceUserId);
+    // Refresh Token DB에 저장 (7일 후 만료)
+    Instant refreshTokenExpiry = Instant.now().plusMillis(refreshTokenTime);
+    refreshTokenRepository.save(serviceUserId, refreshToken, refreshTokenExpiry);
 
     // 응답 생성
-    LoginResponse loginResponse = new LoginResponse(accessToken, refreshToken, me.userId());
+    LoginResponse loginResponse = new LoginResponse(accessToken, refreshToken, serviceUserId);
+    String jsonResponse = objectMapper.writeValueAsString(loginResponse);
 
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setCharacterEncoding("UTF-8");
-    response.getWriter().write(objectMapper.writeValueAsString(loginResponse));
+    response.getWriter().write(jsonResponse);
   }
 }
