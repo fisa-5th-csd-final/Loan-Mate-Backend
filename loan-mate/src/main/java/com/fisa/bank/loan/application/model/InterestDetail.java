@@ -1,14 +1,15 @@
 package com.fisa.bank.loan.application.model;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class InterestDetail {
-  private final LocalDateTime repaymentDate;
-  private final BigDecimal interest;
+  private LocalDateTime repaymentDate;
+  private BigDecimal interest;
 }

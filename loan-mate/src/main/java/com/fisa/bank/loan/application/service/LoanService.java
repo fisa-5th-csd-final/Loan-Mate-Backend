@@ -101,7 +101,7 @@ public class LoanService implements ManageLoanUseCase {
     List<PrepaymentInfo> prepaymentInfos = loanReader.findPrepaymentInfos();
 
     for (PrepaymentInfo prepaymentInfo : prepaymentInfos) {
-      List<InterestDetail> interestDetails = prepaymentInfo.getInterestDetails();
+      List<InterestDetail> interestDetails = prepaymentInfo.getInterestDetailResponses();
       BigDecimal earlyRepayment = prepaymentInfo.getEarlyRepayment();
 
       BigDecimal remainInterests =

@@ -1,16 +1,17 @@
 package com.fisa.bank.loan.application.model;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 @Builder
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class PrepaymentInfo {
-  private final Long loanLedgerId;
-  private final String loanProductName;
-  private final BigDecimal earlyRepayment;
-  private final List<InterestDetail> interestDetails;
+  private Long loanLedgerId;
+  private String loanProductName;
+  private BigDecimal earlyRepayment;
+  private List<InterestDetail> interestDetailResponses;
 }
