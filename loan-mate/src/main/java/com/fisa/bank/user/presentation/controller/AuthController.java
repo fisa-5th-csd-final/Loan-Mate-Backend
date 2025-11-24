@@ -8,28 +8,28 @@ import java.io.IOException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.fisa.bank.user.application.dto.RefreshTokenRequest;
 import com.fisa.bank.user.application.dto.RefreshTokenResponse;
+import com.fisa.bank.user.application.usecase.LogoutUseCase;
 import com.fisa.bank.user.application.usecase.UpdateTokenUseCase;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api")
 public class AuthController {
 
   private final UpdateTokenUseCase updateTokenUseCase;
+  private final LogoutUseCase logoutUseCase;
 
-  @GetMapping("/api/login")
+  @GetMapping("/login")
   public void login(HttpServletResponse response) throws IOException {
     response.sendRedirect("/oauth2/authorization/loan-mate");
   }
 
-  @PostMapping("/api/auth/refresh")
+  @PostMapping("/auth/refresh")
   public ResponseEntity<RefreshTokenResponse> refresh(@RequestBody RefreshTokenRequest request) {
     try {
       RefreshTokenResponse response = updateTokenUseCase.execute(request.refreshToken());
@@ -41,5 +41,11 @@ public class AuthController {
       log.warn("토큰 갱신 중 예외 발생: {}", e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
+  }
+
+  @PostMapping("/logout")
+  public ResponseEntity<Void> logout() {
+    logoutUseCase.execute();
+    return ResponseEntity.noContent().build();
   }
 }
