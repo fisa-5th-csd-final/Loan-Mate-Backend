@@ -17,5 +17,7 @@ public interface ManageLoanUseCase {
 
   void cancelLoan(Long loanId);
 
+  void updateAutoDepositEnabled(Long loanId, boolean autoDepositEnabled);
+
   List<LoansWithPrepaymentBenefitResponse> getLoansWithPrepaymentBenefit();
 }

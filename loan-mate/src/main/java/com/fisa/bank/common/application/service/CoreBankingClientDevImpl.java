@@ -104,4 +104,44 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
 
     callApi(endpoint, HttpMethod.DELETE, Void.class);
   }
+
+  @Override
+  public void patch(String endpoint, Object body) {
+    callApi(endpoint, HttpMethod.PATCH, body, Void.class);
+  }
+
+  // requestBody 버전 callAPi 오버로딩
+  private <T, B> T callApi(String endpoint, HttpMethod method, B body, Class<T> responseType) {
+    String token = tokenManager.getAccessToken();
+
+    try {
+      return executeRequest(endpoint, token, method, body, responseType);
+
+    } catch (WebClientResponseException e) {
+
+      if (e.getStatusCode().value() == 401) {
+        log.warn("AccessToken 재발급 후 재요청");
+
+        String newToken = tokenManager.refreshAndGetNewToken();
+        return executeRequest(endpoint, newToken, method, body, responseType);
+      }
+
+      log.error("CoreBanking 호출 실패: {} {}", e.getStatusCode(), e.getMessage());
+      throw e;
+    } catch (Exception e) {
+      log.error("알 수 없는 예외", e);
+      throw new IllegalStateException("CoreBanking API 호출 중 예외 발생", e);
+    }
+  }
+
+  private <T, B> T executeRequest(
+      String endpoint, String token, HttpMethod method, B body, Class<T> responseType) {
+    return client(token)
+        .method(method)
+        .uri(baseUrl + endpoint)
+        .bodyValue(body)
+        .retrieve()
+        .bodyToMono(responseType)
+        .block();
+  }
 }

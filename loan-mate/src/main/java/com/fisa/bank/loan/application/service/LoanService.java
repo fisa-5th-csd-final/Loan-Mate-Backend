@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fisa.bank.common.application.service.CoreBankingClient;
+import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
 import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
@@ -93,7 +94,6 @@ public class LoanService implements ManageLoanUseCase {
     coreBankingClient.fetchOneDelete(url);
   }
 
-  @Override
   public List<LoansWithPrepaymentBenefitResponse> getLoansWithPrepaymentBenefit() {
     List<LoansWithPrepaymentBenefitResponse> loansWithPrepaymentBenefitResponses =
         new ArrayList<>();
@@ -117,5 +117,14 @@ public class LoanService implements ManageLoanUseCase {
       }
     }
     return loansWithPrepaymentBenefitResponses;
+  }
+
+  @Override
+  public void updateAutoDepositEnabled(Long loanId, boolean autoDepositEnabled) {
+
+    String endpoint = "/loans/" + loanId + "/auto-deposit";
+    AutoDepositUpdateRequest body = new AutoDepositUpdateRequest(autoDepositEnabled);
+
+    coreBankingClient.patch(endpoint, body);
   }
 }
