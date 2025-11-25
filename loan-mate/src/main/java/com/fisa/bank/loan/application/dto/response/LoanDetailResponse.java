@@ -7,7 +7,6 @@ import lombok.Getter;
 import java.math.BigDecimal;
 
 import com.fisa.bank.loan.application.model.LoanDetail;
-import com.fisa.bank.loan.persistence.enums.RiskLevel;
 import com.fisa.bank.persistence.loan.enums.LoanType;
 import com.fisa.bank.persistence.loan.enums.RepaymentType;
 
@@ -25,11 +24,7 @@ public class LoanDetailResponse {
   private final RepaymentType repaymentType;
   private final int progress;
 
-  // TODO: 나중에 위험도 계산 가능하면 final로 변경
-  private RiskLevel riskLevel;
-
   public static LoanDetailResponse from(Long loanId, LoanDetail loanDetail) {
-    // TODO: 위험도 세팅
     return LoanDetailResponse.builder()
         .loanId(loanId)
         .loanName(loanDetail.getName())

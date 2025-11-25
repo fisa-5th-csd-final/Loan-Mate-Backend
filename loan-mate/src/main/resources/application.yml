@@ -15,3 +15,6 @@ server:
     session:
       cookie:
         name: LOANMATESESSION
+
+ai-server:
+  api-url: ${AI_SERVER_API_URL}

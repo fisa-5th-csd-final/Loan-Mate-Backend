@@ -9,21 +9,22 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fisa.bank.common.application.service.AiClient;
 import com.fisa.bank.common.application.service.CoreBankingClient;
+import com.fisa.bank.common.application.util.RequesterInfo;
 import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
 import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
 import com.fisa.bank.loan.application.dto.response.LoansWithPrepaymentBenefitResponse;
-import com.fisa.bank.loan.application.model.InterestDetail;
-import com.fisa.bank.loan.application.model.Loan;
-import com.fisa.bank.loan.application.model.LoanDetail;
-import com.fisa.bank.loan.application.model.PrepaymentInfo;
+import com.fisa.bank.loan.application.model.*;
 import com.fisa.bank.loan.application.service.reader.LoanReader;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
 
@@ -33,14 +34,31 @@ public class LoanService implements ManageLoanUseCase {
 
   private final LoanReader loanReader;
   private final CoreBankingClient coreBankingClient;
+  private final RequesterInfo requesterInfo;
+  private static final String PREDICT_URL = "/predict";
+  private static final String LOAN_COMMENT = "/insight/loan";
+  private final AiClient aiClient;
 
   @Override
   @Transactional
-  public List<LoanListResponse> getLoans(Long userId) {
-    List<LoanListResponse> loanLedgers =
-        loanReader.findLoans(userId).stream().map(LoanListResponse::from).toList();
-    // TODO: 위험도 추가
-    return loanLedgers;
+  public List<LoanListResponse> getLoans() {
+    Long userId = requesterInfo.getCoreBankingUserId();
+    // db에서 대출 리스트 조회
+    List<Loan> loans = loanReader.findLoans(userId);
+
+    //    List<LoanListResponse> loanLedgers =
+    //        loanReader.findLoans(userId).stream().map(LoanListResponse::from).toList();
+
+    // 위험도 fetch
+    LoanRisks loanRisks = aiClient.fetchOne(PREDICT_URL, userId, LoanRisks.class);
+
+    // 위험도와 대출 id를 매핑하는 맵
+    Map<Long, BigDecimal> riskMap =
+        loanRisks.getLoans().stream()
+            .collect(Collectors.toMap(LoanRiskDetail::getLoanLedgerId, LoanRiskDetail::getRisk));
+
+    // 대출 리스트와 위험도 매핑
+    return loans.stream().map(loan -> LoanListResponse.from(loan, riskMap)).toList();
   }
 
   @Override
@@ -49,6 +67,14 @@ public class LoanService implements ManageLoanUseCase {
     Integer progress = calculateProgressRate(loanDetail).intValueExact();
 
     loanDetail.setProgress(progress);
+    // 대출 LLM 코멘트
+    LoanComment loanComment = aiClient.fetchOne(LOAN_COMMENT, loanId, LoanComment.class);
+
+    if (!loanComment.getLoanLedgerId().equals(loanId)) {
+      throw new IllegalStateException("요청한 loanId와 응답 loanLedgerId가 불일치합니다.");
+    }
+
+    loanDetail.setComment(loanComment.getComment());
     return LoanDetailResponse.from(loanId, loanDetail);
   }
 
@@ -94,6 +120,7 @@ public class LoanService implements ManageLoanUseCase {
     coreBankingClient.fetchOneDelete(url);
   }
 
+  @Override
   public List<LoansWithPrepaymentBenefitResponse> getLoansWithPrepaymentBenefit() {
     List<LoansWithPrepaymentBenefitResponse> loansWithPrepaymentBenefitResponses =
         new ArrayList<>();
