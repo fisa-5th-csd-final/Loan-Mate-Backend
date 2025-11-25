@@ -36,7 +36,8 @@ public class LoanService implements ManageLoanUseCase {
   private final LoanReader loanReader;
   private final CoreBankingClient coreBankingClient;
   private final RequesterInfo requesterInfo;
-  private final String PREDICT_URL = "/api/ai/predict";
+  private final String PREDICT_URL = "/predict";
+  private final String LOAN_COMMENT = "/insight/loan";
   private final AiClient aiClient;
 
   @Override
@@ -71,6 +72,14 @@ public class LoanService implements ManageLoanUseCase {
     Integer progress = calculateProgressRate(loanDetail).intValueExact();
 
     loanDetail.setProgress(progress);
+    // 대출 LLM 코멘트
+    LoanComment loanComment = aiClient.fetchOne(LOAN_COMMENT, loanId, LoanComment.class);
+
+    if (!loanComment.getLoanLedgerId().equals(loanId)) {
+      throw new RuntimeException("요청한 loanId와 응답 loanLedgerId가 불일치합니다.");
+    }
+
+    loanDetail.setComment(loanComment.getComment());
     return LoanDetailResponse.from(loanId, loanDetail);
   }
 
