@@ -17,5 +17,6 @@ server:
         name: LOANMATESESSION
 
 app:
-  front-end-url: ${FRONT_URL}
+  front-success-url: ${FRONT_URL}/login/success
+  front-fail-url: ${FRONT_URL}/login/fail
   cookie-secure: false
