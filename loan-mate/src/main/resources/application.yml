@@ -19,4 +19,3 @@ server:
 app:
   front-success-url: ${FRONT_URL}/login/success
   front-fail-url: ${FRONT_URL}/login/fail
-  cookie-secure: false
