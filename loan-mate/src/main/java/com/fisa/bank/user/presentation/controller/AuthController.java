@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.fisa.bank.common.util.CookieUtil;
-import com.fisa.bank.user.application.dto.RefreshTokenResponse;
+import com.fisa.bank.user.application.dto.TokenPair;
 import com.fisa.bank.user.application.usecase.LogoutUseCase;
 import com.fisa.bank.user.application.usecase.UpdateTokenUseCase;
 
@@ -41,14 +41,14 @@ public class AuthController {
   }
 
   @PostMapping("/auth/refresh")
-  public ResponseEntity<RefreshTokenResponse> refresh(
+  public ResponseEntity<Void> refresh(
       @CookieValue("refreshToken") String refreshToken, HttpServletResponse response) {
 
     if (refreshToken == null) {
       log.warn("Refresh Token 없음 (쿠키 없음)");
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
-    RefreshTokenResponse newTokens;
+    TokenPair newTokens;
     try {
       newTokens = updateTokenUseCase.execute(refreshToken);
     } catch (IllegalArgumentException e) {

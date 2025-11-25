@@ -1,7 +1,7 @@
 package com.fisa.bank.user.application.usecase;
 
-import com.fisa.bank.user.application.dto.RefreshTokenResponse;
+import com.fisa.bank.user.application.dto.TokenPair;
 
 public interface UpdateTokenUseCase {
-  RefreshTokenResponse execute(String refreshToken);
+  TokenPair execute(String refreshToken);
 }
