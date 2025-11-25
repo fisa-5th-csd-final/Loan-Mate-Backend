@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fisa.bank.common.application.service.CoreBankingClient;
 import com.fisa.bank.common.application.service.JwtTokenGenerator;
-import com.fisa.bank.user.application.dto.LoginResponse;
+import com.fisa.bank.common.util.CookieUtil;
 import com.fisa.bank.user.application.dto.UserInfoResponse;
 import com.fisa.bank.user.application.repository.RefreshTokenRepository;
 import com.fisa.bank.user.application.repository.UserAuthRepository;
@@ -93,38 +93,24 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     Instant refreshTokenExpiry = Instant.now().plusMillis(refreshTokenExpiration);
     refreshTokenRepository.save(serviceUserId, refreshToken, refreshTokenExpiry);
 
-    // 응답 생성
-    LoginResponse loginResponse = new LoginResponse(accessToken, refreshToken, serviceUserId);
-    String jsonResponse = objectMapper.writeValueAsString(loginResponse);
-
-    boolean secure = request.isSecure(); // HTTPS면 true
+    // 쿠키 발급
+    boolean secure = request.isSecure(); // HTTPS에서만 secure=true
 
     Cookie accessCookie =
-        createHttpOnlyCookie(
-            "accessToken", accessToken, (int) (accessTokenExpiration / 1000L), secure); // 30분
+        CookieUtil.createHttpOnlyCookie(
+            "accessToken", accessToken, (int) (accessTokenExpiration / 1000L), secure);
 
     Cookie refreshCookie =
-        createHttpOnlyCookie(
+        CookieUtil.createHttpOnlyCookie(
             "refreshToken", refreshToken, (int) (refreshTokenExpiration / 1000L), secure);
 
     response.addCookie(accessCookie);
     response.addCookie(refreshCookie);
 
-    // 프론트로 리다이렉트
     String redirectUrl = frontendUrl + "/oauth/callback";
-    log.info("로그인 성공, 프론트엔드로 리다이렉트: {}", redirectUrl);
+    log.info("로그인 성공. 프론트엔드로 리다이렉트: {}", redirectUrl);
 
     response.setContentType(MediaType.TEXT_HTML_VALUE);
     response.sendRedirect(redirectUrl);
-  }
-
-  private Cookie createHttpOnlyCookie(
-      String name, String value, int maxAgeSeconds, boolean secure) {
-    Cookie cookie = new Cookie(name, value);
-    cookie.setHttpOnly(true);
-    cookie.setSecure(secure);
-    cookie.setPath("/"); // 모든 경로에서 쿠키 전송
-    cookie.setMaxAge(maxAgeSeconds);
-    return cookie;
   }
 }
