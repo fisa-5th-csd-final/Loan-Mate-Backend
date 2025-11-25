@@ -46,11 +46,8 @@ public class LoanService implements ManageLoanUseCase {
     // db에서 대출 리스트 조회
     List<Loan> loans = loanReader.findLoans(userId);
 
-    //    List<LoanListResponse> loanLedgers =
-    //        loanReader.findLoans(userId).stream().map(LoanListResponse::from).toList();
-
     // 위험도 fetch
-    LoanRisks loanRisks = aiClient.fetchOne(PREDICT_URL, userId, LoanRisks.class);
+    LoanRisks loanRisks = aiClient.fetchOne(PREDICT_URL, Map.of("userId", userId), LoanRisks.class);
 
     // 위험도와 대출 id를 매핑하는 맵
     Map<Long, BigDecimal> riskMap =
@@ -68,7 +65,8 @@ public class LoanService implements ManageLoanUseCase {
 
     loanDetail.setProgress(progress);
     // 대출 LLM 코멘트
-    LoanComment loanComment = aiClient.fetchOne(LOAN_COMMENT, loanId, LoanComment.class);
+    LoanComment loanComment =
+        aiClient.fetchOne(LOAN_COMMENT, Map.of("loan_ledger_id", loanId), LoanComment.class);
 
     if (!loanComment.getLoanLedgerId().equals(loanId)) {
       throw new IllegalStateException("요청한 loanId와 응답 loanLedgerId가 불일치합니다.");
