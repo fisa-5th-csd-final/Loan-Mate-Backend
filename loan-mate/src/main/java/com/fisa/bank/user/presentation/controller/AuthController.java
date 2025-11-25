@@ -83,9 +83,17 @@ public class AuthController {
   }
 
   @PostMapping("/logout")
-  public ResponseEntity<Void> logout() {
+  public ResponseEntity<Void> logout(HttpServletResponse response) {
     try {
+      // refreshToken 삭제
       logoutUseCase.execute();
+      // 쿠키 삭제
+      Cookie deleteAccessToken = CookieUtil.deleteCookie("accessToken");
+      Cookie deleteRefreshToken = CookieUtil.deleteCookie("refreshToken");
+
+      response.addCookie(deleteAccessToken);
+      response.addCookie(deleteRefreshToken);
+
       return ResponseEntity.noContent().build();
     } catch (Exception e) {
       log.error("로그아웃 처리 중 예외가 발생했습니다.", e);
