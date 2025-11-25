@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fisa.bank.common.application.service.JwtTokenGenerator;
 import com.fisa.bank.common.application.service.JwtTokenValidator;
-import com.fisa.bank.user.application.dto.RefreshTokenResponse;
+import com.fisa.bank.user.application.dto.TokenPair;
 import com.fisa.bank.user.application.repository.RefreshTokenRepository;
 
 @Slf4j
@@ -28,7 +28,7 @@ public class DefaultUpdateTokenUseCase implements UpdateTokenUseCase {
   private long refreshTokenExpiration;
 
   @Override
-  public RefreshTokenResponse execute(String refreshToken) {
+  public TokenPair execute(String refreshToken) {
     log.info("토큰 갱신 요청");
 
     Long userId = jwtTokenValidator.validateRefreshTokenAndGetUserId(refreshToken);
@@ -48,6 +48,6 @@ public class DefaultUpdateTokenUseCase implements UpdateTokenUseCase {
     refreshTokenRepository.save(userId, newRefreshToken, refreshTokenExpiry);
     log.info("새로운 Access/Refresh Token 발급 및 저장 완료. userId: {}", userId);
 
-    return new RefreshTokenResponse(newAccessToken, newRefreshToken);
+    return new TokenPair(newAccessToken, newRefreshToken);
   }
 }

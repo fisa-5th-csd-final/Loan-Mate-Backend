@@ -11,6 +11,7 @@ import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -22,7 +23,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fisa.bank.common.application.service.CoreBankingClient;
 import com.fisa.bank.common.application.service.JwtTokenGenerator;
-import com.fisa.bank.user.application.dto.LoginResponse;
+import com.fisa.bank.common.util.CookieUtil;
 import com.fisa.bank.user.application.dto.UserInfoResponse;
 import com.fisa.bank.user.application.repository.RefreshTokenRepository;
 import com.fisa.bank.user.application.repository.UserAuthRepository;
@@ -40,9 +41,16 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
   private final JwtTokenGenerator jwtTokenGenerator;
   private final RefreshTokenRepository refreshTokenRepository;
   private final UserAuthRepository userAuthRepository;
+  private final CookieUtil cookieUtil;
 
   @Value("${jwt.refresh-token-expiration}")
-  private Long refreshTokenTime;
+  private Long refreshTokenExpiration;
+
+  @Value("${jwt.access-token-expiration}")
+  private Long accessTokenExpiration;
+
+  @Value("${app.front-success-url}")
+  private String frontSuccessUrl;
 
   @Override
   public void onAuthenticationSuccess(
@@ -83,15 +91,24 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     String accessToken = jwtTokenGenerator.generateAccessToken(serviceUserId);
     String refreshToken = jwtTokenGenerator.generateRefreshToken(serviceUserId);
     // Refresh Token DB에 저장 (7일 후 만료)
-    Instant refreshTokenExpiry = Instant.now().plusMillis(refreshTokenTime);
+    Instant refreshTokenExpiry = Instant.now().plusMillis(refreshTokenExpiration);
     refreshTokenRepository.save(serviceUserId, refreshToken, refreshTokenExpiry);
 
-    // 응답 생성
-    LoginResponse loginResponse = new LoginResponse(accessToken, refreshToken, serviceUserId);
-    String jsonResponse = objectMapper.writeValueAsString(loginResponse);
+    ResponseCookie accessCookie =
+        cookieUtil.createHttpOnlyCookie(
+            "accessToken", accessToken, (int) (accessTokenExpiration / 1000L));
 
-    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-    response.setCharacterEncoding("UTF-8");
-    response.getWriter().write(jsonResponse);
+    ResponseCookie refreshCookie =
+        cookieUtil.createHttpOnlyCookie(
+            "refreshToken", refreshToken, (int) (accessTokenExpiration / 1000L));
+
+    response.addHeader("Set-Cookie", accessCookie.toString());
+    response.addHeader("Set-Cookie", refreshCookie.toString());
+
+    String redirectUrl = frontSuccessUrl;
+    log.info("로그인 성공. 프론트엔드로 리다이렉트: {}", redirectUrl);
+
+    response.setContentType(MediaType.TEXT_HTML_VALUE);
+    response.sendRedirect(redirectUrl);
   }
 }
