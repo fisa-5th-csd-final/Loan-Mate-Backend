@@ -1,6 +1,5 @@
 package com.fisa.bank.common.config.security;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +11,7 @@ import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -41,6 +41,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
   private final JwtTokenGenerator jwtTokenGenerator;
   private final RefreshTokenRepository refreshTokenRepository;
   private final UserAuthRepository userAuthRepository;
+  private final CookieUtil cookieUtil;
 
   @Value("${jwt.refresh-token-expiration}")
   private Long refreshTokenExpiration;
@@ -93,19 +94,16 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     Instant refreshTokenExpiry = Instant.now().plusMillis(refreshTokenExpiration);
     refreshTokenRepository.save(serviceUserId, refreshToken, refreshTokenExpiry);
 
-    // 쿠키 발급
-    boolean secure = request.isSecure(); // HTTPS에서만 secure=true
+    ResponseCookie accessCookie =
+        cookieUtil.createHttpOnlyCookie(
+            "accessToken", accessToken, (int) (accessTokenExpiration / 1000L));
 
-    Cookie accessCookie =
-        CookieUtil.createHttpOnlyCookie(
-            "accessToken", accessToken, (int) (accessTokenExpiration / 1000L), secure);
+    ResponseCookie refreshCookie =
+        cookieUtil.createHttpOnlyCookie(
+            "refreshToken", refreshToken, (int) (accessTokenExpiration / 1000L));
 
-    Cookie refreshCookie =
-        CookieUtil.createHttpOnlyCookie(
-            "refreshToken", refreshToken, (int) (refreshTokenExpiration / 1000L), secure);
-
-    response.addCookie(accessCookie);
-    response.addCookie(refreshCookie);
+    response.addHeader("Set-Cookie", accessCookie.toString());
+    response.addHeader("Set-Cookie", refreshCookie.toString());
 
     String redirectUrl = frontSuccessUrl;
     log.info("로그인 성공. 프론트엔드로 리다이렉트: {}", redirectUrl);
