@@ -9,11 +9,14 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fisa.bank.common.application.service.AiClient;
 import com.fisa.bank.common.application.service.CoreBankingClient;
 import com.fisa.bank.common.application.util.RequesterInfo;
 import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
@@ -21,12 +24,10 @@ import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
 import com.fisa.bank.loan.application.dto.response.LoansWithPrepaymentBenefitResponse;
-import com.fisa.bank.loan.application.model.InterestDetail;
-import com.fisa.bank.loan.application.model.Loan;
-import com.fisa.bank.loan.application.model.LoanDetail;
-import com.fisa.bank.loan.application.model.PrepaymentInfo;
+import com.fisa.bank.loan.application.model.*;
 import com.fisa.bank.loan.application.service.reader.LoanReader;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
+import com.fisa.bank.loan.persistence.enums.RiskLevel;
 
 @Service
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
@@ -35,14 +36,32 @@ public class LoanService implements ManageLoanUseCase {
   private final LoanReader loanReader;
   private final CoreBankingClient coreBankingClient;
   private final RequesterInfo requesterInfo;
+  private final String PREDICT_URL = "/api/ai/predict";
+  private final AiClient aiClient;
 
   @Override
   @Transactional
   public List<LoanListResponse> getLoans() {
-    Long serviceUserId = requesterInfo.getCoreBankingUserId();
+    Long userId = requesterInfo.getCoreBankingUserId();
+    // db에서 대출 리스트 조회
     List<LoanListResponse> loanLedgers =
-        loanReader.findLoans(serviceUserId).stream().map(LoanListResponse::from).toList();
-    // TODO: 위험도 추가
+        loanReader.findLoans(userId).stream().map(LoanListResponse::from).toList();
+
+    // 위험도 fetch
+    LoanRisks loanRisks = aiClient.fetchOne(PREDICT_URL, userId, LoanRisks.class);
+
+    // 위험도와 대출 id를 매핑하는 맵
+    Map<Long, BigDecimal> riskMap =
+        loanRisks.getLoans().stream()
+            .collect(Collectors.toMap(LoanRiskDetail::getLoanLedgerId, LoanRiskDetail::getRisk));
+
+    // 대출 리스트와 위험도 매핑
+    loanLedgers.forEach(
+        loan -> {
+          BigDecimal risk = riskMap.get(loan.getLoanId());
+          RiskLevel level = RiskLevel.fromRiskScore(risk);
+          loan.setRiskLevel(level);
+        });
     return loanLedgers;
   }
 
