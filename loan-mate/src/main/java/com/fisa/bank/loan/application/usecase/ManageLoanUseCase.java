@@ -9,7 +9,7 @@ import com.fisa.bank.loan.application.dto.response.LoansWithPrepaymentBenefitRes
 
 public interface ManageLoanUseCase {
 
-  List<LoanListResponse> getLoans(Long userId);
+  List<LoanListResponse> getLoans();
 
   LoanDetailResponse getLoanDetail(Long loanId);
 

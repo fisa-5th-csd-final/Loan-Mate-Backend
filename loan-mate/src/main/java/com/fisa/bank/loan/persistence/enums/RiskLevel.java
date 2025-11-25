@@ -2,17 +2,34 @@ package com.fisa.bank.loan.persistence.enums;
 
 import lombok.Getter;
 
+import java.math.BigDecimal;
+
 @Getter
 public enum RiskLevel {
-  ONE(1),
-  TWO(2),
-  THREE(3),
-  FOUR(4),
-  FIVE(5);
+  ONE,
+  TWO,
+  THREE,
+  FOUR,
+  FIVE;
 
-  private final int num;
+  public static RiskLevel fromRiskScore(BigDecimal risk) {
+    if (risk == null) {
+      return null;
+    }
 
-  RiskLevel(int num) {
-    this.num = num;
+    // BigDecimal을 double로 변환 (0.0 ~ 1.0)
+    double r = risk.doubleValue();
+
+    if (r < 0.2) {
+      return ONE;
+    } else if (r < 0.4) {
+      return TWO;
+    } else if (r < 0.6) {
+      return THREE;
+    } else if (r < 0.8) {
+      return FOUR;
+    } else {
+      return FIVE;
+    }
   }
 }

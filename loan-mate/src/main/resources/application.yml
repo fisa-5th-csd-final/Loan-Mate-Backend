@@ -19,3 +19,6 @@ server:
 app:
   front-success-url: ${FRONT_URL}/login/success
   front-fail-url: ${FRONT_URL}/login/fail
+  
+ai-server:
+  api-url: ${AI_SERVER_API_URL}
