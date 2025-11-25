@@ -48,8 +48,8 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
   @Value("${jwt.access-token-expiration}")
   private Long accessTokenExpiration;
 
-  @Value("${app.frontend-url}")
-  private String frontendUrl;
+  @Value("${app.front-success-url}")
+  private String frontSuccessUrl;
 
   @Override
   public void onAuthenticationSuccess(
@@ -107,7 +107,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     response.addCookie(accessCookie);
     response.addCookie(refreshCookie);
 
-    String redirectUrl = frontendUrl + "/oauth/callback";
+    String redirectUrl = frontSuccessUrl;
     log.info("로그인 성공. 프론트엔드로 리다이렉트: {}", redirectUrl);
 
     response.setContentType(MediaType.TEXT_HTML_VALUE);
