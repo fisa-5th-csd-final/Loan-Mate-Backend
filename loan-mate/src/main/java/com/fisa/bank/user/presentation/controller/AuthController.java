@@ -41,11 +41,6 @@ public class AuthController {
   @PostMapping("/auth/refresh")
   public ResponseEntity<Void> refresh(
       @CookieValue("refreshToken") String refreshToken, HttpServletResponse response) {
-
-    if (refreshToken == null) {
-      log.warn("Refresh Token 없음 (쿠키 없음)");
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
     TokenPair newTokens;
     try {
       newTokens = updateTokenUseCase.execute(refreshToken);
