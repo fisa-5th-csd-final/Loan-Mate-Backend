@@ -22,7 +22,7 @@ public class AiClientImpl implements AiClient {
 
   @Override
   public <T, B> T fetchOne(String endpoint, B body, Class<T> clazz) {
-    JsonNode root = executeRequest(endpoint, HttpMethod.GET, body, JsonNode.class);
+    JsonNode root = executeRequest(endpoint, HttpMethod.POST, body, JsonNode.class);
 
     if (root == null || root.isNull()) {
       throw new IllegalStateException("응답이 null 입니다.");

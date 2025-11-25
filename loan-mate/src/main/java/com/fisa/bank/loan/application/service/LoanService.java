@@ -27,7 +27,6 @@ import com.fisa.bank.loan.application.dto.response.LoansWithPrepaymentBenefitRes
 import com.fisa.bank.loan.application.model.*;
 import com.fisa.bank.loan.application.service.reader.LoanReader;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
-import com.fisa.bank.loan.persistence.enums.RiskLevel;
 
 @Service
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
@@ -36,8 +35,8 @@ public class LoanService implements ManageLoanUseCase {
   private final LoanReader loanReader;
   private final CoreBankingClient coreBankingClient;
   private final RequesterInfo requesterInfo;
-  private final String PREDICT_URL = "/predict";
-  private final String LOAN_COMMENT = "/insight/loan";
+  private static final String PREDICT_URL = "/predict";
+  private static final String LOAN_COMMENT = "/insight/loan";
   private final AiClient aiClient;
 
   @Override
@@ -45,8 +44,10 @@ public class LoanService implements ManageLoanUseCase {
   public List<LoanListResponse> getLoans() {
     Long userId = requesterInfo.getCoreBankingUserId();
     // db에서 대출 리스트 조회
-    List<LoanListResponse> loanLedgers =
-        loanReader.findLoans(userId).stream().map(LoanListResponse::from).toList();
+    List<Loan> loans = loanReader.findLoans(userId);
+
+    //    List<LoanListResponse> loanLedgers =
+    //        loanReader.findLoans(userId).stream().map(LoanListResponse::from).toList();
 
     // 위험도 fetch
     LoanRisks loanRisks = aiClient.fetchOne(PREDICT_URL, userId, LoanRisks.class);
@@ -57,13 +58,7 @@ public class LoanService implements ManageLoanUseCase {
             .collect(Collectors.toMap(LoanRiskDetail::getLoanLedgerId, LoanRiskDetail::getRisk));
 
     // 대출 리스트와 위험도 매핑
-    loanLedgers.forEach(
-        loan -> {
-          BigDecimal risk = riskMap.get(loan.getLoanId());
-          RiskLevel level = RiskLevel.fromRiskScore(risk);
-          loan.setRiskLevel(level);
-        });
-    return loanLedgers;
+    return loans.stream().map(loan -> LoanListResponse.from(loan, riskMap)).toList();
   }
 
   @Override
@@ -76,7 +71,7 @@ public class LoanService implements ManageLoanUseCase {
     LoanComment loanComment = aiClient.fetchOne(LOAN_COMMENT, loanId, LoanComment.class);
 
     if (!loanComment.getLoanLedgerId().equals(loanId)) {
-      throw new RuntimeException("요청한 loanId와 응답 loanLedgerId가 불일치합니다.");
+      throw new IllegalStateException("요청한 loanId와 응답 loanLedgerId가 불일치합니다.");
     }
 
     loanDetail.setComment(loanComment.getComment());
