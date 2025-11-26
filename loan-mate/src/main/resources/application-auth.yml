@@ -2,6 +2,8 @@ jwt:
   secret: ${JWT_SECRET}
   access-token-expiration: 900000 # 15분 (밀리초)
   refresh-token-expiration: 604800000 # 7일 (밀리초)
+  cookie:
+    domain: ${JWT_COOKIE_DOMAIN}
 
 core-bank:
   api-url: ${CORE_BANKING_API_URL}
