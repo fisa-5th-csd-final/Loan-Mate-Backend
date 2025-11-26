@@ -59,24 +59,24 @@ pipeline {
             }
         }
 
-        stage('Deploy to EC2') {
-               when {
-                   branch 'develop'
-               }
-               steps {
-                   echo 'Deploying to EC2...'
-                   sshagent(credentials: ['from-jenkins-to-aws-ec2-access-key']) {
-                       sh """
-                           scp -o StrictHostKeyChecking=yes deploy.sh ${env.SSH_USER}@${env.DEPLOY_HOST}:/home/${env.SSH_USER}/deploy.sh
-
-                           ssh -o StrictHostKeyChecking=yes ${env.SSH_USER}@${env.DEPLOY_HOST} "
-                               chmod +x /home/${env.SSH_USER}/deploy.sh
-                               /home/${env.SSH_USER}/deploy.sh
-                           "
-                       """
-                   }
-               }
-        }
+//         stage('Deploy to EC2') {
+//                when {
+//                    branch 'develop'
+//                }
+//                steps {
+//                    echo 'Deploying to EC2...'
+//                    sshagent(credentials: ['from-jenkins-to-aws-ec2-access-key']) {
+//                        sh """
+//                            scp -o StrictHostKeyChecking=yes deploy.sh ${env.SSH_USER}@${env.DEPLOY_HOST}:/home/${env.SSH_USER}/deploy.sh
+//
+//                            ssh -o StrictHostKeyChecking=yes ${env.SSH_USER}@${env.DEPLOY_HOST} "
+//                                chmod +x /home/${env.SSH_USER}/deploy.sh
+//                                /home/${env.SSH_USER}/deploy.sh
+//                            "
+//                        """
+//                    }
+//                }
+//         }
     }
 
     post {
