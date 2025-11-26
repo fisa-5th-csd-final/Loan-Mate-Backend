@@ -3,6 +3,8 @@ pipeline {
 
     environment {
         GRADLE_USER_HOME = "${WORKSPACE}/.gradle"
+        DEPLOY_HOST = "${DEPLOY_HOST}"
+        SSH_USER="${SSH_USER}"
     }
 
     stages {
@@ -55,6 +57,25 @@ pipeline {
                     }
                 }
             }
+        }
+
+        stage('Deploy to EC2') {
+               when {
+                   branch 'develop'
+               }
+               steps {
+                   echo 'Deploying to EC2...'
+                   sshagent(credentials: ['from-jenkins-to-aws-ec2-access-key']) {
+                       sh """
+                           scp -o StrictHostKeyChecking=yes deploy.sh ${env.SSH_USER}@${env.DEPLOY_HOST}:/home/${env.SSH_USER}/deploy.sh
+
+                           ssh -o StrictHostKeyChecking=yes ${env.SSH_USER}@${env.DEPLOY_HOST} "
+                               chmod +x /home/${env.SSH_USER}/deploy.sh
+                               /home/${env.SSH_USER}/deploy.sh
+                           "
+                       """
+                   }
+               }
         }
     }
 
