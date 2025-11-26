@@ -9,13 +9,13 @@ import org.springframework.stereotype.Component;
 @Profile("prod")
 public class CookieUtilProd implements CookieUtil {
 
-    @Value("${jwt.cookie.domain}")
-    private String cookieDomain;
+  @Value("${jwt.cookie.domain}")
+  private String cookieDomain;
 
   @Override
   public ResponseCookie createHttpOnlyCookie(String name, String value, int maxAgeSeconds) {
     return ResponseCookie.from(name, value)
-            .domain(cookieDomain)
+        .domain(cookieDomain)
         .httpOnly(true)
         .secure(true) // prod는 https만 사용
         .sameSite("None") // 크로스 도메인 필수
@@ -27,7 +27,7 @@ public class CookieUtilProd implements CookieUtil {
   @Override
   public ResponseCookie deleteCookie(String name) {
     return ResponseCookie.from(name, "")
-            .domain(cookieDomain)
+        .domain(cookieDomain)
         .httpOnly(true)
         .secure(true)
         .sameSite("None")
