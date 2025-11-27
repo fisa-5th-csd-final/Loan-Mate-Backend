@@ -59,7 +59,7 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
   }
 
   @Override
-  public void fetchOneDelete(String endpoint) {
+  public void delete(String endpoint) {
     callApi(endpoint, HttpMethod.DELETE, Void.class);
   }
 

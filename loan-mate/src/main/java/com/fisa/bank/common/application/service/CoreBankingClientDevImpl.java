@@ -100,7 +100,7 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
    *
    * @param endpoint 요청 URL
    */
-  public void fetchOneDelete(String endpoint) {
+  public void delete(String endpoint) {
 
     callApi(endpoint, HttpMethod.DELETE, Void.class);
   }

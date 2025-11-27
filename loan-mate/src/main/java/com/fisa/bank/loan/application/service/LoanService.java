@@ -119,7 +119,7 @@ public class LoanService implements ManageLoanUseCase {
   @Override
   public void cancelLoan(Long loanId) {
     String url = "/loans/" + loanId;
-    coreBankingClient.fetchOneDelete(url);
+    coreBankingClient.delete(url);
   }
 
   @Override
