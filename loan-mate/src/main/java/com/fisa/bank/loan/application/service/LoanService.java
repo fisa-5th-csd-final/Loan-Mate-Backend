@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fisa.bank.common.application.service.AiClient;
-import com.fisa.bank.common.application.service.CoreBankingClient;
+import com.fisa.bank.common.application.util.ai.AiClient;
+import com.fisa.bank.common.application.util.core_bank.CoreBankingClient;
 import com.fisa.bank.common.application.util.RequesterInfo;
 import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
 import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;

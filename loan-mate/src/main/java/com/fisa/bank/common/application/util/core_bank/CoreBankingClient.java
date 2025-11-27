@@ -1,4 +1,4 @@
-package com.fisa.bank.common.application.service;
+package com.fisa.bank.common.application.util.core_bank;
 
 import java.util.List;
 

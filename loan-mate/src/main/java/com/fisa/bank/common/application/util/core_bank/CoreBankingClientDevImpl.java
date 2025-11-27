@@ -1,5 +1,6 @@
-package com.fisa.bank.common.application.service;
+package com.fisa.bank.common.application.util.core_bank;
 
+import com.fisa.bank.common.application.util.jwt.DevAccessTokenManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

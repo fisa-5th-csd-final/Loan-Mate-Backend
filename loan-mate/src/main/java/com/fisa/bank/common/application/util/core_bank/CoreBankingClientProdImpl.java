@@ -1,4 +1,4 @@
-package com.fisa.bank.common.application.service;
+package com.fisa.bank.common.application.util.core_bank;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

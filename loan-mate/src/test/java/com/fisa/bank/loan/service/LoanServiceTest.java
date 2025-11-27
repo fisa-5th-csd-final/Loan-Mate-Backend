@@ -18,7 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.fisa.bank.common.application.service.CoreBankingClient;
+import com.fisa.bank.common.application.util.core_bank.CoreBankingClient;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.repository.LoanRepository;

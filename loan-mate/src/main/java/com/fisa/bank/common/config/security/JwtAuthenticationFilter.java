@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.fisa.bank.common.application.service.JwtTokenValidator;
+import com.fisa.bank.common.application.util.jwt.JwtTokenValidator;
 
 @Slf4j
 @Component

@@ -7,7 +7,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fisa.bank.common.application.service.CoreBankingClient;
+import com.fisa.bank.common.application.util.core_bank.CoreBankingClient;
 import com.fisa.bank.loan.application.exception.LoanLedgerNotFoundException;
 import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.model.LoanDetail;

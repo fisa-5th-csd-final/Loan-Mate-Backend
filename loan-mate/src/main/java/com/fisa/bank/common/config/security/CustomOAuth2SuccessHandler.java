@@ -21,8 +21,8 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fisa.bank.common.application.service.CoreBankingClient;
-import com.fisa.bank.common.application.service.JwtTokenGenerator;
+import com.fisa.bank.common.application.util.core_bank.CoreBankingClient;
+import com.fisa.bank.common.application.util.jwt.JwtTokenGenerator;
 import com.fisa.bank.common.presentation.util.CookieUtil;
 import com.fisa.bank.user.application.dto.UserInfoResponse;
 import com.fisa.bank.user.application.repository.RefreshTokenRepository;

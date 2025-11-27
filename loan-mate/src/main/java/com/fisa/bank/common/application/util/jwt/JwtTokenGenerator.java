@@ -1,4 +1,4 @@
-package com.fisa.bank.common.application.service;
+package com.fisa.bank.common.application.util.jwt;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
