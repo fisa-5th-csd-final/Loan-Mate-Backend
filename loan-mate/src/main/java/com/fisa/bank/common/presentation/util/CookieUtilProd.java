@@ -1,4 +1,4 @@
-package com.fisa.bank.common.util;
+package com.fisa.bank.common.presentation.util;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
