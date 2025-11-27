@@ -41,6 +41,33 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
   @Value("${core-bank.api-url}")
   private String BASE_URL;
 
+  @Override
+  public <T> T fetchOne(String endpoint, Class<T> clazz) {
+    JsonNode root = callApi(endpoint, HttpMethod.GET, JsonNode.class);
+    return jsonNodeMapper.map(root.path("data"), clazz);
+  }
+
+  @Override
+  public <T> List<T> fetchList(String endpoint, Class<T> clazz) {
+    JsonNode root = callApi(endpoint, HttpMethod.GET, JsonNode.class);
+
+    JsonNode arr = root.path("data");
+
+    return StreamSupport.stream(arr.spliterator(), false)
+        .map(n -> jsonNodeMapper.map(n, clazz))
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public void fetchOneDelete(String endpoint) {
+    callApi(endpoint, HttpMethod.DELETE, Void.class);
+  }
+
+  @Override
+  public void patch(String endpoint, Object body) {
+    callApi(endpoint, HttpMethod.PATCH, body, Void.class);
+  }
+
   private WebClient client(String token) {
     return builder.defaultHeader("Authorization", "Bearer " + token).build();
   }
@@ -161,32 +188,5 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
 
       throw e;
     }
-  }
-
-  @Override
-  public <T> T fetchOne(String endpoint, Class<T> clazz) {
-    JsonNode root = callApi(endpoint, HttpMethod.GET, JsonNode.class);
-    return jsonNodeMapper.map(root.path("data"), clazz);
-  }
-
-  @Override
-  public <T> List<T> fetchList(String endpoint, Class<T> clazz) {
-    JsonNode root = callApi(endpoint, HttpMethod.GET, JsonNode.class);
-
-    JsonNode arr = root.path("data");
-
-    return StreamSupport.stream(arr.spliterator(), false)
-        .map(n -> jsonNodeMapper.map(n, clazz))
-        .collect(Collectors.toList());
-  }
-
-  @Override
-  public void fetchOneDelete(String endpoint) {
-    callApi(endpoint, HttpMethod.DELETE, Void.class);
-  }
-
-  @Override
-  public void patch(String endpoint, Object body) {
-    callApi(endpoint, HttpMethod.PATCH, body, Void.class);
   }
 }
