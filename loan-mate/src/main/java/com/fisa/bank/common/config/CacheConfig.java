@@ -35,6 +35,7 @@ public class CacheConfig {
         .build();
   }
 
+  // Redis 와 통신하는 통신 모듈 설정
   @Bean
   public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
     RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
@@ -43,6 +44,7 @@ public class CacheConfig {
     var keySerializer = new StringRedisSerializer();
     var valueSerializer = new GenericJackson2JsonRedisSerializer(objectMapper.copy());
 
+    // 직렬화 설정
     redisTemplate.setKeySerializer(keySerializer);
     redisTemplate.setValueSerializer(valueSerializer);
     redisTemplate.setHashKeySerializer(keySerializer);
@@ -51,6 +53,7 @@ public class CacheConfig {
     return redisTemplate;
   }
 
+  // Redis 캐시 추상화 설정
   private RedisCacheConfiguration defaultCacheConfiguration() {
     var keySerializer = new StringRedisSerializer();
     var valueSerializer = new GenericJackson2JsonRedisSerializer(objectMapper.copy());
