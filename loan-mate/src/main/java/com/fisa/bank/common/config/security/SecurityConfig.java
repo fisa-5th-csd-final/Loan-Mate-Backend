@@ -30,6 +30,18 @@ public class SecurityConfig {
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
   @Bean
+  @Order(0)
+  public SecurityFilterChain swaggerSecurityFilterChain(HttpSecurity http) throws Exception {
+    http.securityMatcher(
+            "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**")
+        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+        .csrf(AbstractHttpConfigurer::disable)
+        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+    return http.build();
+  }
+
+  @Bean
   @Order(1)
   public SecurityFilterChain oauth2SecurityFilterChain(
       HttpSecurity http,
