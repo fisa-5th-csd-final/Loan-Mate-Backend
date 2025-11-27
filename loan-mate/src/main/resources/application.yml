@@ -15,6 +15,7 @@ server:
     session:
       cookie:
         name: LOANMATESESSION
+  forward-headers-strategy: framework
 
 app:
   front-success-url: ${FRONT_URL}/login/success
