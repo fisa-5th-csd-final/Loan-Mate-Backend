@@ -1,0 +1,65 @@
+package com.fisa.bank.common.config;
+
+import lombok.RequiredArgsConstructor;
+
+import java.time.Duration;
+
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+@EnableCaching
+@Configuration
+@RequiredArgsConstructor
+public class CacheConfig {
+
+  private final ObjectMapper objectMapper;
+
+  @Bean
+  public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
+    RedisCacheConfiguration cacheConfiguration = defaultCacheConfiguration();
+
+    return RedisCacheManager.builder(connectionFactory)
+        .cacheDefaults(cacheConfiguration)
+        .transactionAware()
+        .build();
+  }
+
+  @Bean
+  public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+    RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+    redisTemplate.setConnectionFactory(connectionFactory);
+
+    var keySerializer = new StringRedisSerializer();
+    var valueSerializer = new GenericJackson2JsonRedisSerializer(objectMapper.copy());
+
+    redisTemplate.setKeySerializer(keySerializer);
+    redisTemplate.setValueSerializer(valueSerializer);
+    redisTemplate.setHashKeySerializer(keySerializer);
+    redisTemplate.setHashValueSerializer(valueSerializer);
+
+    return redisTemplate;
+  }
+
+  private RedisCacheConfiguration defaultCacheConfiguration() {
+    var keySerializer = new StringRedisSerializer();
+    var valueSerializer = new GenericJackson2JsonRedisSerializer(objectMapper.copy());
+
+    return RedisCacheConfiguration.defaultCacheConfig()
+        .serializeKeysWith(SerializationPair.fromSerializer(keySerializer))
+        .serializeValuesWith(SerializationPair.fromSerializer(valueSerializer))
+        .entryTtl(Duration.ofDays(1))
+        .disableCachingNullValues();
+  }
+
+}
