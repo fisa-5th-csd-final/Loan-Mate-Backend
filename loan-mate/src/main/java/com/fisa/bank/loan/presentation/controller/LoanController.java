@@ -1,6 +1,5 @@
 package com.fisa.bank.loan.presentation.controller;
 
-import com.fisa.bank.loan.application.dto.response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

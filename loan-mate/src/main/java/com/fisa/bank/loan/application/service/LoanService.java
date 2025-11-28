@@ -1,8 +1,5 @@
 package com.fisa.bank.loan.application.service;
 
-import com.fisa.bank.loan.application.dto.response.*;
-import com.fisa.bank.persistence.loan.entity.LoanLedger;
-import com.fisa.bank.persistence.loan.repository.LoanRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -166,15 +163,15 @@ public class LoanService implements ManageLoanUseCase {
     List<LoanLedger> loanLedgers = loanReader.findAllByUserId(userId);
 
     return loanLedgers.stream()
-            .map(
-                    ledger ->
-                            AutoDepositResponse.builder()
-                                    .loanName(ledger.getLoanProduct().getName())
-                                    .accountBalance(
-                                            ledger.getAccount() != null ? ledger.getAccount().getBalance() : null)
-                                    .autoDepositEnabled(ledger.isAutoDepositEnabled())
-                                    .build())
-            .toList();
+        .map(
+            ledger ->
+                AutoDepositResponse.builder()
+                    .loanName(ledger.getLoanProduct().getName())
+                    .accountBalance(
+                        ledger.getAccount() != null ? ledger.getAccount().getBalance() : null)
+                    .autoDepositEnabled(ledger.isAutoDepositEnabled())
+                    .build())
+        .toList();
   }
 
     @Override
