@@ -33,6 +33,12 @@ public class LoanReader {
     return coreBankingClient.fetchOne(url, LoanDetail.class);
   }
 
+  public List<LoanDetail> findLoanDetails() {
+    String url = "/loans/ledgers/details";
+
+    return coreBankingClient.fetchList(url, LoanDetail.class);
+  }
+
   public List<Loan> findLoans(Long userId) {
     return loanRepository.getLoans(UserId.of(userId));
   }

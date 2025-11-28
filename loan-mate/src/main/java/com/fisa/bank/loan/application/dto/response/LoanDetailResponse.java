@@ -19,6 +19,7 @@ public class LoanDetailResponse {
   private final BigDecimal remainPrincipal;
   private final BigDecimal principal;
   private final BigDecimal monthlyRepayment;
+  private final BigDecimal interestPayment;
   private final String accountNumber;
   private final LoanType loanType;
   private final RepaymentType repaymentType;
@@ -30,6 +31,7 @@ public class LoanDetailResponse {
         .loanName(loanDetail.getName())
         .loanType(loanDetail.getLoanType())
         .monthlyRepayment(loanDetail.getMonthlyRepayment())
+        .interestPayment(loanDetail.getInterestPayment())
         .repaymentType(loanDetail.getRepaymentType())
         .accountNumber(loanDetail.getAccountNumber())
         .remainPrincipal(loanDetail.getRemainPrincipal())
