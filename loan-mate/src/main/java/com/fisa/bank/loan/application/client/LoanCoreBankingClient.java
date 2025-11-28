@@ -22,7 +22,6 @@ public class LoanCoreBankingClient {
   private static final String LOANS_BASE_PATH = "/loans";
 
   private final CoreBankingClient coreBankingClient;
-  private final RequesterInfo requesterInfo;
 
   // LoanDetail 세부 정보 캐싱
   @Cacheable(
@@ -33,19 +32,21 @@ public class LoanCoreBankingClient {
   }
 
   // 조기 상환 정보 캐싱
-  @Cacheable(cacheNames = "prePaymentInfo", key = "#springRequesterInfo.coreBankingUserId")
+  @Cacheable(cacheNames = "prePaymentInfo", key = "@springRequesterInfo.coreBankingUserId")
   public List<PrepaymentInfo> fetchPrepaymentInfos() {
     return coreBankingClient.fetchList(LOANS_BASE_PATH + "/prepayment-infos", PrepaymentInfo.class);
   }
 
-  // 조기 상환이므로, 캐시 무효화
+  // 조기 상환이므로, 거의 모든 캐시 무효화
   // 조기 상환에 실패하면?
   @Caching(
       evict = {
         @CacheEvict(
             cacheNames = "loanDetail",
-            key = "#springRequesterInfo.coreBankingUserId + ':' + #loanId"),
-        @CacheEvict(cacheNames = "prePaymentInfo", key = "#springRequesterInfo.coreBankingUserId")
+            key = "@springRequesterInfo.coreBankingUserId + ':' + #loanId"),
+        @CacheEvict(cacheNames = "prePaymentInfo", key = "@springRequesterInfo.coreBankingUserId"),
+        @CacheEvict(cacheNames = "loanComment", key = "#loanId"),
+        @CacheEvict(cacheNames = "loanRisks", key = "@springRequesterInfo.coreBankingUserId")
       })
   public void cancelLoan(Long loanId) {
     coreBankingClient.delete(LOANS_BASE_PATH + "/" + loanId);
@@ -56,8 +57,8 @@ public class LoanCoreBankingClient {
       evict = {
         @CacheEvict(
             cacheNames = "loanDetail",
-            key = "#springRequesterInfo.coreBankingUserId + ':' + #loanId"),
-        @CacheEvict(cacheNames = "prePaymentInfo", key = "#springRequesterInfo.coreBankingUserId")
+            key = "@springRequesterInfo.coreBankingUserId + ':' + #loanId"),
+        @CacheEvict(cacheNames = "prePaymentInfo", key = "@springRequesterInfo.coreBankingUserId"),
       })
   public void updateAutoDeposit(Long loanId, boolean autoDepositEnabled) {
     coreBankingClient.patch(
