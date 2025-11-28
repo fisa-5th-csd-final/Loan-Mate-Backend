@@ -184,9 +184,7 @@ public class LoanService implements ManageLoanUseCase {
             .map(
                 loanDetail -> {
                   // progress 계산
-                  Integer progress = calculateProgressRate(loanDetail).intValueExact();
-                  loanDetail.setProgress(progress);
-
+                  loanDetail.setProgress(calculateProgressRate(loanDetail).intValueExact());
                   // DTO 변환
                   return LoanDetailResponse.from(loanDetail.getLoanLedgerId(), loanDetail);
                 })
