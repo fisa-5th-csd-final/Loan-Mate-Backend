@@ -79,10 +79,10 @@ public class LoanController {
     return ApiResponseGenerator.success(ResponseCode.GET, summary);
   }
 
-    @GetMapping("/ledgers/details")
-    public ApiResponse<SuccessBody<List<LoanDetailResponse>>> getLoanDetails() {
-        log.info("모든 대출 세부 정보 조회");
-        List<LoanDetailResponse> loanDetails = manageLoanUseCase.getLoanDetails();
-        return ApiResponseGenerator.success(ResponseCode.GET, loanDetails);
-    }
+  @GetMapping("/ledgers/details")
+  public ApiResponse<SuccessBody<List<LoanDetailResponse>>> getLoanDetails() {
+    log.info("모든 대출 세부 정보 조회");
+    List<LoanDetailResponse> loanDetails = manageLoanUseCase.getLoanDetails();
+    return ApiResponseGenerator.success(ResponseCode.GET, loanDetails);
+  }
 }

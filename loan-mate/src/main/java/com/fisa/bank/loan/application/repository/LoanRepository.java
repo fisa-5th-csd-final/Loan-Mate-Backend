@@ -13,5 +13,5 @@ public interface LoanRepository {
 
   Optional<Loan> findById(Long loanId);
 
-    List<LoanAutoDeposit> findAutoDepositByUserId(Long userId);
+  List<LoanAutoDeposit> findAutoDepositByUserId(Long userId);
 }

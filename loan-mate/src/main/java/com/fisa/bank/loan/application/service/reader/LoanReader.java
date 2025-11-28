@@ -1,6 +1,5 @@
 package com.fisa.bank.loan.application.service.reader;
 
-import com.fisa.bank.loan.application.model.LoanAutoDeposit;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -11,10 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fisa.bank.common.application.service.CoreBankingClient;
 import com.fisa.bank.loan.application.exception.LoanLedgerNotFoundException;
 import com.fisa.bank.loan.application.model.Loan;
+import com.fisa.bank.loan.application.model.LoanAutoDeposit;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.model.PrepaymentInfo;
 import com.fisa.bank.loan.application.repository.LoanRepository;
-import com.fisa.bank.persistence.loan.repository.LoanLedgerRepository;
 import com.fisa.bank.persistence.user.entity.id.UserId;
 
 @Component
@@ -22,7 +21,6 @@ import com.fisa.bank.persistence.user.entity.id.UserId;
 @Transactional(readOnly = true)
 public class LoanReader {
   private final LoanRepository loanRepository;
-  private final LoanLedgerRepository loanLedgerRepository;
   private final CoreBankingClient coreBankingClient;
 
   private static final String PREPAYMENT_INFOS_URL = "/loans/prepayment-infos";
@@ -52,7 +50,7 @@ public class LoanReader {
     return coreBankingClient.fetchList(PREPAYMENT_INFOS_URL, PrepaymentInfo.class);
   }
 
-    public List<LoanAutoDeposit> findAutoDepositByUserId(Long userId) {
-        return loanRepository.findAutoDepositByUserId(userId);
-    }
+  public List<LoanAutoDeposit> findAutoDepositByUserId(Long userId) {
+    return loanRepository.findAutoDepositByUserId(userId);
+  }
 }

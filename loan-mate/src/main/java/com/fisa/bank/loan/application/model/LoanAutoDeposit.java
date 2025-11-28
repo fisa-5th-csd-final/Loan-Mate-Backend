@@ -8,8 +8,8 @@ import java.math.BigDecimal;
 @Getter
 @AllArgsConstructor
 public class LoanAutoDeposit {
-    private final Long loanLedgerId;
-    private final String loanName;
-    private final BigDecimal accountBalance;
-    private final boolean autoDepositEnabled;
+  private final Long loanLedgerId;
+  private final String loanName;
+  private final BigDecimal accountBalance;
+  private final boolean autoDepositEnabled;
 }

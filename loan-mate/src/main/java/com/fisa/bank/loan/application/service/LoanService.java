@@ -24,7 +24,6 @@ import com.fisa.bank.loan.application.dto.response.*;
 import com.fisa.bank.loan.application.model.*;
 import com.fisa.bank.loan.application.service.reader.LoanReader;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
-import com.fisa.bank.persistence.loan.entity.LoanLedger;
 
 @Service
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
@@ -155,32 +154,30 @@ public class LoanService implements ManageLoanUseCase {
     coreBankingClient.patch(endpoint, body);
   }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<AutoDepositResponse> getAutoDepositSummary() {
-        Long userId = requesterInfo.getCoreBankingUserId();
+  @Override
+  @Transactional(readOnly = true)
+  public List<AutoDepositResponse> getAutoDepositSummary() {
+    Long userId = requesterInfo.getCoreBankingUserId();
 
-        List<LoanAutoDeposit> summary = loanReader.findAutoDepositByUserId(userId);
+    List<LoanAutoDeposit> summary = loanReader.findAutoDepositByUserId(userId);
 
-        return summary.stream()
-                .map(AutoDepositResponse::from)
-                .toList();
-    }
+    return summary.stream().map(AutoDepositResponse::from).toList();
+  }
 
-    @Override
-    public List<LoanDetailResponse> getLoanDetails() {
-        List<LoanDetail> loanDetails = loanReader.findLoanDetails();
+  @Override
+  public List<LoanDetailResponse> getLoanDetails() {
+    List<LoanDetail> loanDetails = loanReader.findLoanDetails();
 
-        List<LoanDetailResponse> responseList =
-                loanDetails.stream()
-                        .map(
-                                loanDetail -> {
-                                    // progress 계산
-                                    loanDetail.setProgress(calculateProgressRate(loanDetail).intValueExact());
-                                    // DTO 변환
-                                    return LoanDetailResponse.from(loanDetail.getLoanLedgerId(), loanDetail);
-                                })
-                        .toList();
-        return responseList;
-    }
+    List<LoanDetailResponse> responseList =
+        loanDetails.stream()
+            .map(
+                loanDetail -> {
+                  // progress 계산
+                  loanDetail.setProgress(calculateProgressRate(loanDetail).intValueExact());
+                  // DTO 변환
+                  return LoanDetailResponse.from(loanDetail.getLoanLedgerId(), loanDetail);
+                })
+            .toList();
+    return responseList;
+  }
 }
