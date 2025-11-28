@@ -1,5 +1,7 @@
 package com.fisa.bank.loan.application.service.reader;
 
+import com.fisa.bank.persistence.loan.entity.LoanLedger;
+import com.fisa.bank.persistence.loan.repository.LoanLedgerRepository;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;

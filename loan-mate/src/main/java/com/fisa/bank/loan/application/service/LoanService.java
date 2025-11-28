@@ -1,5 +1,8 @@
 package com.fisa.bank.loan.application.service;
 
+import com.fisa.bank.loan.application.dto.response.*;
+import com.fisa.bank.persistence.loan.entity.LoanLedger;
+import com.fisa.bank.persistence.loan.repository.LoanRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -163,32 +166,31 @@ public class LoanService implements ManageLoanUseCase {
     List<LoanLedger> loanLedgers = loanReader.findAllByUserId(userId);
 
     return loanLedgers.stream()
-        .map(
-            ledger ->
-                AutoDepositResponse.builder()
-                    .loanName(
-                        ledger.getLoanProduct() != null ? ledger.getLoanProduct().getName() : null)
-                    .accountBalance(
-                        ledger.getAccount() != null ? ledger.getAccount().getBalance() : null)
-                    .autoDepositEnabled(ledger.isAutoDepositEnabled())
-                    .build())
-        .toList();
-  }
-
-  @Override
-  public List<LoanDetailResponse> getLoanDetails() {
-    List<LoanDetail> loanDetails = loanReader.findLoanDetails();
-
-    List<LoanDetailResponse> responseList =
-        loanDetails.stream()
             .map(
-                loanDetail -> {
-                  // progress 계산
-                  loanDetail.setProgress(calculateProgressRate(loanDetail).intValueExact());
-                  // DTO 변환
-                  return LoanDetailResponse.from(loanDetail.getLoanLedgerId(), loanDetail);
-                })
+                    ledger ->
+                            AutoDepositResponse.builder()
+                                    .loanName(ledger.getLoanProduct().getName())
+                                    .accountBalance(
+                                            ledger.getAccount() != null ? ledger.getAccount().getBalance() : null)
+                                    .autoDepositEnabled(ledger.isAutoDepositEnabled())
+                                    .build())
             .toList();
-    return responseList;
   }
+
+    @Override
+    public List<LoanDetailResponse> getLoanDetails() {
+        List<LoanDetail> loanDetails = loanReader.findLoanDetails();
+
+        List<LoanDetailResponse> responseList =
+                loanDetails.stream()
+                        .map(
+                                loanDetail -> {
+                                    // progress 계산
+                                    loanDetail.setProgress(calculateProgressRate(loanDetail).intValueExact());
+                                    // DTO 변환
+                                    return LoanDetailResponse.from(loanDetail.getLoanLedgerId(), loanDetail);
+                                })
+                        .toList();
+        return responseList;
+    }
 }
