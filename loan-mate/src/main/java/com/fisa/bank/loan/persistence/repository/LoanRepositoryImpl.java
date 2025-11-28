@@ -1,5 +1,6 @@
 package com.fisa.bank.loan.persistence.repository;
 
+import com.fisa.bank.loan.application.model.LoanAutoDeposit;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -45,4 +46,17 @@ public class LoanRepositoryImpl implements LoanRepository {
   public Optional<Loan> findById(Long loanId) {
     return loanLedgerRepository.findById(LoanLedgerId.of(loanId)).map(LoanRepositoryImpl::toDomain);
   }
+
+    @Override
+    public List<LoanAutoDeposit> findAutoDepositByUserId(Long userId) {
+        return loanLedgerRepository.findAllByUser_UserId(UserId.of(userId))
+                .stream()
+                .map(ledger -> new LoanAutoDeposit(
+                        ledger.getLoanLedgerId().getValue(),
+                        ledger.getLoanProduct().getName(),
+                        ledger.getAccount() != null ? ledger.getAccount().getBalance() : null,
+                        ledger.isAutoDepositEnabled()
+                ))
+                .toList();
+    }
 }

@@ -155,24 +155,17 @@ public class LoanService implements ManageLoanUseCase {
     coreBankingClient.patch(endpoint, body);
   }
 
-  @Transactional(readOnly = true)
-  public List<AutoDepositResponse> getAutoDepositSummary() {
-    Long userId = requesterInfo.getCoreBankingUserId();
-    // UserReader 또는 Reader 계층을 통해 대출 조회
-    // (LoanLedgerRepository 직접 사용 X — 기존 서비스 일관성 유지)
-    List<LoanLedger> loanLedgers = loanReader.findAllByUserId(userId);
+    @Override
+    @Transactional(readOnly = true)
+    public List<AutoDepositResponse> getAutoDepositSummary() {
+        Long userId = requesterInfo.getCoreBankingUserId();
 
-    return loanLedgers.stream()
-        .map(
-            ledger ->
-                AutoDepositResponse.builder()
-                    .loanName(ledger.getLoanProduct().getName())
-                    .accountBalance(
-                        ledger.getAccount() != null ? ledger.getAccount().getBalance() : null)
-                    .autoDepositEnabled(ledger.isAutoDepositEnabled())
-                    .build())
-        .toList();
-  }
+        List<LoanAutoDeposit> summary = loanReader.findAutoDepositByUserId(userId);
+
+        return summary.stream()
+                .map(AutoDepositResponse::from)
+                .toList();
+    }
 
     @Override
     public List<LoanDetailResponse> getLoanDetails() {
