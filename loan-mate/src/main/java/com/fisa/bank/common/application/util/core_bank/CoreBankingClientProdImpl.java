@@ -10,6 +10,7 @@ import java.util.stream.StreamSupport;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
@@ -24,6 +25,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fisa.bank.common.application.exception.ExternalApiException;
 import com.fisa.bank.common.application.util.JsonNodeMapper;
 import com.fisa.bank.common.config.security.ServiceUserAuthentication;
 
@@ -151,12 +153,13 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
             .block();
       }
 
-      log.error(
-          "CoreBanking 호출 실패: {} {} body={}",
-          e.getStatusCode(),
-          e.getMessage(),
-          e.getResponseBodyAsString());
-      throw e;
+      String body = e.getResponseBodyAsString();
+      log.error("CoreBanking 호출 실패: {} {} body={}", e.getStatusCode(), e.getMessage(), body);
+      throw new ExternalApiException(
+          HttpStatus.valueOf(e.getStatusCode().value()),
+          "CORE_BANK_API_ERROR",
+          "CoreBanking error " + e.getStatusCode().value() + " : " + body,
+          body);
     }
   }
 
@@ -191,12 +194,13 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
             .block();
       }
 
-      log.error(
-          "CoreBanking 호출 실패: {} {} body={}",
-          e.getStatusCode(),
-          e.getMessage(),
-          e.getResponseBodyAsString());
-      throw e;
+      String bodyString = e.getResponseBodyAsString();
+      log.error("CoreBanking 호출 실패: {} {} body={}", e.getStatusCode(), e.getMessage(), bodyString);
+      throw new ExternalApiException(
+          HttpStatus.valueOf(e.getStatusCode().value()),
+          "CORE_BANK_API_ERROR",
+          "CoreBanking error " + e.getStatusCode().value() + " : " + bodyString,
+          bodyString);
     }
   }
 }

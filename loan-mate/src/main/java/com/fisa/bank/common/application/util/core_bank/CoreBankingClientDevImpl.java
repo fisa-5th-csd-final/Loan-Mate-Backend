@@ -15,6 +15,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fisa.bank.common.application.exception.ExternalApiException;
 import com.fisa.bank.common.application.util.JsonNodeMapper;
 import com.fisa.bank.common.application.util.jwt.DevAccessTokenManager;
 
@@ -61,12 +62,13 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
         return executeRequest(endpoint, newToken, method, responseType);
       }
 
-      log.error(
-          "CoreBanking 호출 실패: {} {} body={}",
-          e.getStatusCode(),
-          e.getMessage(),
-          e.getResponseBodyAsString());
-      throw e;
+      String body = e.getResponseBodyAsString();
+      log.error("CoreBanking 호출 실패: {} {} body={}", e.getStatusCode(), e.getMessage(), body);
+      throw new ExternalApiException(
+          HttpStatus.valueOf(e.getStatusCode().value()),
+          "CORE_BANK_API_ERROR",
+          "CoreBanking error " + e.getStatusCode().value() + " : " + body,
+          body);
 
     } catch (Exception e) {
       log.error("알 수 없는 예외", e);
@@ -131,12 +133,13 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
         return executeRequest(endpoint, newToken, method, body, responseType);
       }
 
-      log.error(
-          "CoreBanking 호출 실패: {} {} body={}",
-          e.getStatusCode(),
-          e.getMessage(),
-          e.getResponseBodyAsString());
-      throw e;
+      String body = e.getResponseBodyAsString();
+      log.error("CoreBanking 호출 실패: {} {} body={}", e.getStatusCode(), e.getMessage(), body);
+      throw new ExternalApiException(
+          HttpStatus.valueOf(e.getStatusCode().value()),
+          "CORE_BANK_API_ERROR",
+          "CoreBanking error " + e.getStatusCode().value() + " : " + body,
+          body);
     } catch (Exception e) {
       log.error("알 수 없는 예외", e);
       throw new IllegalStateException("CoreBanking API 호출 중 예외 발생", e);

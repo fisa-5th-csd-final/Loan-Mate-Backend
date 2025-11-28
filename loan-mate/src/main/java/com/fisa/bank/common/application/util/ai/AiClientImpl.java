@@ -5,10 +5,12 @@ import reactor.core.publisher.Mono;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fisa.bank.common.application.exception.ExternalApiException;
 import com.fisa.bank.common.application.util.JsonNodeMapper;
 
 @Component
@@ -52,11 +54,14 @@ public class AiClientImpl implements AiClient {
                     .flatMap(
                         bodyStr ->
                             Mono.error(
-                                new IllegalStateException(
+                                new ExternalApiException(
+                                    HttpStatus.valueOf(response.statusCode().value()),
+                                    "AI_API_ERROR",
                                     "AI server error "
                                         + response.statusCode().value()
                                         + " : "
-                                        + bodyStr))))
+                                        + bodyStr,
+                                    bodyStr))))
         .bodyToMono(responseType)
         .block();
   }
