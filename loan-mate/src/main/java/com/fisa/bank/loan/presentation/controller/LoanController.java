@@ -1,5 +1,6 @@
 package com.fisa.bank.loan.presentation.controller;
 
+import com.fisa.bank.loan.application.dto.response.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,10 +14,6 @@ import com.fisa.bank.common.presentation.response.ApiResponseGenerator;
 import com.fisa.bank.common.presentation.response.body.SuccessBody;
 import com.fisa.bank.common.presentation.response.code.ResponseCode;
 import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
-import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
-import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
-import com.fisa.bank.loan.application.dto.response.LoanListResponse;
-import com.fisa.bank.loan.application.dto.response.LoansWithPrepaymentBenefitResponse;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
 
 @RestController
@@ -71,5 +68,14 @@ public class LoanController {
     manageLoanUseCase.updateAutoDepositEnabled(loanId, request.isAutoDepositEnabled());
 
     return ApiResponseGenerator.success(ResponseCode.UPDATE);
+  }
+
+  @GetMapping("/auto-deposit-summary")
+  public ApiResponse<SuccessBody<List<AutoDepositResponse>>> getUserLoanSimpleSummary() {
+    log.info("자동 예치 정보 조회");
+
+    List<AutoDepositResponse> summary = manageLoanUseCase.getAutoDepositSummary();
+
+    return ApiResponseGenerator.success(ResponseCode.GET, summary);
   }
 }
