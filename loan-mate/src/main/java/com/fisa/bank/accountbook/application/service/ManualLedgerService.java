@@ -2,8 +2,6 @@ package com.fisa.bank.accountbook.application.service;
 
 import lombok.RequiredArgsConstructor;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -13,7 +11,6 @@ import com.fisa.bank.accountbook.application.dto.request.ManualLedgerCreateReque
 import com.fisa.bank.accountbook.application.dto.request.ManualLedgerUpdateRequest;
 import com.fisa.bank.accountbook.application.dto.response.ManualLedgerResponse;
 import com.fisa.bank.accountbook.application.exception.ManualLedgerAccessDeniedException;
-import com.fisa.bank.accountbook.application.exception.ManualLedgerInvalidRequestException;
 import com.fisa.bank.accountbook.application.exception.ManualLedgerNotFoundException;
 import com.fisa.bank.accountbook.application.model.ManualLedgerEntry;
 import com.fisa.bank.accountbook.application.model.ManualLedgerType;
@@ -30,7 +27,6 @@ public class ManualLedgerService implements ManageManualLedgerUseCase {
 
   @Override
   public ManualLedgerResponse addEntry(ManualLedgerCreateRequest request) {
-    validateCreate(request);
 
     Long userId = requesterInfo.getServiceUserId();
     ManualLedgerEntry entry =
@@ -59,7 +55,6 @@ public class ManualLedgerService implements ManageManualLedgerUseCase {
 
   @Override
   public ManualLedgerResponse updateEntry(Long entryId, ManualLedgerUpdateRequest request) {
-    validateUpdate(request);
     Long userId = requesterInfo.getServiceUserId();
     ManualLedgerEntry ownedEntry = getOwnedEntry(entryId, userId);
 
@@ -81,36 +76,6 @@ public class ManualLedgerService implements ManageManualLedgerUseCase {
     Long userId = requesterInfo.getServiceUserId();
     ManualLedgerEntry ownedEntry = getOwnedEntry(entryId, userId);
     manualLedgerRepository.deleteById(ownedEntry.id());
-  }
-
-  private void validateCreate(ManualLedgerCreateRequest request) {
-    if (request == null) {
-      throw new ManualLedgerInvalidRequestException("요청 데이터가 비어 있습니다.");
-    }
-    validateCommon(request.type(), request.amount());
-    validateSavedAt(request.savedAt());
-  }
-
-  private void validateUpdate(ManualLedgerUpdateRequest request) {
-    if (request == null) {
-      throw new ManualLedgerInvalidRequestException("요청 데이터가 비어 있습니다.");
-    }
-    validateCommon(request.type(), request.amount());
-  }
-
-  private void validateCommon(ManualLedgerType type, BigDecimal amount) {
-    if (type == null) {
-      throw new ManualLedgerInvalidRequestException("수입/지출 유형을 선택해야 합니다.");
-    }
-    if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0 || amount.scale() > 2) {
-      throw new ManualLedgerInvalidRequestException("금액은 0보다 큰 값이어야 하며 소수점 둘째 자리까지 입력 가능합니다.");
-    }
-  }
-
-  private void validateSavedAt(LocalDate savedAt) {
-    if (savedAt == null) {
-      throw new ManualLedgerInvalidRequestException("저장 일자를 입력해야 합니다.");
-    }
   }
 
   private String trimDescription(String description) {
