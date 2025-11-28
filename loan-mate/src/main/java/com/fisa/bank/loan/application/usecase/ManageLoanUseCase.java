@@ -2,10 +2,7 @@ package com.fisa.bank.loan.application.usecase;
 
 import java.util.List;
 
-import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
-import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
-import com.fisa.bank.loan.application.dto.response.LoanListResponse;
-import com.fisa.bank.loan.application.dto.response.LoansWithPrepaymentBenefitResponse;
+import com.fisa.bank.loan.application.dto.response.*;
 
 public interface ManageLoanUseCase {
 
@@ -20,4 +17,6 @@ public interface ManageLoanUseCase {
   void updateAutoDepositEnabled(Long loanId, boolean autoDepositEnabled);
 
   List<LoansWithPrepaymentBenefitResponse> getLoansWithPrepaymentBenefit();
+
+  List<AutoDepositResponse> getAutoDepositSummary();
 }

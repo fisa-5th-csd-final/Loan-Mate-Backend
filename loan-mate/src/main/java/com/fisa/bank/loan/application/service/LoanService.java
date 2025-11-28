@@ -1,8 +1,23 @@
 package com.fisa.bank.loan.application.service;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-
+import com.fisa.bank.common.application.util.RequesterInfo;
+import com.fisa.bank.loan.application.client.LoanAiClient;
+import com.fisa.bank.loan.application.client.LoanCoreBankingClient;
+import com.fisa.bank.loan.application.dto.response.AutoDepositResponse;
+import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
+import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
+import com.fisa.bank.loan.application.dto.response.LoanListResponse;
+import com.fisa.bank.loan.application.dto.response.LoansWithPrepaymentBenefitResponse;
+import com.fisa.bank.loan.application.model.InterestDetail;
+import com.fisa.bank.loan.application.model.Loan;
+import com.fisa.bank.loan.application.model.LoanComment;
+import com.fisa.bank.loan.application.model.LoanDetail;
+import com.fisa.bank.loan.application.model.LoanRiskDetail;
+import com.fisa.bank.loan.application.model.LoanRisks;
+import com.fisa.bank.loan.application.model.PrepaymentInfo;
+import com.fisa.bank.loan.application.service.reader.LoanReader;
+import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
+import com.fisa.bank.persistence.loan.entity.LoanLedger;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
@@ -12,20 +27,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.fisa.bank.common.application.util.RequesterInfo;
-import com.fisa.bank.loan.application.client.LoanAiClient;
-import com.fisa.bank.loan.application.client.LoanCoreBankingClient;
-import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
-import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
-import com.fisa.bank.loan.application.dto.response.LoanListResponse;
-import com.fisa.bank.loan.application.dto.response.LoansWithPrepaymentBenefitResponse;
-import com.fisa.bank.loan.application.model.*;
-import com.fisa.bank.loan.application.service.reader.LoanReader;
-import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
 
 @Service
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
@@ -145,5 +150,25 @@ public class LoanService implements ManageLoanUseCase {
   public void updateAutoDepositEnabled(Long loanId, boolean autoDepositEnabled) {
 
     loanCoreBankingClient.updateAutoDeposit(loanId, autoDepositEnabled);
+  }
+
+  @Transactional(readOnly = true)
+  public List<AutoDepositResponse> getAutoDepositSummary() {
+    Long userId = requesterInfo.getCoreBankingUserId();
+    // UserReader 또는 Reader 계층을 통해 대출 조회
+    // (LoanLedgerRepository 직접 사용 X — 기존 서비스 일관성 유지)
+    List<LoanLedger> loanLedgers = loanReader.findAllByUserId(userId);
+
+    return loanLedgers.stream()
+        .map(
+            ledger ->
+                AutoDepositResponse.builder()
+                    .loanName(
+                        ledger.getLoanProduct() != null ? ledger.getLoanProduct().getName() : null)
+                    .accountBalance(
+                        ledger.getAccount() != null ? ledger.getAccount().getBalance() : null)
+                    .autoDepositEnabled(ledger.isAutoDepositEnabled())
+                    .build())
+        .toList();
   }
 }

@@ -13,6 +13,8 @@ import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.model.PrepaymentInfo;
 import com.fisa.bank.loan.application.repository.LoanRepository;
+import com.fisa.bank.persistence.loan.entity.LoanLedger;
+import com.fisa.bank.persistence.loan.repository.LoanLedgerRepository;
 import com.fisa.bank.persistence.user.entity.id.UserId;
 
 @Component
@@ -20,6 +22,7 @@ import com.fisa.bank.persistence.user.entity.id.UserId;
 @Transactional(readOnly = true)
 public class LoanReader {
   private final LoanRepository loanRepository;
+  private final LoanLedgerRepository loanLedgerRepository;
   private final LoanCoreBankingClient loanCoreBankingClient;
 
   public LoanDetail findLoanDetail(Long loanId) { // 특정 LoanLedger의 정보
@@ -38,5 +41,9 @@ public class LoanReader {
 
   public List<PrepaymentInfo> findPrepaymentInfos() {
     return loanCoreBankingClient.fetchPrepaymentInfos();
+  }
+
+  public List<LoanLedger> findAllByUserId(Long userId) {
+    return loanLedgerRepository.findAllByUser_UserId(UserId.of(userId));
   }
 }
