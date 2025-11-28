@@ -30,6 +30,12 @@ public class LoanCoreBankingClient {
     return coreBankingClient.fetchOne(LOANS_BASE_PATH + "/ledger/" + loanId, LoanDetail.class);
   }
 
+  // LoanDetail 리스트 조회 (사용자별)
+  @Cacheable(cacheNames = "loanDetails", key = "@springRequesterInfo.coreBankingUserId")
+  public List<LoanDetail> fetchLoanDetails() {
+    return coreBankingClient.fetchList(LOANS_BASE_PATH + "/ledgers", LoanDetail.class);
+  }
+
   // 조기 상환 정보 캐싱
   @Cacheable(cacheNames = "prePaymentInfo", key = "@springRequesterInfo.coreBankingUserId")
   public List<PrepaymentInfo> fetchPrepaymentInfos() {
@@ -43,6 +49,7 @@ public class LoanCoreBankingClient {
         @CacheEvict(
             cacheNames = "loanDetail",
             key = "@springRequesterInfo.coreBankingUserId + ':' + #loanId"),
+        @CacheEvict(cacheNames = "loanDetails", key = "@springRequesterInfo.coreBankingUserId"),
         @CacheEvict(cacheNames = "prePaymentInfo", key = "@springRequesterInfo.coreBankingUserId"),
         @CacheEvict(cacheNames = "loanComment", key = "#loanId"),
         @CacheEvict(cacheNames = "loanRisks", key = "@springRequesterInfo.coreBankingUserId")
@@ -57,7 +64,10 @@ public class LoanCoreBankingClient {
         @CacheEvict(
             cacheNames = "loanDetail",
             key = "@springRequesterInfo.coreBankingUserId + ':' + #loanId"),
+        @CacheEvict(cacheNames = "loanDetails", key = "@springRequesterInfo.coreBankingUserId"),
         @CacheEvict(cacheNames = "prePaymentInfo", key = "@springRequesterInfo.coreBankingUserId"),
+        @CacheEvict(cacheNames = "loanComment", key = "#loanId"),
+        @CacheEvict(cacheNames = "loanRisks", key = "@springRequesterInfo.coreBankingUserId")
       })
   public void updateAutoDeposit(Long loanId, boolean autoDepositEnabled) {
     coreBankingClient.patch(

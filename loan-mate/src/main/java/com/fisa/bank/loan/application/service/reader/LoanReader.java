@@ -29,6 +29,10 @@ public class LoanReader {
     return loanCoreBankingClient.fetchLoanDetail(loanId);
   }
 
+  public List<LoanDetail> findLoanDetails() {
+    return loanCoreBankingClient.fetchLoanDetails();
+  }
+
   public List<Loan> findLoans(Long userId) {
     return loanRepository.getLoans(UserId.of(userId));
   }

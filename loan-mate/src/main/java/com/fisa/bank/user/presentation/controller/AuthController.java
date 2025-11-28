@@ -59,7 +59,7 @@ public class AuthController {
 
     ResponseCookie newRefreshCookie =
         cookieUtil.createHttpOnlyCookie(
-            "accessToken", newTokens.refreshToken(), (int) (refreshTokenExpiration / 1000L));
+            "refreshToken", newTokens.refreshToken(), (int) (refreshTokenExpiration / 1000L));
 
     response.addHeader("Set-Cookie", newRefreshCookie.toString());
     response.addHeader("Set-Cookie", newAccessCookie.toString());
