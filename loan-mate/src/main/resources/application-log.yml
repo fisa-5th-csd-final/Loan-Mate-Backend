@@ -1,0 +1,4 @@
+logging:
+  level:
+    com.fisa.bank.common.application.util.ai.AiClientImpl: trace
+    com.fisa.bank.common.application.util.core_bank.CoreBankingClientProdImpl: trace
