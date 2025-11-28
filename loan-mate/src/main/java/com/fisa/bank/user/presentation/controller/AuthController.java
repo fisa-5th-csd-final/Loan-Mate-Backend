@@ -12,7 +12,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.fisa.bank.common.util.CookieUtil;
+import com.fisa.bank.common.presentation.util.CookieUtil;
 import com.fisa.bank.user.application.dto.TokenPair;
 import com.fisa.bank.user.application.usecase.LogoutUseCase;
 import com.fisa.bank.user.application.usecase.UpdateTokenUseCase;

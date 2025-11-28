@@ -1,4 +1,4 @@
-package com.fisa.bank.common.application.service;
+package com.fisa.bank.common.application.util.core_bank;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +10,8 @@ import java.util.stream.StreamSupport;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
@@ -24,8 +26,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fisa.bank.common.application.exception.ExternalApiException;
 import com.fisa.bank.common.application.util.JsonNodeMapper;
 import com.fisa.bank.common.config.security.ServiceUserAuthentication;
+import com.fisa.bank.common.application.util.RequesterInfo;
 
 @Slf4j
 @Component
@@ -37,12 +41,53 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
   private final OAuth2AuthorizedClientService authorizedClientService;
   private final WebClient.Builder builder;
   private final JsonNodeMapper jsonNodeMapper;
+  private final RequesterInfo requesterInfo;
 
   @Value("${core-bank.api-url}")
   private String BASE_URL;
 
+  @Override
+  public <T> T fetchOne(String endpoint, Class<T> clazz) {
+    JsonNode root = callApi(endpoint, HttpMethod.GET, JsonNode.class);
+    return jsonNodeMapper.map(root.path("data"), clazz);
+  }
+
+  @Override
+  public <T> List<T> fetchList(String endpoint, Class<T> clazz) {
+    JsonNode root = callApi(endpoint, HttpMethod.GET, JsonNode.class);
+
+    JsonNode arr = root.path("data");
+
+    return StreamSupport.stream(arr.spliterator(), false)
+        .map(n -> jsonNodeMapper.map(n, clazz))
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public void delete(String endpoint) {
+    callApi(endpoint, HttpMethod.DELETE, Void.class);
+  }
+
+  @Override
+  public void patch(String endpoint, Object body) {
+    callApi(endpoint, HttpMethod.PATCH, body, Void.class);
+  }
+
   private WebClient client(String token) {
     return builder.defaultHeader("Authorization", "Bearer " + token).build();
+  }
+
+  private <T> void logResponse(String url, ResponseEntity<T> entity) {
+    if (!log.isTraceEnabled() || entity == null) {
+      return;
+    }
+
+    log.trace(
+        "CoreBank response <- status={} url={} headers={} body={}",
+        entity.getStatusCodeValue(),
+        url,
+        entity.getHeaders(),
+        entity.getBody());
   }
 
   private Authentication getAuth() {
@@ -100,14 +145,23 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
 
     Authentication auth = getAuth();
     String token = getAccessToken(auth);
+    String url = BASE_URL + endpoint;
+
+    if (log.isTraceEnabled()) {
+      log.trace("CoreBank request -> method={} url={} body=null", method, url);
+    }
 
     try {
-      return client(token)
-          .method(method)
-          .uri(BASE_URL + endpoint)
-          .retrieve()
-          .bodyToMono(responseType)
-          .block();
+      ResponseEntity<T> entity =
+          client(token)
+              .method(method)
+              .uri(url)
+              .retrieve()
+              .toEntity(responseType)
+              .block();
+
+      logResponse(url, entity);
+      return entity != null ? entity.getBody() : null;
 
     } catch (WebClientResponseException e) {
 
@@ -116,15 +170,25 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
 
         String newToken = getAccessToken(auth);
 
-        return client(newToken)
-            .method(method)
-            .uri(BASE_URL + endpoint)
-            .retrieve()
-            .bodyToMono(responseType)
-            .block();
+        ResponseEntity<T> entity =
+            client(newToken)
+                .method(method)
+                .uri(url)
+                .retrieve()
+                .toEntity(responseType)
+                .block();
+
+        logResponse(url, entity);
+        return entity != null ? entity.getBody() : null;
       }
 
-      throw e;
+      String body = e.getResponseBodyAsString();
+      log.error("CoreBanking 호출 실패: {} {} body={}", e.getStatusCode(), e.getMessage(), body);
+      throw new ExternalApiException(
+          HttpStatus.valueOf(e.getStatusCode().value()),
+          "CORE_BANK_API_ERROR",
+          "CoreBanking error " + e.getStatusCode().value() + " : " + body,
+          body);
     }
   }
 
@@ -133,15 +197,24 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
 
     Authentication auth = getAuth();
     String token = getAccessToken(auth);
+    String url = BASE_URL + endpoint;
+
+    if (log.isTraceEnabled()) {
+      log.trace("CoreBank request -> method={} url={} body={}", method, url, body);
+    }
 
     try {
-      return client(token)
-          .method(method)
-          .uri(BASE_URL + endpoint)
-          .bodyValue(body)
-          .retrieve()
-          .bodyToMono(responseType)
-          .block();
+      ResponseEntity<T> entity =
+          client(token)
+              .method(method)
+              .uri(url)
+              .bodyValue(body)
+              .retrieve()
+              .toEntity(responseType)
+              .block();
+
+      logResponse(url, entity);
+      return entity != null ? entity.getBody() : null;
 
     } catch (WebClientResponseException e) {
 
@@ -150,43 +223,26 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
 
         String newToken = getAccessToken(auth);
 
-        return client(newToken)
-            .method(method)
-            .uri(BASE_URL + endpoint)
-            .bodyValue(body)
-            .retrieve()
-            .bodyToMono(responseType)
-            .block();
+        ResponseEntity<T> entity =
+            client(newToken)
+                .method(method)
+                .uri(url)
+                .bodyValue(body)
+                .retrieve()
+                .toEntity(responseType)
+                .block();
+
+        logResponse(url, entity);
+        return entity != null ? entity.getBody() : null;
       }
 
-      throw e;
+      String bodyString = e.getResponseBodyAsString();
+      log.error("CoreBanking 호출 실패: {} {} body={}", e.getStatusCode(), e.getMessage(), bodyString);
+      throw new ExternalApiException(
+          HttpStatus.valueOf(e.getStatusCode().value()),
+          "CORE_BANK_API_ERROR",
+          "CoreBanking error " + e.getStatusCode().value() + " : " + bodyString,
+          bodyString);
     }
-  }
-
-  @Override
-  public <T> T fetchOne(String endpoint, Class<T> clazz) {
-    JsonNode root = callApi(endpoint, HttpMethod.GET, JsonNode.class);
-    return jsonNodeMapper.map(root.path("data"), clazz);
-  }
-
-  @Override
-  public <T> List<T> fetchList(String endpoint, Class<T> clazz) {
-    JsonNode root = callApi(endpoint, HttpMethod.GET, JsonNode.class);
-
-    JsonNode arr = root.path("data");
-
-    return StreamSupport.stream(arr.spliterator(), false)
-        .map(n -> jsonNodeMapper.map(n, clazz))
-        .collect(Collectors.toList());
-  }
-
-  @Override
-  public void fetchOneDelete(String endpoint) {
-    callApi(endpoint, HttpMethod.DELETE, Void.class);
-  }
-
-  @Override
-  public void patch(String endpoint, Object body) {
-    callApi(endpoint, HttpMethod.PATCH, body, Void.class);
   }
 }

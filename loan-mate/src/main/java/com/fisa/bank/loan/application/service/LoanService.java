@@ -16,12 +16,21 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fisa.bank.common.application.service.AiClient;
-import com.fisa.bank.common.application.service.CoreBankingClient;
 import com.fisa.bank.common.application.util.RequesterInfo;
-import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
-import com.fisa.bank.loan.application.dto.response.*;
-import com.fisa.bank.loan.application.model.*;
+import com.fisa.bank.loan.application.client.LoanAiClient;
+import com.fisa.bank.loan.application.client.LoanCoreBankingClient;
+import com.fisa.bank.loan.application.dto.response.AutoDepositResponse;
+import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
+import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
+import com.fisa.bank.loan.application.dto.response.LoanListResponse;
+import com.fisa.bank.loan.application.dto.response.LoansWithPrepaymentBenefitResponse;
+import com.fisa.bank.loan.application.model.InterestDetail;
+import com.fisa.bank.loan.application.model.Loan;
+import com.fisa.bank.loan.application.model.LoanComment;
+import com.fisa.bank.loan.application.model.LoanDetail;
+import com.fisa.bank.loan.application.model.LoanRiskDetail;
+import com.fisa.bank.loan.application.model.LoanRisks;
+import com.fisa.bank.loan.application.model.PrepaymentInfo;
 import com.fisa.bank.loan.application.service.reader.LoanReader;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
 
@@ -30,24 +39,20 @@ import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
 public class LoanService implements ManageLoanUseCase {
 
   private final LoanReader loanReader;
-  private final CoreBankingClient coreBankingClient;
+  private final LoanCoreBankingClient loanCoreBankingClient;
+  private final LoanAiClient loanAiClient;
   private final RequesterInfo requesterInfo;
-  private static final String PREDICT_URL = "/predict";
-  private static final String LOAN_COMMENT = "/insight/loan";
-  private final AiClient aiClient;
-  private static final String AI_REQUEST_KEY_USER_ID = "user_id";
-  private static final String AI_REQUEST_KEY_LOAN_LEDGER_ID = "loan_ledger_id";
 
   @Override
   @Transactional
+  // TODO: 캐시 추가
   public List<LoanListResponse> getLoans() {
     Long userId = requesterInfo.getCoreBankingUserId();
     // db에서 대출 리스트 조회
     List<Loan> loans = loanReader.findLoans(userId);
 
     // 위험도 fetch
-    LoanRisks loanRisks =
-        aiClient.fetchOne(PREDICT_URL, Map.of(AI_REQUEST_KEY_USER_ID, userId), LoanRisks.class);
+    LoanRisks loanRisks = loanAiClient.fetchLoanRisks(userId);
 
     // 위험도와 대출 id를 매핑하는 맵
     Map<Long, BigDecimal> riskMap =
@@ -59,15 +64,14 @@ public class LoanService implements ManageLoanUseCase {
   }
 
   @Override
+  // TODO: 캐시 추가
   public LoanDetailResponse getLoanDetail(Long loanId) {
     LoanDetail loanDetail = loanReader.findLoanDetail(loanId);
     Integer progress = calculateProgressRate(loanDetail).intValueExact();
 
     loanDetail.setProgress(progress);
     // 대출 LLM 코멘트
-    LoanComment loanComment =
-        aiClient.fetchOne(
-            LOAN_COMMENT, Map.of(AI_REQUEST_KEY_LOAN_LEDGER_ID, loanId), LoanComment.class);
+    LoanComment loanComment = loanAiClient.fetchLoanComment(loanId);
 
     if (!loanComment.getLoanLedgerId().equals(loanId)) {
       throw new IllegalStateException("요청한 loanId와 응답 loanLedgerId가 불일치합니다.");
@@ -115,8 +119,7 @@ public class LoanService implements ManageLoanUseCase {
 
   @Override
   public void cancelLoan(Long loanId) {
-    String url = "/loans/" + loanId;
-    coreBankingClient.fetchOneDelete(url);
+    loanCoreBankingClient.cancelLoan(loanId);
   }
 
   @Override
@@ -148,10 +151,7 @@ public class LoanService implements ManageLoanUseCase {
   @Override
   public void updateAutoDepositEnabled(Long loanId, boolean autoDepositEnabled) {
 
-    String endpoint = "/loans/" + loanId + "/auto-deposit";
-    AutoDepositUpdateRequest body = new AutoDepositUpdateRequest(autoDepositEnabled);
-
-    coreBankingClient.patch(endpoint, body);
+    loanCoreBankingClient.updateAutoDeposit(loanId, autoDepositEnabled);
   }
 
   @Override

@@ -8,6 +8,7 @@ import java.util.Map;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -34,6 +35,7 @@ public class SecurityConfig {
   public SecurityFilterChain swaggerSecurityFilterChain(HttpSecurity http) throws Exception {
     http.securityMatcher(
             "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/swagger-resources/**")
+        .cors(Customizer.withDefaults())
         .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
         .csrf(AbstractHttpConfigurer::disable)
         .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
@@ -61,6 +63,7 @@ public class SecurityConfig {
         );
 
     http.securityMatcher("/oauth2/**", "/login/**", "/api/login/**")
+        .cors(Customizer.withDefaults())
         .csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(
             auth ->
@@ -96,6 +99,7 @@ public class SecurityConfig {
   @Order(2)
   public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
     http.securityMatcher("/api/**")
+        .cors(Customizer.withDefaults())
         .csrf(AbstractHttpConfigurer::disable)
         .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(

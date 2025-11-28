@@ -198,3 +198,6 @@ docker/.github_credentials
 
 ### build
 loan-mate/build/**
+
+### bin
+loan-mate/bin

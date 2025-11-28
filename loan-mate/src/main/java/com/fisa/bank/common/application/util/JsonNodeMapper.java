@@ -26,7 +26,7 @@ public class JsonNodeMapper {
       return objectMapper.treeToValue(node, clazz);
     } catch (Exception e) {
       throw new RuntimeException(
-          "JsonNode -> DTO 변환 실패 \n" + "@JsonIgnoreProperties(ignoreUnknown = true)을 DTO에 붙여보세요",
+          "JsonNode -> DTO 변환 실패 : " + "@JsonIgnoreProperties(ignoreUnknown = true)을 DTO에 붙여보세요",
           e);
     }
   }

@@ -1,4 +1,4 @@
-package com.fisa.bank.common.util;
+package com.fisa.bank.common.presentation.util;
 
 import org.springframework.http.ResponseCookie;
 
