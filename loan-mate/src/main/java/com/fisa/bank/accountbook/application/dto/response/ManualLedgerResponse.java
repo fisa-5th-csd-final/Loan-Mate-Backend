@@ -7,7 +7,7 @@ import com.fisa.bank.accountbook.application.model.ManualLedgerEntry;
 import com.fisa.bank.accountbook.application.model.ManualLedgerType;
 
 public record ManualLedgerResponse(
-    Long id, ManualLedgerType type, BigDecimal amount, String description, LocalDate occurredAt) {
+    Long id, ManualLedgerType type, BigDecimal amount, String description, LocalDate savedAt) {
 
   public static ManualLedgerResponse from(ManualLedgerEntry entry) {
     return new ManualLedgerResponse(
