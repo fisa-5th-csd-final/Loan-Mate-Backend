@@ -46,10 +46,9 @@ public class AiClientImpl implements AiClient {
 
   private <T, B> T executeRequest(
       String endpoint, HttpMethod method, B body, Class<T> responseType) {
-    Long userId = requesterInfo.getServiceUserId();
     String url = baseUrl + endpoint;
     if (log.isTraceEnabled()) {
-      log.trace("AI request -> method={} url={} userId={} body={}", method, url, userId, body);
+      log.trace("AI request -> method={} url={} body={}", method, url, body);
     }
 
     return client()

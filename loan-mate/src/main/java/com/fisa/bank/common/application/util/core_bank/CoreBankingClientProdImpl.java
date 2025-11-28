@@ -77,6 +77,19 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
     return builder.defaultHeader("Authorization", "Bearer " + token).build();
   }
 
+  private <T> void logResponse(String url, ResponseEntity<T> entity) {
+    if (!log.isTraceEnabled() || entity == null) {
+      return;
+    }
+
+    log.trace(
+        "CoreBank response <- status={} url={} headers={} body={}",
+        entity.getStatusCodeValue(),
+        url,
+        entity.getHeaders(),
+        entity.getBody());
+  }
+
   private Authentication getAuth() {
     return SecurityContextHolder.getContext().getAuthentication();
   }
@@ -132,11 +145,10 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
 
     Authentication auth = getAuth();
     String token = getAccessToken(auth);
-    Long userId = requesterInfo.getCoreBankingUserId();
     String url = BASE_URL + endpoint;
 
     if (log.isTraceEnabled()) {
-      log.trace("CoreBank request -> method={} url={} userId={} body=null", method, url, userId);
+      log.trace("CoreBank request -> method={} url={} body=null", method, url);
     }
 
     try {
@@ -148,16 +160,7 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
               .toEntity(responseType)
               .block();
 
-      if (log.isTraceEnabled() && entity != null) {
-        log.trace(
-            "CoreBank response <- status={} url={} headers={} body={} userId={}",
-            entity.getStatusCodeValue(),
-            url,
-            entity.getHeaders(),
-            entity.getBody(),
-            userId);
-      }
-
+      logResponse(url, entity);
       return entity != null ? entity.getBody() : null;
 
     } catch (WebClientResponseException e) {
@@ -175,16 +178,7 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
                 .toEntity(responseType)
                 .block();
 
-        if (log.isTraceEnabled() && entity != null) {
-          log.trace(
-              "CoreBank response <- status={} url={} headers={} body={} userId={}",
-              entity.getStatusCodeValue(),
-              url,
-              entity.getHeaders(),
-              entity.getBody(),
-              userId);
-        }
-
+        logResponse(url, entity);
         return entity != null ? entity.getBody() : null;
       }
 
@@ -203,11 +197,10 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
 
     Authentication auth = getAuth();
     String token = getAccessToken(auth);
-    Long userId = requesterInfo.getCoreBankingUserId();
     String url = BASE_URL + endpoint;
 
     if (log.isTraceEnabled()) {
-      log.trace("CoreBank request -> method={} url={} userId={} body={}", method, url, userId, body);
+      log.trace("CoreBank request -> method={} url={} body={}", method, url, body);
     }
 
     try {
@@ -220,16 +213,7 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
               .toEntity(responseType)
               .block();
 
-      if (log.isTraceEnabled() && entity != null) {
-        log.trace(
-            "CoreBank response <- status={} url={} headers={} body={} userId={}",
-            entity.getStatusCodeValue(),
-            url,
-            entity.getHeaders(),
-            entity.getBody(),
-            userId);
-      }
-
+      logResponse(url, entity);
       return entity != null ? entity.getBody() : null;
 
     } catch (WebClientResponseException e) {
@@ -248,16 +232,7 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
                 .toEntity(responseType)
                 .block();
 
-        if (log.isTraceEnabled() && entity != null) {
-          log.trace(
-              "CoreBank response <- status={} url={} headers={} body={} userId={}",
-              entity.getStatusCodeValue(),
-              url,
-              entity.getHeaders(),
-              entity.getBody(),
-              userId);
-        }
-
+        logResponse(url, entity);
         return entity != null ? entity.getBody() : null;
       }
 

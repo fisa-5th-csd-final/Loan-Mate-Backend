@@ -40,12 +40,24 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
     return builder.defaultHeader("Authorization", "Bearer " + token).build();
   }
 
+  private <T> void logResponse(String url, ResponseEntity<T> entity) {
+    if (!log.isTraceEnabled() || entity == null) {
+      return;
+    }
+
+    log.trace(
+        "CoreBank response <- status={} url={} headers={} body={}",
+        entity.getStatusCodeValue(),
+        url,
+        entity.getHeaders(),
+        entity.getBody());
+  }
+
   private <T> T executeRequest(
       String endpoint, String token, HttpMethod method, Class<T> responseType) {
     String url = baseUrl + endpoint;
-    Long userId = requesterInfo.getCoreBankingUserId();
     if (log.isTraceEnabled()) {
-      log.trace("CoreBank request -> method={} url={} userId={} body=null", method, url, userId);
+      log.trace("CoreBank request -> method={} url={} body=null", method, url);
     }
 
     ResponseEntity<T> entity =
@@ -56,16 +68,7 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
             .toEntity(responseType)
             .block();
 
-    if (log.isTraceEnabled() && entity != null) {
-      log.trace(
-          "CoreBank response <- status={} url={} headers={} body={} userId={}",
-          entity.getStatusCodeValue(),
-          url,
-          entity.getHeaders(),
-          entity.getBody(),
-          userId);
-    }
-
+    logResponse(url, entity);
     return entity != null ? entity.getBody() : null;
   }
 
@@ -172,9 +175,8 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
   private <T, B> T executeRequest(
       String endpoint, String token, HttpMethod method, B body, Class<T> responseType) {
     String url = baseUrl + endpoint;
-    Long userId = requesterInfo.getCoreBankingUserId();
     if (log.isTraceEnabled()) {
-      log.trace("CoreBank request -> method={} url={} userId={} body={}", method, url, userId, body);
+      log.trace("CoreBank request -> method={} url={} body={}", method, url, body);
     }
 
     ResponseEntity<T> entity =
@@ -186,16 +188,7 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
             .toEntity(responseType)
             .block();
 
-    if (log.isTraceEnabled() && entity != null) {
-      log.trace(
-          "CoreBank response <- status={} url={} headers={} body={} userId={}",
-          entity.getStatusCodeValue(),
-          url,
-          entity.getHeaders(),
-          entity.getBody(),
-          userId);
-    }
-
+    logResponse(url, entity);
     return entity != null ? entity.getBody() : null;
   }
 }
