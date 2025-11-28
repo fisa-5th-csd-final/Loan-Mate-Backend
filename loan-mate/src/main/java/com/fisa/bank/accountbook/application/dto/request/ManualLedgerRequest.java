@@ -5,5 +5,5 @@ import java.time.LocalDate;
 
 import com.fisa.bank.accountbook.application.model.ManualLedgerType;
 
-public record ManualLedgerCreateRequest(
+public record ManualLedgerRequest(
     ManualLedgerType type, BigDecimal amount, String description, LocalDate savedAt) {}
