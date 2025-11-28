@@ -15,4 +15,6 @@ public interface ManualLedgerRepository {
   List<ManualLedgerEntry> findByUserIdAndType(Long serviceUserId, ManualLedgerType type);
 
   Optional<ManualLedgerEntry> findById(Long id);
+
+  void deleteById(Long id);
 }

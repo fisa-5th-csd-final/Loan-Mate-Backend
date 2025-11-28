@@ -48,4 +48,9 @@ public class ManualLedgerRepositoryImpl implements ManualLedgerRepository {
   public Optional<ManualLedgerEntry> findById(Long id) {
     return jpaManualLedgerRepository.findById(id).map(mapper::toDomain);
   }
+
+  @Override
+  public void deleteById(Long id) {
+    jpaManualLedgerRepository.deleteById(id);
+  }
 }
