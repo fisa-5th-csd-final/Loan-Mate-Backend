@@ -1,5 +1,8 @@
 package com.fisa.bank.loan.application.service;
 
+import com.fisa.bank.loan.application.dto.response.*;
+import com.fisa.bank.persistence.loan.entity.LoanLedger;
+import com.fisa.bank.persistence.loan.repository.LoanRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
