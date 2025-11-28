@@ -28,7 +28,7 @@ public class AiClientImpl implements AiClient {
       throw new IllegalStateException("응답이 null 입니다.");
     }
 
-    return jsonNodeMapper.map(root.path("data"), clazz);
+    return jsonNodeMapper.map(root, clazz);
   }
 
   private WebClient client() {
