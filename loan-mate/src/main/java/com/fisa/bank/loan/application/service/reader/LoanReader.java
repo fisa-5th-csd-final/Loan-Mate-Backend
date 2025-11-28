@@ -7,7 +7,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fisa.bank.common.application.util.core_bank.CoreBankingClient;
+import com.fisa.bank.loan.application.client.LoanCoreBankingClient;
 import com.fisa.bank.loan.application.exception.LoanLedgerNotFoundException;
 import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.model.LoanDetail;
@@ -20,14 +20,10 @@ import com.fisa.bank.persistence.user.entity.id.UserId;
 @Transactional(readOnly = true)
 public class LoanReader {
   private final LoanRepository loanRepository;
-  private final CoreBankingClient coreBankingClient;
+  private final LoanCoreBankingClient loanCoreBankingClient;
 
-  private static final String PREPAYMENT_INFOS_URL = "/loans/prepayment-infos";
-
-  public LoanDetail findLoanDetail(Long loanId) {
-    String url = "/loans/ledger/" + loanId;
-
-    return coreBankingClient.fetchOne(url, LoanDetail.class);
+  public LoanDetail findLoanDetail(Long loanId) { // 특정 LoanLedger의 정보
+    return loanCoreBankingClient.fetchLoanDetail(loanId);
   }
 
   public List<Loan> findLoans(Long userId) {
@@ -41,6 +37,6 @@ public class LoanReader {
   }
 
   public List<PrepaymentInfo> findPrepaymentInfos() {
-    return coreBankingClient.fetchList(PREPAYMENT_INFOS_URL, PrepaymentInfo.class);
+    return loanCoreBankingClient.fetchPrepaymentInfos();
   }
 }

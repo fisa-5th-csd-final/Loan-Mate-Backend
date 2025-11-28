@@ -21,9 +21,9 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fisa.bank.common.application.util.core_bank.CoreBankingClient;
 import com.fisa.bank.common.application.util.jwt.JwtTokenGenerator;
 import com.fisa.bank.common.presentation.util.CookieUtil;
+import com.fisa.bank.user.application.client.CoreBankingUserClient;
 import com.fisa.bank.user.application.dto.UserInfoResponse;
 import com.fisa.bank.user.application.repository.RefreshTokenRepository;
 import com.fisa.bank.user.application.repository.UserAuthRepository;
@@ -34,7 +34,7 @@ import com.fisa.bank.user.application.usecase.SyncCoreBankUserUseCase;
 @RequiredArgsConstructor
 public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
-  private final CoreBankingClient coreBankingClient;
+  private final CoreBankingUserClient coreBankingUserClient;
   private final SyncCoreBankUserUseCase syncCoreBankUserUseCase;
   private final OAuth2AuthorizedClientService authorizedClientService;
   private final ObjectMapper objectMapper;
@@ -58,7 +58,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
       throws IOException {
 
     // 코어 뱅킹 사용자 정보 조회 및 동기화
-    UserInfoResponse me = coreBankingClient.fetchOne("/users/me", UserInfoResponse.class);
+    UserInfoResponse me = coreBankingUserClient.fetchMe();
     syncCoreBankUserUseCase.sync(me);
 
     // serviceUserId 조회

@@ -16,10 +16,9 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fisa.bank.common.application.util.ai.AiClient;
-import com.fisa.bank.common.application.util.core_bank.CoreBankingClient;
 import com.fisa.bank.common.application.util.RequesterInfo;
-import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
+import com.fisa.bank.common.application.util.ai.AiClient;
+import com.fisa.bank.loan.application.client.LoanCoreBankingClient;
 import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
@@ -33,7 +32,7 @@ import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
 public class LoanService implements ManageLoanUseCase {
 
   private final LoanReader loanReader;
-  private final CoreBankingClient coreBankingClient;
+  private final LoanCoreBankingClient loanCoreBankingClient;
   private final RequesterInfo requesterInfo;
   private static final String PREDICT_URL = "/predict";
   private static final String LOAN_COMMENT = "/insight/loan";
@@ -43,6 +42,7 @@ public class LoanService implements ManageLoanUseCase {
 
   @Override
   @Transactional
+  // TODO: 캐시 추가
   public List<LoanListResponse> getLoans() {
     Long userId = requesterInfo.getCoreBankingUserId();
     // db에서 대출 리스트 조회
@@ -62,6 +62,7 @@ public class LoanService implements ManageLoanUseCase {
   }
 
   @Override
+  // TODO: 캐시 추가
   public LoanDetailResponse getLoanDetail(Long loanId) {
     LoanDetail loanDetail = loanReader.findLoanDetail(loanId);
     Integer progress = calculateProgressRate(loanDetail).intValueExact();
@@ -118,8 +119,7 @@ public class LoanService implements ManageLoanUseCase {
 
   @Override
   public void cancelLoan(Long loanId) {
-    String url = "/loans/" + loanId;
-    coreBankingClient.delete(url);
+    loanCoreBankingClient.cancelLoan(loanId);
   }
 
   @Override
@@ -151,9 +151,6 @@ public class LoanService implements ManageLoanUseCase {
   @Override
   public void updateAutoDepositEnabled(Long loanId, boolean autoDepositEnabled) {
 
-    String endpoint = "/loans/" + loanId + "/auto-deposit";
-    AutoDepositUpdateRequest body = new AutoDepositUpdateRequest(autoDepositEnabled);
-
-    coreBankingClient.patch(endpoint, body);
+    loanCoreBankingClient.updateAutoDeposit(loanId, autoDepositEnabled);
   }
 }
