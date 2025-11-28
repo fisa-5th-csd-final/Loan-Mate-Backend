@@ -1,5 +1,8 @@
 package com.fisa.bank.loan.application.service;
 
+import com.fisa.bank.loan.application.dto.response.*;
+import com.fisa.bank.persistence.loan.entity.LoanLedger;
+import com.fisa.bank.persistence.loan.repository.LoanRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -20,10 +23,6 @@ import com.fisa.bank.common.application.service.AiClient;
 import com.fisa.bank.common.application.service.CoreBankingClient;
 import com.fisa.bank.common.application.util.RequesterInfo;
 import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
-import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
-import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
-import com.fisa.bank.loan.application.dto.response.LoanListResponse;
-import com.fisa.bank.loan.application.dto.response.LoansWithPrepaymentBenefitResponse;
 import com.fisa.bank.loan.application.model.*;
 import com.fisa.bank.loan.application.service.reader.LoanReader;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
@@ -155,5 +154,24 @@ public class LoanService implements ManageLoanUseCase {
     AutoDepositUpdateRequest body = new AutoDepositUpdateRequest(autoDepositEnabled);
 
     coreBankingClient.patch(endpoint, body);
+  }
+
+  @Transactional(readOnly = true)
+  public List<AutoDepositResponse> getAutoDepositSummary() {
+    Long userId = requesterInfo.getCoreBankingUserId();
+    // UserReader 또는 Reader 계층을 통해 대출 조회
+    // (LoanLedgerRepository 직접 사용 X — 기존 서비스 일관성 유지)
+    List<LoanLedger> loanLedgers = loanReader.findAllByUserId(userId);
+
+    return loanLedgers.stream()
+            .map(
+                    ledger ->
+                            AutoDepositResponse.builder()
+                                    .loanName(ledger.getLoanProduct().getName())
+                                    .accountBalance(
+                                            ledger.getAccount() != null ? ledger.getAccount().getBalance() : null)
+                                    .autoDepositEnabled(ledger.isAutoDepositEnabled())
+                                    .build())
+            .toList();
   }
 }
