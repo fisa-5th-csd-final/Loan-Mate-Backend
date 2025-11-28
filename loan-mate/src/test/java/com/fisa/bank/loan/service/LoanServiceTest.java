@@ -72,13 +72,16 @@ public class LoanServiceTest {
     // 1. 아직 상환한 적 없음 (paidMonth = 0)
     noRepaymentLoan =
         new LoanDetail(
+            null,
             "미상환 대출",
             BigDecimal.valueOf(1000),
             BigDecimal.valueOf(1000),
             BigDecimal.valueOf(1000),
+            BigDecimal.ZERO,
             accountNumber,
             LoanType.CREDIT,
             RepaymentType.BULLET,
+            null,
             null,
             createdAt,
             TOTAL_TERM,
@@ -89,14 +92,17 @@ public class LoanServiceTest {
     // 2. 상환 완료 상태 (스킵 대상)
     terminatedLoan =
         new LoanDetail(
+            null,
             "중도 상환된 대출",
             BigDecimal.valueOf(1000),
             BigDecimal.valueOf(1000),
             BigDecimal.valueOf(1000),
+            BigDecimal.ZERO,
             accountNumber,
             LoanType.CREDIT,
             RepaymentType.BULLET,
             fullRepaymentDate,
+            null,
             createdAt,
             TOTAL_TERM,
             RepaymentStatus.TERMINATED,
@@ -106,14 +112,17 @@ public class LoanServiceTest {
     // 3. 만기 상환 직후 (12개월 / 12개월 = 100% 스킵 대상)
     fullyRepaidLoan =
         new LoanDetail(
+            null,
             "만기 상환 직후 완료된 대출",
             BigDecimal.valueOf(1000),
             BigDecimal.valueOf(1000),
             BigDecimal.valueOf(1000),
+            BigDecimal.ZERO,
             accountNumber,
             LoanType.CREDIT,
             RepaymentType.BULLET,
             fullRepaymentDate,
+            null,
             createdAt,
             TOTAL_TERM,
             RepaymentStatus.COMPLETED,
@@ -123,14 +132,17 @@ public class LoanServiceTest {
     // 4. 최소 1번 상환 (4개월 / 12개월 = 33%)
     activeRepaymentLoan =
         new LoanDetail(
+            null,
             "진행중인 대출",
             BigDecimal.valueOf(1000),
             BigDecimal.valueOf(1000),
             BigDecimal.valueOf(1000),
+            BigDecimal.ZERO,
             accountNumber,
             LoanType.CREDIT,
             RepaymentType.BULLET,
             lastRepaymentDate,
+            null,
             createdAt,
             TOTAL_TERM,
             RepaymentStatus.NORMAL,
