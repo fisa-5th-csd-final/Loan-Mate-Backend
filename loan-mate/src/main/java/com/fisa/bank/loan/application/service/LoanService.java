@@ -166,7 +166,8 @@ public class LoanService implements ManageLoanUseCase {
         .map(
             ledger ->
                 AutoDepositResponse.builder()
-                    .loanName(ledger.getLoanProduct().getName())
+                    .loanName(
+                        ledger.getLoanProduct() != null ? ledger.getLoanProduct().getName() : null)
                     .accountBalance(
                         ledger.getAccount() != null ? ledger.getAccount().getBalance() : null)
                     .autoDepositEnabled(ledger.isAutoDepositEnabled())
