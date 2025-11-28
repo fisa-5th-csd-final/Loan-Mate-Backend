@@ -13,6 +13,8 @@ import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.model.PrepaymentInfo;
 import com.fisa.bank.loan.application.repository.LoanRepository;
+import com.fisa.bank.persistence.loan.entity.LoanLedger;
+import com.fisa.bank.persistence.loan.repository.LoanLedgerRepository;
 import com.fisa.bank.persistence.user.entity.id.UserId;
 
 @Component
@@ -20,6 +22,7 @@ import com.fisa.bank.persistence.user.entity.id.UserId;
 @Transactional(readOnly = true)
 public class LoanReader {
   private final LoanRepository loanRepository;
+  private final LoanLedgerRepository loanLedgerRepository;
   private final CoreBankingClient coreBankingClient;
 
   private static final String PREPAYMENT_INFOS_URL = "/loans/prepayment-infos";
@@ -42,5 +45,9 @@ public class LoanReader {
 
   public List<PrepaymentInfo> findPrepaymentInfos() {
     return coreBankingClient.fetchList(PREPAYMENT_INFOS_URL, PrepaymentInfo.class);
+  }
+
+  public List<LoanLedger> findAllByUserId(Long userId) {
+    return loanLedgerRepository.findAllByUser_UserId(UserId.of(userId));
   }
 }
