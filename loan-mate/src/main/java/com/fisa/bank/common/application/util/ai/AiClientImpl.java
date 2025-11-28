@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fisa.bank.common.application.util.JsonNodeMapper;
@@ -42,6 +43,20 @@ public class AiClientImpl implements AiClient {
         .uri(baseUrl + endpoint)
         .bodyValue(body)
         .retrieve()
+        .onStatus(
+            status -> status.is4xxClientError() || status.is5xxServerError(),
+            response ->
+                response
+                    .bodyToMono(String.class)
+                    .defaultIfEmpty("")
+                    .flatMap(
+                        bodyStr ->
+                            Mono.error(
+                                new IllegalStateException(
+                                    "AI server error "
+                                        + response.statusCode().value()
+                                        + " : "
+                                        + bodyStr))))
         .bodyToMono(responseType)
         .block();
   }
