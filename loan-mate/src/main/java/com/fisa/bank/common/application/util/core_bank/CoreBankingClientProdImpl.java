@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
@@ -28,6 +29,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fisa.bank.common.application.exception.ExternalApiException;
 import com.fisa.bank.common.application.util.JsonNodeMapper;
 import com.fisa.bank.common.config.security.ServiceUserAuthentication;
+import com.fisa.bank.common.application.util.RequesterInfo;
 
 @Slf4j
 @Component
@@ -39,6 +41,7 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
   private final OAuth2AuthorizedClientService authorizedClientService;
   private final WebClient.Builder builder;
   private final JsonNodeMapper jsonNodeMapper;
+  private final RequesterInfo requesterInfo;
 
   @Value("${core-bank.api-url}")
   private String BASE_URL;
@@ -129,14 +132,33 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
 
     Authentication auth = getAuth();
     String token = getAccessToken(auth);
+    Long userId = requesterInfo.getCoreBankingUserId();
+    String url = BASE_URL + endpoint;
+
+    if (log.isTraceEnabled()) {
+      log.trace("CoreBank request -> method={} url={} userId={} body=null", method, url, userId);
+    }
 
     try {
-      return client(token)
-          .method(method)
-          .uri(BASE_URL + endpoint)
-          .retrieve()
-          .bodyToMono(responseType)
-          .block();
+      ResponseEntity<T> entity =
+          client(token)
+              .method(method)
+              .uri(url)
+              .retrieve()
+              .toEntity(responseType)
+              .block();
+
+      if (log.isTraceEnabled() && entity != null) {
+        log.trace(
+            "CoreBank response <- status={} url={} headers={} body={} userId={}",
+            entity.getStatusCodeValue(),
+            url,
+            entity.getHeaders(),
+            entity.getBody(),
+            userId);
+      }
+
+      return entity != null ? entity.getBody() : null;
 
     } catch (WebClientResponseException e) {
 
@@ -145,12 +167,25 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
 
         String newToken = getAccessToken(auth);
 
-        return client(newToken)
-            .method(method)
-            .uri(BASE_URL + endpoint)
-            .retrieve()
-            .bodyToMono(responseType)
-            .block();
+        ResponseEntity<T> entity =
+            client(newToken)
+                .method(method)
+                .uri(url)
+                .retrieve()
+                .toEntity(responseType)
+                .block();
+
+        if (log.isTraceEnabled() && entity != null) {
+          log.trace(
+              "CoreBank response <- status={} url={} headers={} body={} userId={}",
+              entity.getStatusCodeValue(),
+              url,
+              entity.getHeaders(),
+              entity.getBody(),
+              userId);
+        }
+
+        return entity != null ? entity.getBody() : null;
       }
 
       String body = e.getResponseBodyAsString();
@@ -168,15 +203,34 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
 
     Authentication auth = getAuth();
     String token = getAccessToken(auth);
+    Long userId = requesterInfo.getCoreBankingUserId();
+    String url = BASE_URL + endpoint;
+
+    if (log.isTraceEnabled()) {
+      log.trace("CoreBank request -> method={} url={} userId={} body={}", method, url, userId, body);
+    }
 
     try {
-      return client(token)
-          .method(method)
-          .uri(BASE_URL + endpoint)
-          .bodyValue(body)
-          .retrieve()
-          .bodyToMono(responseType)
-          .block();
+      ResponseEntity<T> entity =
+          client(token)
+              .method(method)
+              .uri(url)
+              .bodyValue(body)
+              .retrieve()
+              .toEntity(responseType)
+              .block();
+
+      if (log.isTraceEnabled() && entity != null) {
+        log.trace(
+            "CoreBank response <- status={} url={} headers={} body={} userId={}",
+            entity.getStatusCodeValue(),
+            url,
+            entity.getHeaders(),
+            entity.getBody(),
+            userId);
+      }
+
+      return entity != null ? entity.getBody() : null;
 
     } catch (WebClientResponseException e) {
 
@@ -185,13 +239,26 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
 
         String newToken = getAccessToken(auth);
 
-        return client(newToken)
-            .method(method)
-            .uri(BASE_URL + endpoint)
-            .bodyValue(body)
-            .retrieve()
-            .bodyToMono(responseType)
-            .block();
+        ResponseEntity<T> entity =
+            client(newToken)
+                .method(method)
+                .uri(url)
+                .bodyValue(body)
+                .retrieve()
+                .toEntity(responseType)
+                .block();
+
+        if (log.isTraceEnabled() && entity != null) {
+          log.trace(
+              "CoreBank response <- status={} url={} headers={} body={} userId={}",
+              entity.getStatusCodeValue(),
+              url,
+              entity.getHeaders(),
+              entity.getBody(),
+              userId);
+        }
+
+        return entity != null ? entity.getBody() : null;
       }
 
       String bodyString = e.getResponseBodyAsString();

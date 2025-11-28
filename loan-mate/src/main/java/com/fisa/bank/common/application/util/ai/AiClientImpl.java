@@ -1,20 +1,24 @@
 package com.fisa.bank.common.application.util.ai;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fisa.bank.common.application.exception.ExternalApiException;
 import com.fisa.bank.common.application.util.JsonNodeMapper;
+import com.fisa.bank.common.application.util.RequesterInfo;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class AiClientImpl implements AiClient {
   private final WebClient.Builder builder;
 
@@ -22,6 +26,8 @@ public class AiClientImpl implements AiClient {
 
   @Value("${ai-server.api-url}")
   private String baseUrl;
+
+  private final RequesterInfo requesterInfo;
 
   @Override
   public <T, B> T fetchOne(String endpoint, B body, Class<T> clazz) {
@@ -40,9 +46,15 @@ public class AiClientImpl implements AiClient {
 
   private <T, B> T executeRequest(
       String endpoint, HttpMethod method, B body, Class<T> responseType) {
+    Long userId = requesterInfo.getServiceUserId();
+    String url = baseUrl + endpoint;
+    if (log.isTraceEnabled()) {
+      log.trace("AI request -> method={} url={} userId={} body={}", method, url, userId, body);
+    }
+
     return client()
         .method(method)
-        .uri(baseUrl + endpoint)
+        .uri(url)
         .bodyValue(body)
         .retrieve()
         .onStatus(
@@ -62,7 +74,19 @@ public class AiClientImpl implements AiClient {
                                         + " : "
                                         + bodyStr,
                                     bodyStr))))
-        .bodyToMono(responseType)
+        .toEntity(responseType)
+        .doOnSuccess(
+            entity -> {
+              if (log.isTraceEnabled() && entity != null) {
+                log.trace(
+                    "AI response <- status={} url={} headers={} body={}",
+                    entity.getStatusCodeValue(),
+                    url,
+                    entity.getHeaders(),
+                    entity.getBody());
+              }
+            })
+        .map(ResponseEntity::getBody)
         .block();
   }
 }
