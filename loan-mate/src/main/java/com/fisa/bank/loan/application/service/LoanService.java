@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fisa.bank.common.application.util.RequesterInfo;
-import com.fisa.bank.common.application.util.ai.AiClient;
+import com.fisa.bank.loan.application.client.LoanAiClient;
 import com.fisa.bank.loan.application.client.LoanCoreBankingClient;
 import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
@@ -33,12 +33,8 @@ public class LoanService implements ManageLoanUseCase {
 
   private final LoanReader loanReader;
   private final LoanCoreBankingClient loanCoreBankingClient;
+  private final LoanAiClient loanAiClient;
   private final RequesterInfo requesterInfo;
-  private static final String PREDICT_URL = "/predict";
-  private static final String LOAN_COMMENT = "/insight/loan";
-  private final AiClient aiClient;
-  private static final String AI_REQUEST_KEY_USER_ID = "user_id";
-  private static final String AI_REQUEST_KEY_LOAN_LEDGER_ID = "loan_ledger_id";
 
   @Override
   @Transactional
@@ -49,8 +45,7 @@ public class LoanService implements ManageLoanUseCase {
     List<Loan> loans = loanReader.findLoans(userId);
 
     // 위험도 fetch
-    LoanRisks loanRisks =
-        aiClient.fetchOne(PREDICT_URL, Map.of(AI_REQUEST_KEY_USER_ID, userId), LoanRisks.class);
+    LoanRisks loanRisks = loanAiClient.fetchLoanRisks(userId);
 
     // 위험도와 대출 id를 매핑하는 맵
     Map<Long, BigDecimal> riskMap =
@@ -69,9 +64,7 @@ public class LoanService implements ManageLoanUseCase {
 
     loanDetail.setProgress(progress);
     // 대출 LLM 코멘트
-    LoanComment loanComment =
-        aiClient.fetchOne(
-            LOAN_COMMENT, Map.of(AI_REQUEST_KEY_LOAN_LEDGER_ID, loanId), LoanComment.class);
+    LoanComment loanComment = loanAiClient.fetchLoanComment(loanId);
 
     if (!loanComment.getLoanLedgerId().equals(loanId)) {
       throw new IllegalStateException("요청한 loanId와 응답 loanLedgerId가 불일치합니다.");
