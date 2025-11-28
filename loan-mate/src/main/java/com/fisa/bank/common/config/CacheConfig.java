@@ -1,11 +1,9 @@
 package com.fisa.bank.common.config;
 
-import java.time.Duration;
 import lombok.RequiredArgsConstructor;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+
+import java.time.Duration;
+
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -18,12 +16,17 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+
 @EnableCaching
 @Configuration
 @RequiredArgsConstructor
 public class CacheConfig {
 
-    private final ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper;
 
   @Bean
   public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
@@ -66,10 +69,12 @@ public class CacheConfig {
   }
 
   private ObjectMapper redisObjectMapper() {
-    var typeValidator = BasicPolymorphicTypeValidator.builder().allowIfBaseType(Object.class).build();
+    var typeValidator =
+        BasicPolymorphicTypeValidator.builder().allowIfBaseType(Object.class).build();
 
     ObjectMapper mapper = objectMapper.copy();
-    mapper.activateDefaultTyping(typeValidator, ObjectMapper.DefaultTyping.EVERYTHING, JsonTypeInfo.As.PROPERTY);
+    mapper.activateDefaultTyping(
+        typeValidator, ObjectMapper.DefaultTyping.EVERYTHING, JsonTypeInfo.As.PROPERTY);
     mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     return mapper;
   }

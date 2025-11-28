@@ -2,6 +2,9 @@ package com.fisa.bank.common.config.security;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.Collections;
+import java.util.Map;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -19,8 +22,6 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepo
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import java.util.Collections;
-import java.util.Map;
 
 @Configuration
 @EnableWebSecurity

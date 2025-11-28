@@ -1,10 +1,11 @@
 package com.fisa.bank.loan.application.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import lombok.NoArgsConstructor;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Getter
 @NoArgsConstructor
@@ -14,5 +15,4 @@ public class LoanRiskDetail {
   private Long loanLedgerId;
   private BigDecimal risk;
   private String explanation;
-
 }

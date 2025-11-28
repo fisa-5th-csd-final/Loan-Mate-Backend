@@ -9,7 +9,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Component;
 
-import com.fisa.bank.common.application.util.RequesterInfo;
 import com.fisa.bank.common.application.util.core_bank.CoreBankingClient;
 import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
 import com.fisa.bank.loan.application.model.LoanDetail;

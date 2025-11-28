@@ -29,7 +29,9 @@ public class LoanAiClient {
   }
 
   // 사용자 1명이 가입한 1건의 대출 Ledger에 대한 comment
-  @Cacheable(cacheNames = "loanComment", key = "@springRequesterInfo.coreBankingUserId + ':' + #loanLedgerId")
+  @Cacheable(
+      cacheNames = "loanComment",
+      key = "@springRequesterInfo.coreBankingUserId + ':' + #loanLedgerId")
   public LoanComment fetchLoanComment(Long loanLedgerId) {
     return aiClient.fetchOne(
         LOAN_COMMENT_URL, Map.of(AI_REQUEST_KEY_LOAN_LEDGER_ID, loanLedgerId), LoanComment.class);
