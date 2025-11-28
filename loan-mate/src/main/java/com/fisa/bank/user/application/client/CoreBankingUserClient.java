@@ -1,11 +1,11 @@
 package com.fisa.bank.user.application.client;
 
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Component;
 
 import com.fisa.bank.common.application.util.core_bank.CoreBankingClient;
 import com.fisa.bank.user.application.dto.UserInfoResponse;
-
-import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor

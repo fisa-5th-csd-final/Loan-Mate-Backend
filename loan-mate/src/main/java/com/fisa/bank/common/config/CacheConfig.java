@@ -64,5 +64,4 @@ public class CacheConfig {
         .entryTtl(Duration.ofDays(1))
         .disableCachingNullValues();
   }
-
 }
