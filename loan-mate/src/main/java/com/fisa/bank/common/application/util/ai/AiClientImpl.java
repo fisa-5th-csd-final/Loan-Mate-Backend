@@ -13,8 +13,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fisa.bank.common.application.exception.ExternalApiException;
-import com.fisa.bank.common.application.util.JsonNodeMapper;
 import com.fisa.bank.common.application.util.RequesterInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 @Component
 @RequiredArgsConstructor
@@ -22,7 +23,7 @@ import com.fisa.bank.common.application.util.RequesterInfo;
 public class AiClientImpl implements AiClient {
   private final WebClient.Builder builder;
 
-  private final JsonNodeMapper jsonNodeMapper;
+  @Qualifier("aiObjectMapper") private final ObjectMapper aiObjectMapper;
 
   @Value("${ai-server.api-url}")
   private String baseUrl;
@@ -37,7 +38,7 @@ public class AiClientImpl implements AiClient {
       throw new IllegalStateException("응답이 null 입니다.");
     }
 
-    return jsonNodeMapper.map(root, clazz);
+    return map(root, clazz);
   }
 
   private WebClient client() {
@@ -87,5 +88,13 @@ public class AiClientImpl implements AiClient {
             })
         .map(ResponseEntity::getBody)
         .block();
+  }
+
+  private <T> T map(JsonNode node, Class<T> clazz) {
+    try {
+      return aiObjectMapper.treeToValue(node, clazz);
+    } catch (Exception e) {
+      throw new RuntimeException("AI JsonNode -> DTO 변환 실패", e);
+    }
   }
 }

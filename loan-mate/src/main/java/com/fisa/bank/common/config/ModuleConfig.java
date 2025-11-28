@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
@@ -13,10 +14,18 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 @Configuration
 public class ModuleConfig {
 
-  @Bean
+  @Bean // CoreBanking 및 프론트 요청/응답 직렬화 OM
   public ObjectMapper objectMapper() {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.registerModule(new JavaTimeModule());
+    return objectMapper;
+  }
+
+  @Bean(name = "aiObjectMapper") // AI 서버와 통신할 때 사용하는 OM
+  public ObjectMapper aiObjectMapper() {
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.registerModule(new JavaTimeModule());
+    objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
     return objectMapper;
   }
 }
