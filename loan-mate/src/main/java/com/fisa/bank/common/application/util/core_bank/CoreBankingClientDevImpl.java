@@ -61,7 +61,11 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
         return executeRequest(endpoint, newToken, method, responseType);
       }
 
-      log.error("CoreBanking 호출 실패: {} {}", e.getStatusCode(), e.getMessage());
+      log.error(
+          "CoreBanking 호출 실패: {} {} body={}",
+          e.getStatusCode(),
+          e.getMessage(),
+          e.getResponseBodyAsString());
       throw e;
 
     } catch (Exception e) {
@@ -127,7 +131,11 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
         return executeRequest(endpoint, newToken, method, body, responseType);
       }
 
-      log.error("CoreBanking 호출 실패: {} {}", e.getStatusCode(), e.getMessage());
+      log.error(
+          "CoreBanking 호출 실패: {} {} body={}",
+          e.getStatusCode(),
+          e.getMessage(),
+          e.getResponseBodyAsString());
       throw e;
     } catch (Exception e) {
       log.error("알 수 없는 예외", e);

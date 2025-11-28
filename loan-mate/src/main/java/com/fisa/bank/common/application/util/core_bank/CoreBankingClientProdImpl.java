@@ -151,6 +151,11 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
             .block();
       }
 
+      log.error(
+          "CoreBanking 호출 실패: {} {} body={}",
+          e.getStatusCode(),
+          e.getMessage(),
+          e.getResponseBodyAsString());
       throw e;
     }
   }
@@ -186,6 +191,11 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
             .block();
       }
 
+      log.error(
+          "CoreBanking 호출 실패: {} {} body={}",
+          e.getStatusCode(),
+          e.getMessage(),
+          e.getResponseBodyAsString());
       throw e;
     }
   }
