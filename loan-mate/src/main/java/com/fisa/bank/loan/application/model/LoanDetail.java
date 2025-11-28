@@ -28,6 +28,7 @@ public class LoanDetail {
   private LoanType loanType;
   private RepaymentType repaymentType;
   private LocalDateTime lastRepaymentDate;
+  private LocalDateTime nextRepaymentDate;
   private LocalDateTime createdAt;
   private int term;
   private RepaymentStatus repaymentStatus;
