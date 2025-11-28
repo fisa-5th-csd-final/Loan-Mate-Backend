@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.fisa.bank.loan.application.model.Loan;
+import com.fisa.bank.loan.application.model.LoanAutoDeposit;
 import com.fisa.bank.persistence.user.entity.id.UserId;
 
 public interface LoanRepository {
@@ -11,4 +12,6 @@ public interface LoanRepository {
   List<Loan> getLoans(UserId userId);
 
   Optional<Loan> findById(Long loanId);
+
+    List<LoanAutoDeposit> findAutoDepositByUserId(Long userId);
 }

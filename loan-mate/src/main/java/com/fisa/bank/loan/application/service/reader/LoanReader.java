@@ -1,5 +1,6 @@
 package com.fisa.bank.loan.application.service.reader;
 
+import com.fisa.bank.loan.application.model.LoanAutoDeposit;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -13,7 +14,6 @@ import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.model.PrepaymentInfo;
 import com.fisa.bank.loan.application.repository.LoanRepository;
-import com.fisa.bank.persistence.loan.entity.LoanLedger;
 import com.fisa.bank.persistence.loan.repository.LoanLedgerRepository;
 import com.fisa.bank.persistence.user.entity.id.UserId;
 
@@ -47,7 +47,7 @@ public class LoanReader {
     return coreBankingClient.fetchList(PREPAYMENT_INFOS_URL, PrepaymentInfo.class);
   }
 
-  public List<LoanLedger> findAllByUserId(Long userId) {
-    return loanLedgerRepository.findAllByUser_UserId(UserId.of(userId));
-  }
+    public List<LoanAutoDeposit> findAutoDepositByUserId(Long userId) {
+        return loanRepository.findAutoDepositByUserId(userId);
+    }
 }
