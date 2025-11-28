@@ -10,6 +10,7 @@ import java.util.stream.StreamSupport;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -133,13 +134,13 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
         return executeRequest(endpoint, newToken, method, body, responseType);
       }
 
-      String body = e.getResponseBodyAsString();
-      log.error("CoreBanking 호출 실패: {} {} body={}", e.getStatusCode(), e.getMessage(), body);
+      String bodyAsString = e.getResponseBodyAsString();
+      log.error("CoreBanking 호출 실패: {} {} body={}", e.getStatusCode(), e.getMessage(), bodyAsString);
       throw new ExternalApiException(
           HttpStatus.valueOf(e.getStatusCode().value()),
           "CORE_BANK_API_ERROR",
-          "CoreBanking error " + e.getStatusCode().value() + " : " + body,
-          body);
+          "CoreBanking error " + e.getStatusCode().value() + " : " + bodyAsString,
+          bodyAsString);
     } catch (Exception e) {
       log.error("알 수 없는 예외", e);
       throw new IllegalStateException("CoreBanking API 호출 중 예외 발생", e);
