@@ -36,6 +36,12 @@ public class LoanController {
     return ApiResponseGenerator.success(ResponseCode.GET, loanDetail);
   }
 
+  @GetMapping("/ledger/{loanId:\\d+}/comment")
+  public ApiResponse<SuccessBody<LoanAiCommentResponse>> getComment(@PathVariable Long loanId){
+      log.info("대출 AI 코멘트 조회");
+      return ApiResponseGenerator.success(ResponseCode.GET, manageLoanUseCase.getAiComment(loanId));
+  }
+
   @GetMapping("/ledgers/{loanId}/auto-deposit")
   public ApiResponse<SuccessBody<LoanAutoDepositResponse>> getAutoDeposit(
       @PathVariable Long loanId) {

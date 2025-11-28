@@ -21,4 +21,6 @@ public interface ManageLoanUseCase {
   List<AutoDepositResponse> getAutoDepositSummary();
 
   List<LoanDetailResponse> getLoanDetails();
+
+  LoanAiCommentResponse getAiComment(Long loanLedgerId);
 }
