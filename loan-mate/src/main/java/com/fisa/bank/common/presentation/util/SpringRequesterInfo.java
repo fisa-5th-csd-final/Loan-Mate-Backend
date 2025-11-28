@@ -14,7 +14,7 @@ import com.fisa.bank.common.config.security.ServiceUserAuthentication;
 import com.fisa.bank.user.application.model.UserAuth;
 import com.fisa.bank.user.application.repository.UserAuthRepository;
 
-@Component
+@Component("springRequesterInfo")
 @RequiredArgsConstructor
 public class SpringRequesterInfo implements RequesterInfo {
 
