@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.persistence.loan.enums.LoanType;
@@ -19,10 +20,12 @@ public class LoanDetailResponse {
   private final BigDecimal remainPrincipal;
   private final BigDecimal principal;
   private final BigDecimal monthlyRepayment;
+  private final BigDecimal interestPayment;
   private final String accountNumber;
   private final LoanType loanType;
   private final RepaymentType repaymentType;
   private final int progress;
+  private final LocalDateTime nextRepaymentDate;
 
   public static LoanDetailResponse from(Long loanId, LoanDetail loanDetail) {
     return LoanDetailResponse.builder()
@@ -30,11 +33,13 @@ public class LoanDetailResponse {
         .loanName(loanDetail.getName())
         .loanType(loanDetail.getLoanType())
         .monthlyRepayment(loanDetail.getMonthlyRepayment())
+        .interestPayment(loanDetail.getInterestPayment())
         .repaymentType(loanDetail.getRepaymentType())
         .accountNumber(loanDetail.getAccountNumber())
         .remainPrincipal(loanDetail.getRemainPrincipal())
         .principal(loanDetail.getPrincipal())
         .progress(loanDetail.getProgress())
+        .nextRepaymentDate(loanDetail.getNextRepaymentDate())
         .build();
   }
 }

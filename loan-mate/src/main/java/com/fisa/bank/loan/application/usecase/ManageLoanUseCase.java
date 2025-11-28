@@ -19,4 +19,6 @@ public interface ManageLoanUseCase {
   List<LoansWithPrepaymentBenefitResponse> getLoansWithPrepaymentBenefit();
 
   List<AutoDepositResponse> getAutoDepositSummary();
+
+  List<LoanDetailResponse> getLoanDetails();
 }

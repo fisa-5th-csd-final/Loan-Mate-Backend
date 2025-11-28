@@ -174,4 +174,21 @@ public class LoanService implements ManageLoanUseCase {
                     .build())
         .toList();
   }
+
+  @Override
+  public List<LoanDetailResponse> getLoanDetails() {
+    List<LoanDetail> loanDetails = loanReader.findLoanDetails();
+
+    List<LoanDetailResponse> responseList =
+        loanDetails.stream()
+            .map(
+                loanDetail -> {
+                  // progress 계산
+                  loanDetail.setProgress(calculateProgressRate(loanDetail).intValueExact());
+                  // DTO 변환
+                  return LoanDetailResponse.from(loanDetail.getLoanLedgerId(), loanDetail);
+                })
+            .toList();
+    return responseList;
+  }
 }

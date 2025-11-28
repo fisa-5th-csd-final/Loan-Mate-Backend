@@ -18,14 +18,17 @@ import com.fisa.bank.persistence.loan.enums.RepaymentType;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LoanDetail {
+  private Long loanLedgerId;
   private String name;
   private BigDecimal remainPrincipal;
   private BigDecimal principal;
   private BigDecimal monthlyRepayment;
+  private BigDecimal interestPayment;
   private String accountNumber;
   private LoanType loanType;
   private RepaymentType repaymentType;
   private LocalDateTime lastRepaymentDate;
+  private LocalDateTime nextRepaymentDate;
   private LocalDateTime createdAt;
   private int term;
   private RepaymentStatus repaymentStatus;
