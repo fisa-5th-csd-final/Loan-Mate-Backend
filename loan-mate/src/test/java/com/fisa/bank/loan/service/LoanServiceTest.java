@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,8 +19,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.fisa.bank.common.application.service.CoreBankingClient;
+import com.fisa.bank.common.application.util.RequesterInfo;
+import com.fisa.bank.loan.application.client.LoanAiClient;
+import com.fisa.bank.loan.application.client.LoanCoreBankingClient;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
+import com.fisa.bank.loan.application.model.LoanComment;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.repository.LoanRepository;
 import com.fisa.bank.loan.application.service.LoanService;
@@ -35,7 +39,11 @@ public class LoanServiceTest {
 
   @Mock LoanRepository loanRepository;
 
-  @Mock CoreBankingClient coreBankingClient;
+  @Mock LoanCoreBankingClient loanCoreBankingClient;
+
+  @Mock LoanAiClient loanAiClient;
+
+  @Mock RequesterInfo requesterInfo;
 
   @Mock LoanReader loanReader;
 
@@ -45,6 +53,11 @@ public class LoanServiceTest {
   private static LoanDetail fullyRepaidLoan; // 케이스 4: 만기 상환 직후
 
   private static final int TOTAL_TERM = 1;
+
+  @BeforeEach
+  void init() {
+    when(loanAiClient.fetchLoanComment(anyLong())).thenReturn(new LoanComment(1L, ""));
+  }
 
   @BeforeAll
   static void setup() {
@@ -59,65 +72,81 @@ public class LoanServiceTest {
     // 1. 아직 상환한 적 없음 (paidMonth = 0)
     noRepaymentLoan =
         new LoanDetail(
+            null,
             "미상환 대출",
             BigDecimal.valueOf(1000),
             BigDecimal.valueOf(1000),
             BigDecimal.valueOf(1000),
+            BigDecimal.ZERO,
             accountNumber,
             LoanType.CREDIT,
             RepaymentType.BULLET,
             null,
+            null,
             createdAt,
             TOTAL_TERM,
             RepaymentStatus.NORMAL,
+            null,
             null);
 
     // 2. 상환 완료 상태 (스킵 대상)
     terminatedLoan =
         new LoanDetail(
+            null,
             "중도 상환된 대출",
             BigDecimal.valueOf(1000),
             BigDecimal.valueOf(1000),
             BigDecimal.valueOf(1000),
+            BigDecimal.ZERO,
             accountNumber,
             LoanType.CREDIT,
             RepaymentType.BULLET,
             fullRepaymentDate,
+            null,
             createdAt,
             TOTAL_TERM,
             RepaymentStatus.TERMINATED,
+            null,
             null);
 
     // 3. 만기 상환 직후 (12개월 / 12개월 = 100% 스킵 대상)
     fullyRepaidLoan =
         new LoanDetail(
+            null,
             "만기 상환 직후 완료된 대출",
             BigDecimal.valueOf(1000),
             BigDecimal.valueOf(1000),
             BigDecimal.valueOf(1000),
+            BigDecimal.ZERO,
             accountNumber,
             LoanType.CREDIT,
             RepaymentType.BULLET,
             fullRepaymentDate,
+            null,
             createdAt,
             TOTAL_TERM,
             RepaymentStatus.COMPLETED,
+            null,
             null);
 
     // 4. 최소 1번 상환 (4개월 / 12개월 = 33%)
     activeRepaymentLoan =
         new LoanDetail(
+            null,
             "진행중인 대출",
             BigDecimal.valueOf(1000),
             BigDecimal.valueOf(1000),
             BigDecimal.valueOf(1000),
+            BigDecimal.ZERO,
             accountNumber,
             LoanType.CREDIT,
             RepaymentType.BULLET,
             lastRepaymentDate,
+            null,
             createdAt,
             TOTAL_TERM,
             RepaymentStatus.NORMAL,
+            null,
             null);
   }
 

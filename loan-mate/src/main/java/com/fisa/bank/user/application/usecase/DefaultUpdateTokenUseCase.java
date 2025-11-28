@@ -9,8 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fisa.bank.common.application.service.JwtTokenGenerator;
-import com.fisa.bank.common.application.service.JwtTokenValidator;
+import com.fisa.bank.common.application.util.jwt.JwtTokenGenerator;
+import com.fisa.bank.common.application.util.jwt.JwtTokenValidator;
 import com.fisa.bank.user.application.dto.TokenPair;
 import com.fisa.bank.user.application.repository.RefreshTokenRepository;
 

@@ -1,4 +1,4 @@
-package com.fisa.bank.common.application.service;
+package com.fisa.bank.common.application.util.core_bank;
 
 import java.util.List;
 
@@ -7,7 +7,7 @@ public interface CoreBankingClient {
 
   <T> List<T> fetchList(String endpoint, Class<T> clazz);
 
-  public void fetchOneDelete(String endpoint);
+  public void delete(String endpoint);
 
   void patch(String endpoint, Object body);
 }

@@ -13,7 +13,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 
-import com.fisa.bank.common.util.CookieUtil;
+import com.fisa.bank.common.presentation.util.CookieUtil;
 
 @Slf4j
 @Component

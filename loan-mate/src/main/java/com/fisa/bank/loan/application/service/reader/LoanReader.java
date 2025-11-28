@@ -7,7 +7,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fisa.bank.common.application.service.CoreBankingClient;
+import com.fisa.bank.loan.application.client.LoanCoreBankingClient;
 import com.fisa.bank.loan.application.exception.LoanLedgerNotFoundException;
 import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.model.LoanDetail;
@@ -23,19 +23,14 @@ import com.fisa.bank.persistence.user.entity.id.UserId;
 public class LoanReader {
   private final LoanRepository loanRepository;
   private final LoanLedgerRepository loanLedgerRepository;
-  private final CoreBankingClient coreBankingClient;
+  private final LoanCoreBankingClient loanCoreBankingClient;
 
-  private static final String PREPAYMENT_INFOS_URL = "/loans/prepayment-infos";
-  private static final String LOAN_DETAILS_URL = "/loans/ledgers/details";
-
-  public LoanDetail findLoanDetail(Long loanId) {
-    String url = "/loans/ledger/" + loanId;
-
-    return coreBankingClient.fetchOne(url, LoanDetail.class);
+  public LoanDetail findLoanDetail(Long loanId) { // 특정 LoanLedger의 정보
+    return loanCoreBankingClient.fetchLoanDetail(loanId);
   }
 
   public List<LoanDetail> findLoanDetails() {
-    return coreBankingClient.fetchList(LOAN_DETAILS_URL, LoanDetail.class);
+    return loanCoreBankingClient.fetchLoanDetails();
   }
 
   public List<Loan> findLoans(Long userId) {
@@ -49,7 +44,7 @@ public class LoanReader {
   }
 
   public List<PrepaymentInfo> findPrepaymentInfos() {
-    return coreBankingClient.fetchList(PREPAYMENT_INFOS_URL, PrepaymentInfo.class);
+    return loanCoreBankingClient.fetchPrepaymentInfos();
   }
 
   public List<LoanLedger> findAllByUserId(Long userId) {

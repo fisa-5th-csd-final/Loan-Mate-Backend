@@ -1,4 +1,4 @@
-package com.fisa.bank.common.application.service;
+package com.fisa.bank.common.application.util.core_bank;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,12 +10,17 @@ import java.util.stream.StreamSupport;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fisa.bank.common.application.exception.ExternalApiException;
 import com.fisa.bank.common.application.util.JsonNodeMapper;
+import com.fisa.bank.common.application.util.jwt.DevAccessTokenManager;
+import com.fisa.bank.common.application.util.RequesterInfo;
 
 @Slf4j
 @Component
@@ -26,6 +31,7 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
   private final DevAccessTokenManager tokenManager;
   private final WebClient.Builder builder;
   private final JsonNodeMapper jsonNodeMapper;
+  private final RequesterInfo requesterInfo;
 
   @Value("${core-bank.api-url}")
   private String baseUrl;
@@ -34,14 +40,36 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
     return builder.defaultHeader("Authorization", "Bearer " + token).build();
   }
 
+  private <T> void logResponse(String url, ResponseEntity<T> entity) {
+    if (!log.isTraceEnabled() || entity == null) {
+      return;
+    }
+
+    log.trace(
+        "CoreBank response <- status={} url={} headers={} body={}",
+        entity.getStatusCodeValue(),
+        url,
+        entity.getHeaders(),
+        entity.getBody());
+  }
+
   private <T> T executeRequest(
       String endpoint, String token, HttpMethod method, Class<T> responseType) {
-    return client(token)
-        .method(method)
-        .uri(baseUrl + endpoint)
-        .retrieve()
-        .bodyToMono(responseType)
-        .block();
+    String url = baseUrl + endpoint;
+    if (log.isTraceEnabled()) {
+      log.trace("CoreBank request -> method={} url={} body=null", method, url);
+    }
+
+    ResponseEntity<T> entity =
+        client(token)
+            .method(method)
+            .uri(url)
+            .retrieve()
+            .toEntity(responseType)
+            .block();
+
+    logResponse(url, entity);
+    return entity != null ? entity.getBody() : null;
   }
 
   /** API 호출 + 토큰 만료 시 자동 재발급 */
@@ -60,8 +88,13 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
         return executeRequest(endpoint, newToken, method, responseType);
       }
 
-      log.error("CoreBanking 호출 실패: {} {}", e.getStatusCode(), e.getMessage());
-      throw e;
+      String body = e.getResponseBodyAsString();
+      log.error("CoreBanking 호출 실패: {} {} body={}", e.getStatusCode(), e.getMessage(), body);
+      throw new ExternalApiException(
+          HttpStatus.valueOf(e.getStatusCode().value()),
+          "CORE_BANK_API_ERROR",
+          "CoreBanking error " + e.getStatusCode().value() + " : " + body,
+          body);
 
     } catch (Exception e) {
       log.error("알 수 없는 예외", e);
@@ -100,7 +133,7 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
    *
    * @param endpoint 요청 URL
    */
-  public void fetchOneDelete(String endpoint) {
+  public void delete(String endpoint) {
 
     callApi(endpoint, HttpMethod.DELETE, Void.class);
   }
@@ -126,8 +159,13 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
         return executeRequest(endpoint, newToken, method, body, responseType);
       }
 
-      log.error("CoreBanking 호출 실패: {} {}", e.getStatusCode(), e.getMessage());
-      throw e;
+      String bodyAsString = e.getResponseBodyAsString();
+      log.error("CoreBanking 호출 실패: {} {} body={}", e.getStatusCode(), e.getMessage(), bodyAsString);
+      throw new ExternalApiException(
+          HttpStatus.valueOf(e.getStatusCode().value()),
+          "CORE_BANK_API_ERROR",
+          "CoreBanking error " + e.getStatusCode().value() + " : " + bodyAsString,
+          bodyAsString);
     } catch (Exception e) {
       log.error("알 수 없는 예외", e);
       throw new IllegalStateException("CoreBanking API 호출 중 예외 발생", e);
@@ -136,12 +174,21 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
 
   private <T, B> T executeRequest(
       String endpoint, String token, HttpMethod method, B body, Class<T> responseType) {
-    return client(token)
-        .method(method)
-        .uri(baseUrl + endpoint)
-        .bodyValue(body)
-        .retrieve()
-        .bodyToMono(responseType)
-        .block();
+    String url = baseUrl + endpoint;
+    if (log.isTraceEnabled()) {
+      log.trace("CoreBank request -> method={} url={} body={}", method, url, body);
+    }
+
+    ResponseEntity<T> entity =
+        client(token)
+            .method(method)
+            .uri(url)
+            .bodyValue(body)
+            .retrieve()
+            .toEntity(responseType)
+            .block();
+
+    logResponse(url, entity);
+    return entity != null ? entity.getBody() : null;
   }
 }
