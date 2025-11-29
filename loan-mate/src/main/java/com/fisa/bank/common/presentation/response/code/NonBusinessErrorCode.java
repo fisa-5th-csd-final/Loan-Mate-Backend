@@ -14,7 +14,10 @@ import com.fisa.bank.common.presentation.response.code.ApiResponseCode.ErrorResp
 @Getter
 public enum NonBusinessErrorCode implements ErrorResponseCode<Throwable> {
   EXTERNAL_API_ERROR(
-      HttpStatus.BAD_GATEWAY, "EXTERNAL_API_ERROR", "External API 호출 실패", ExternalApiException.class),
+      HttpStatus.BAD_GATEWAY,
+      "EXTERNAL_API_ERROR",
+      "External API 호출 실패",
+      ExternalApiException.class),
   INTERNAL_SERVER_ERROR(
       HttpStatus.INTERNAL_SERVER_ERROR,
       "INTERNAL_SERVER_ERROR",
