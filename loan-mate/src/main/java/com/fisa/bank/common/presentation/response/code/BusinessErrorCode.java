@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.http.HttpStatus;
 
+import com.fisa.bank.account.application.exception.SalaryAccountNotFoundException;
 import com.fisa.bank.accountbook.application.exception.ManualLedgerAccessDeniedException;
 import com.fisa.bank.accountbook.application.exception.ManualLedgerNotFoundException;
 import com.fisa.bank.common.application.exception.AlreadyDeletedException;
@@ -20,7 +21,8 @@ public enum BusinessErrorCode implements ErrorResponseCode<BusinessException> {
   // Common
   ALREADY_DELETED_EXCEPTION(HttpStatus.NOT_FOUND, AlreadyDeletedException.class),
   MANUAL_LEDGER_NOT_FOUND(HttpStatus.NOT_FOUND, ManualLedgerNotFoundException.class),
-  MANUAL_LEDGER_ACCESS_DENIED(HttpStatus.FORBIDDEN, ManualLedgerAccessDeniedException.class);
+  MANUAL_LEDGER_ACCESS_DENIED(HttpStatus.FORBIDDEN, ManualLedgerAccessDeniedException.class),
+  SALARY_ACCOUNT_NOT_FOUND(HttpStatus.NOT_FOUND, SalaryAccountNotFoundException.class);
 
   private final HttpStatus status;
   @Getter private final Class<? extends BusinessException> exception;
