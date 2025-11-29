@@ -1,3 +1,4 @@
+# 각 패키지별 로깅 레벨을 설정하는 파일
 logging:
   level:
     com.fisa.bank.common.application.util.ai.AiClientImpl: trace
