@@ -16,10 +16,8 @@ public interface JpaAccountRepository extends JpaRepository<Account, AccountId> 
     where a.accountId = :accountId
       and a.user.userId = :userId
     """)
-    Optional<Account> findByAccountIdAndUserId(
-            @Param("accountId") AccountId accountId,
-            @Param("userId") UserId userId
-    );
+  Optional<Account> findByAccountIdAndUserId(
+      @Param("accountId") AccountId accountId, @Param("userId") UserId userId);
 
     Optional<Account> findFirstByUserAndIsForIncomeTrue(User user);
 }
