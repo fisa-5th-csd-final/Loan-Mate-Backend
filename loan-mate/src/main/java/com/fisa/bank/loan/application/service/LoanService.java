@@ -67,9 +67,17 @@ public class LoanService implements ManageLoanUseCase {
 
   @Override
   public LoanAiCommentResponse getAiComment(Long loanId) {
-    LoanComment loanComment = loanAiClient.fetchLoanComment(loanId);
+    Long userId = requesterInfo.getCoreBankingUserId();
+    LoanRisks loanRisks = loanAiClient.fetchLoanRisks(userId);
 
-    return new LoanAiCommentResponse(loanComment.getLoanLedgerId(), loanComment.getComment());
+    return Optional.ofNullable(loanRisks)
+            .map(LoanRisks::getLoans)
+            .orElse(List.of())
+            .stream()
+            .filter(detail -> loanId.equals(detail.getLoanLedgerId()))
+            .map(detail -> new LoanAiCommentResponse(detail.getLoanLedgerId(), detail.getExplanation()))
+            .findFirst()
+            .orElse(new LoanAiCommentResponse(loanId, null));
   }
 
   @Override
