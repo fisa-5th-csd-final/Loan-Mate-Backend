@@ -17,6 +17,7 @@ import com.fisa.bank.accountbook.application.model.ManualLedgerType;
 import com.fisa.bank.accountbook.application.repository.ManualLedgerRepository;
 import com.fisa.bank.accountbook.application.usecase.ManageManualLedgerUseCase;
 import com.fisa.bank.common.application.util.RequesterInfo;
+import com.fisa.bank.persistence.account.enums.ConsumptionCategory;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +37,8 @@ public class ManualLedgerService implements ManageManualLedgerUseCase {
             request.type(),
             request.amount(),
             trimDescription(request.description()),
-            request.savedAt());
+            request.savedAt(),
+            resolveCategory(request.type(), request.category()));
 
     ManualLedgerEntry saved = manualLedgerRepository.save(entry);
     return ManualLedgerResponse.from(saved);
@@ -62,10 +64,11 @@ public class ManualLedgerService implements ManageManualLedgerUseCase {
         new ManualLedgerEntry(
             ownedEntry.id(),
             ownedEntry.serviceUserId(),
-            request.type(),
+            ownedEntry.type(),
             request.amount(),
             trimDescription(request.description()),
-            ownedEntry.savedAt());
+            ownedEntry.savedAt(),
+            resolveCategory(ownedEntry.type(), request.category()));
 
     ManualLedgerEntry saved = manualLedgerRepository.save(updatedEntry);
     return ManualLedgerResponse.from(saved);
@@ -84,6 +87,14 @@ public class ManualLedgerService implements ManageManualLedgerUseCase {
     }
     String trimmed = description.trim();
     return trimmed.isEmpty() ? null : trimmed;
+  }
+
+  private ConsumptionCategory resolveCategory(
+      ManualLedgerType type, ConsumptionCategory consumptionCategory) {
+    if (type == ManualLedgerType.INCOME) {
+      return null;
+    }
+    return consumptionCategory;
   }
 
   private ManualLedgerEntry getOwnedEntry(Long entryId, Long userId) {
