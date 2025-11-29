@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fisa.bank.account.application.exception.SalaryAccountNotFoundException;
 import com.fisa.bank.account.application.model.RecommendedSpending;
+import com.fisa.bank.account.application.repository.AccountRepository;
 import com.fisa.bank.account.application.usecase.GetRecommendedSpendingUseCase;
 import com.fisa.bank.account.persistence.repository.JpaAccountTransactionRepository;
 import com.fisa.bank.accountbook.application.model.ManualLedgerType;
@@ -26,7 +27,6 @@ import com.fisa.bank.loan.application.service.reader.LoanReader;
 import com.fisa.bank.persistence.account.entity.Account;
 import com.fisa.bank.persistence.account.entity.id.AccountId;
 import com.fisa.bank.persistence.account.enums.ConsumptionCategory;
-import com.fisa.bank.persistence.account.repository.AccountRepository;
 import com.fisa.bank.persistence.user.entity.User;
 import com.fisa.bank.persistence.user.entity.id.UserId;
 import com.fisa.bank.persistence.user.repository.UserRepository;
@@ -111,9 +111,8 @@ public class RecommendedSpendingService implements GetRecommendedSpendingUseCase
             .findById(UserId.of(coreBankingUserId))
             .orElseThrow(UserNotFoundException::new);
 
-    return accountRepository.findAllByUser(user).stream()
-        .filter(Account::isForIncome)
-        .findFirst()
+    return accountRepository
+        .findSalaryAccount(user)
         .orElseThrow(() -> new SalaryAccountNotFoundException(coreBankingUserId));
   }
 
