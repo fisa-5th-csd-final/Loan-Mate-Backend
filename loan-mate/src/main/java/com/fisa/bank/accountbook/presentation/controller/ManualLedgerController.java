@@ -1,5 +1,6 @@
 package com.fisa.bank.accountbook.presentation.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,7 +36,7 @@ public class ManualLedgerController {
 
   @PostMapping
   public ApiResponse<SuccessBody<ManualLedgerResponse>> addEntry(
-      @RequestBody ManualLedgerCreateRequest request) {
+      @Valid @RequestBody ManualLedgerCreateRequest request) {
     log.info("사용자가 수입/지출 등록 요청");
     ManualLedgerResponse response = manageManualLedgerUseCase.addEntry(request);
     return ApiResponseGenerator.success(ResponseCode.CREATE, response);
@@ -51,7 +52,7 @@ public class ManualLedgerController {
 
   @PutMapping("/{entryId}")
   public ApiResponse<SuccessBody<ManualLedgerResponse>> updateEntry(
-      @PathVariable Long entryId, @RequestBody ManualLedgerUpdateRequest request) {
+      @PathVariable Long entryId, @Valid @RequestBody ManualLedgerUpdateRequest request) {
     log.info("사용자가 수입/지출 수정 요청, id={}", entryId);
     ManualLedgerResponse response = manageManualLedgerUseCase.updateEntry(entryId, request);
     return ApiResponseGenerator.success(ResponseCode.UPDATE, response);
