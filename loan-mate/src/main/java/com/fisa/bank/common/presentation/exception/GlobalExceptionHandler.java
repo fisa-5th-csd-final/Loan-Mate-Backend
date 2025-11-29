@@ -55,6 +55,7 @@ public class GlobalExceptionHandler {
   public ApiResponse<FailureBody> handle(RuntimeException e) {
     NonBusinessErrorCode errorCode = NonBusinessErrorCode.find(e);
     log.error(e.getMessage(), e);
-    return ApiResponseGenerator.fail(errorCode.getStatus(), errorCode.getCode(), errorCode.getMessage());
+    return ApiResponseGenerator.fail(
+        errorCode.getStatus(), errorCode.getCode(), errorCode.getMessage());
   }
 }

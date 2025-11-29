@@ -28,8 +28,8 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fisa.bank.common.application.exception.ExternalApiException;
 import com.fisa.bank.common.application.util.JsonNodeMapper;
-import com.fisa.bank.common.config.security.ServiceUserAuthentication;
 import com.fisa.bank.common.application.util.RequesterInfo;
+import com.fisa.bank.common.config.security.ServiceUserAuthentication;
 
 @Slf4j
 @Component
@@ -153,12 +153,7 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
 
     try {
       ResponseEntity<T> entity =
-          client(token)
-              .method(method)
-              .uri(url)
-              .retrieve()
-              .toEntity(responseType)
-              .block();
+          client(token).method(method).uri(url).retrieve().toEntity(responseType).block();
 
       logResponse(url, entity);
       return entity != null ? entity.getBody() : null;
@@ -171,12 +166,7 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
         String newToken = getAccessToken(auth);
 
         ResponseEntity<T> entity =
-            client(newToken)
-                .method(method)
-                .uri(url)
-                .retrieve()
-                .toEntity(responseType)
-                .block();
+            client(newToken).method(method).uri(url).retrieve().toEntity(responseType).block();
 
         logResponse(url, entity);
         return entity != null ? entity.getBody() : null;
