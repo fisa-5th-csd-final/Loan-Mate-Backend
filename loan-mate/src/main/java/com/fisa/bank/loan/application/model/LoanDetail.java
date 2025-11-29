@@ -33,6 +33,5 @@ public class LoanDetail {
   private int term;
   private RepaymentStatus repaymentStatus;
 
-  @Setter private String comment;
   @Setter private Integer progress;
 }

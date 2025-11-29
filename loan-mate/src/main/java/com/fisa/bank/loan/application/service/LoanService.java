@@ -20,6 +20,7 @@ import com.fisa.bank.common.application.util.RequesterInfo;
 import com.fisa.bank.loan.application.client.LoanAiClient;
 import com.fisa.bank.loan.application.client.LoanCoreBankingClient;
 import com.fisa.bank.loan.application.dto.response.AutoDepositResponse;
+import com.fisa.bank.loan.application.dto.response.LoanAiCommentResponse;
 import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
@@ -65,20 +66,19 @@ public class LoanService implements ManageLoanUseCase {
   }
 
   @Override
+  public LoanAiCommentResponse getAiComment(Long loanId) {
+    LoanComment loanComment = loanAiClient.fetchLoanComment(loanId);
+
+    return new LoanAiCommentResponse(loanComment.getLoanLedgerId(), loanComment.getComment());
+  }
+
+  @Override
   // TODO: 캐시 추가
   public LoanDetailResponse getLoanDetail(Long loanId) {
     LoanDetail loanDetail = loanReader.findLoanDetail(loanId);
     Integer progress = calculateProgressRate(loanDetail).intValueExact();
 
     loanDetail.setProgress(progress);
-    // 대출 LLM 코멘트
-    LoanComment loanComment = loanAiClient.fetchLoanComment(loanId);
-
-    if (!loanComment.getLoanLedgerId().equals(loanId)) {
-      throw new IllegalStateException("요청한 loanId와 응답 loanLedgerId가 불일치합니다.");
-    }
-
-    loanDetail.setComment(loanComment.getComment());
     return LoanDetailResponse.from(loanId, loanDetail);
   }
 
