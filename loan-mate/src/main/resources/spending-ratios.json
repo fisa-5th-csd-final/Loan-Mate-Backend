@@ -1,0 +1,50 @@
+{
+  "T20": {
+    "FOOD": 0.40,
+    "TRANSPORT": 0.13,
+    "SHOPPING": 0.27,
+    "ENTERTAINMENT": 0.20
+  },
+  "T30": {
+    "FOOD": 0.38,
+    "TRANSPORT": 0.23,
+    "SHOPPING": 0.23,
+    "ENTERTAINMENT": 0.15
+  },
+  "T40": {
+    "FOOD": 0.38,
+    "TRANSPORT": 0.23,
+    "SHOPPING": 0.31,
+    "ENTERTAINMENT": 0.08
+  },
+  "T50": {
+    "FOOD": 0.40,
+    "TRANSPORT": 0.20,
+    "SHOPPING": 0.30,
+    "ENTERTAINMENT": 0.10
+  },
+  "T60": {
+    "FOOD": 0.44,
+    "TRANSPORT": 0.22,
+    "SHOPPING": 0.22,
+    "ENTERTAINMENT": 0.11
+  },
+  "T70": {
+    "FOOD": 0.57,
+    "TRANSPORT": 0.14,
+    "SHOPPING": 0.23,
+    "ENTERTAINMENT": 0.06
+  },
+  "T80": {
+    "FOOD": 0.63,
+    "TRANSPORT": 0.16,
+    "SHOPPING": 0.16,
+    "ENTERTAINMENT": 0.06
+  },
+  "T90": {
+    "FOOD": 0.65,
+    "TRANSPORT": 0.13,
+    "SHOPPING": 0.17,
+    "ENTERTAINMENT": 0.04
+  }
+}
