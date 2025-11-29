@@ -6,11 +6,13 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
+import com.fisa.bank.loan.persistence.enums.ChangeItemType;
+
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChangeItem {
-  private String type; // "income" or "expense"
+  private ChangeItemType type; // "income" or "expense"
   private String name;
   private BigDecimal amount;
 }
