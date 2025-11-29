@@ -12,6 +12,7 @@ import com.fisa.bank.common.presentation.response.ApiResponse;
 import com.fisa.bank.common.presentation.response.ApiResponseGenerator;
 import com.fisa.bank.common.presentation.response.body.SuccessBody;
 import com.fisa.bank.common.presentation.response.code.ResponseCode;
+import com.fisa.bank.loan.application.dto.request.AiSimulationRequest;
 import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
 import com.fisa.bank.loan.application.dto.response.*;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
@@ -76,19 +77,11 @@ public class LoanController {
     return ApiResponseGenerator.success(ResponseCode.UPDATE);
   }
 
-  @GetMapping("/auto-deposit-summary")
-  public ApiResponse<SuccessBody<List<AutoDepositResponse>>> getUserLoanSimpleSummary() {
-    log.info("자동 예치 정보 조회");
-
-    List<AutoDepositResponse> summary = manageLoanUseCase.getAutoDepositSummary();
-
-    return ApiResponseGenerator.success(ResponseCode.GET, summary);
-  }
-
-  @GetMapping("/ledgers/details")
-  public ApiResponse<SuccessBody<List<LoanDetailResponse>>> getLoanDetails() {
-    log.info("모든 대출 세부 정보 조회");
-    List<LoanDetailResponse> loanDetails = manageLoanUseCase.getLoanDetails();
-    return ApiResponseGenerator.success(ResponseCode.GET, loanDetails);
+  @PostMapping("/ai-simulation")
+  public ApiResponse<SuccessBody<AiSimulationResponse>> processAiSimulation(
+      @RequestBody AiSimulationRequest request) {
+    log.info("AI Simulation 실행");
+    AiSimulationResponse aiSimulationResponse = manageLoanUseCase.processAiSimulation(request);
+    return ApiResponseGenerator.success(ResponseCode.GET, aiSimulationResponse);
   }
 }
