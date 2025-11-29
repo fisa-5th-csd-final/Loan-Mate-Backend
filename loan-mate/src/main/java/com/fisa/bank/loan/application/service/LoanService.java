@@ -67,14 +67,8 @@ public class LoanService implements ManageLoanUseCase {
 
   @Override
   public LoanAiCommentResponse getAiComment(Long loanId) {
-    LoanDetail loanDetail = loanReader.findLoanDetail(loanId);
     LoanComment loanComment = loanAiClient.fetchLoanComment(loanId);
 
-    if (!loanComment.getLoanLedgerId().equals(loanId)) {
-      throw new IllegalStateException("요청한 loanId와 응답 loanLedgerId가 불일치합니다.");
-    }
-
-    loanDetail.setComment(loanComment.getComment());
     return new LoanAiCommentResponse(loanComment.getLoanLedgerId(), loanComment.getComment());
   }
 
