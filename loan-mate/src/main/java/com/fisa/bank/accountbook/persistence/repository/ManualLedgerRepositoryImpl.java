@@ -63,4 +63,14 @@ public class ManualLedgerRepositoryImpl implements ManualLedgerRepository {
     return jpaManualLedgerRepository.sumAmountByUserIdAndTypeBetween(
         serviceUserId, type, startDate, endDate);
   }
+
+  @Override
+  public List<ManualLedgerEntry> findByUserIdAndTypeAndSavedAtBetween(
+      Long userId, ManualLedgerType type, LocalDate startDate, LocalDate endDate) {
+    return jpaManualLedgerRepository
+        .findByServiceUserIdAndTypeAndSavedAtBetween(userId, type, startDate, endDate)
+        .stream()
+        .map(mapper::toDomain)
+        .toList();
+  }
 }

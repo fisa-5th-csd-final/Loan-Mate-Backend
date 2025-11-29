@@ -79,9 +79,9 @@ public class SpendingService implements GetMonthlySpendingUseCase {
     Long serviceUserId = requesterInfo.getServiceUserId();
 
     return manualLedgerRepository
-        .findByUserIdAndType(serviceUserId, ManualLedgerType.EXPENSE)
+        .findByUserIdAndTypeAndSavedAtBetween(
+            serviceUserId, ManualLedgerType.EXPENSE, startDate, endDate)
         .stream()
-        .filter(entry -> isWithin(entry.savedAt(), startDate, endDate))
         .collect(
             Collectors.groupingBy(
                 entry -> entry.category() == null ? ConsumptionCategory.ETC : entry.category(),
