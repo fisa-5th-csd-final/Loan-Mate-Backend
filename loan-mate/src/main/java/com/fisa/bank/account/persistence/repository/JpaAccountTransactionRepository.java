@@ -25,4 +25,19 @@ public interface JpaAccountTransactionRepository
       @Param("accountId") AccountId accountId,
       @Param("startDate") java.time.LocalDateTime startDate,
       @Param("endDate") java.time.LocalDateTime endDate);
+
+  // 계좌 거래 (급여 통장의 급여 확인)
+  @Query(
+      """
+    SELECT COALESCE(SUM(a.amount), 0)
+    FROM AccountTransaction a
+    WHERE a.account.accountId = :accountId
+      AND a.isIncome = true
+      AND a.createdAt >= :startDate
+      AND a.createdAt < :endDate
+""")
+  BigDecimal sumMonthlyIncome(
+      @Param("accountId") AccountId accountId,
+      @Param("startDate") java.time.LocalDateTime startDate,
+      @Param("endDate") java.time.LocalDateTime endDate);
 }

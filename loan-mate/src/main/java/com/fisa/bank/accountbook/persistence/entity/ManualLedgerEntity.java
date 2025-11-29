@@ -12,6 +12,7 @@ import java.time.LocalDate;
 
 import com.fisa.bank.accountbook.application.model.ManualLedgerType;
 import com.fisa.bank.common.persistence.entity.BaseEntity;
+import com.fisa.bank.persistence.account.enums.ConsumptionCategory;
 
 @Entity
 @Table(name = "manual_ledger")
@@ -40,4 +41,8 @@ public class ManualLedgerEntity extends BaseEntity {
 
   @Column(nullable = false)
   private LocalDate savedAt;
+
+  @Enumerated(EnumType.STRING)
+  @Column(length = 50)
+  private ConsumptionCategory category;
 }

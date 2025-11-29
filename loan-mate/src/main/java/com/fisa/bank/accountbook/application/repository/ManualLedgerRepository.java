@@ -1,5 +1,7 @@
 package com.fisa.bank.accountbook.application.repository;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,4 +19,7 @@ public interface ManualLedgerRepository {
   Optional<ManualLedgerEntry> findById(Long id);
 
   void deleteById(Long id);
+
+  BigDecimal sumAmountByUserIdAndTypeBetween(
+      Long serviceUserId, ManualLedgerType type, LocalDate startDate, LocalDate endDate);
 }
