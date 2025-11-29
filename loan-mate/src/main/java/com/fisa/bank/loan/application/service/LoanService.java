@@ -25,6 +25,7 @@ import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
 import com.fisa.bank.loan.application.dto.response.LoansWithPrepaymentBenefitResponse;
+import com.fisa.bank.loan.application.dto.response.LoanRiskResponse;
 import com.fisa.bank.loan.application.model.InterestDetail;
 import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.model.LoanComment;
@@ -35,6 +36,7 @@ import com.fisa.bank.loan.application.model.PrepaymentInfo;
 import com.fisa.bank.loan.application.service.reader.LoanReader;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
 import com.fisa.bank.persistence.loan.entity.LoanLedger;
+import com.fisa.bank.loan.persistence.enums.RiskLevel;
 
 @Service
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
@@ -78,6 +80,18 @@ public class LoanService implements ManageLoanUseCase {
             .map(detail -> new LoanAiCommentResponse(detail.getLoanLedgerId(), detail.getExplanation()))
             .findFirst()
             .orElse(new LoanAiCommentResponse(loanId, null));
+  }
+
+  @Override
+  public LoanRiskResponse getLoanRisk() {
+    Long userId = requesterInfo.getCoreBankingUserId();
+    LoanRisks loanRisks = loanAiClient.fetchLoanRisks(userId);
+
+    BigDecimal overallRisk = Optional.ofNullable(loanRisks).map(LoanRisks::getOverallRisk).orElse(null);
+
+    RiskLevel overallRiskLevel = Optional.ofNullable(overallRisk).map(RiskLevel::fromRiskScore).orElse(null);
+
+    return new LoanRiskResponse(overallRisk, overallRiskLevel);
   }
 
   @Override
