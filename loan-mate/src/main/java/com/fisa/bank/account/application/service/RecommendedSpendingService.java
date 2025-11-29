@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -39,10 +40,17 @@ public class RecommendedSpendingService implements GetRecommendedSpendingUseCase
 
   private static final BigDecimal ZERO = BigDecimal.ZERO;
   private static final BigDecimal BUDGET_RATIO = BigDecimal.valueOf(0.4);
-  private static final BigDecimal FOOD_RATIO = BigDecimal.valueOf(0.4);
-  private static final BigDecimal TRANSPORT_RATIO = BigDecimal.valueOf(0.15);
-  private static final BigDecimal SHOPPING_RATIO = BigDecimal.valueOf(0.25);
-  private static final BigDecimal ENTERTAINMENT_RATIO = BigDecimal.valueOf(0.2);
+
+  private static final Map<ConsumptionCategory, BigDecimal> CATEGORY_RATIOS;
+
+  static {
+    Map<ConsumptionCategory, BigDecimal> ratios = new EnumMap<>(ConsumptionCategory.class);
+    ratios.put(ConsumptionCategory.FOOD, new BigDecimal("0.4"));
+    ratios.put(ConsumptionCategory.TRANSPORT, new BigDecimal("0.15"));
+    ratios.put(ConsumptionCategory.SHOPPING, new BigDecimal("0.25"));
+    ratios.put(ConsumptionCategory.ENTERTAINMENT, new BigDecimal("0.2"));
+    CATEGORY_RATIOS = Collections.unmodifiableMap(ratios);
+  }
 
   private final RequesterInfo requesterInfo;
   private final UserRepository userRepository;
@@ -135,23 +143,24 @@ public class RecommendedSpendingService implements GetRecommendedSpendingUseCase
       BigDecimal variableBudget) {
 
     Map<ConsumptionCategory, BigDecimal> result = new EnumMap<>(ConsumptionCategory.class);
+    BigDecimal totalAllocated = ZERO;
 
-    BigDecimal food = allocate(variableBudget, FOOD_RATIO);
-    BigDecimal transport = allocate(variableBudget, TRANSPORT_RATIO);
-    BigDecimal shopping = allocate(variableBudget, SHOPPING_RATIO);
-    BigDecimal entertainment = allocate(variableBudget, ENTERTAINMENT_RATIO);
-
-    BigDecimal remainder =
-        variableBudget.subtract(food.add(transport).add(shopping).add(entertainment));
-    // 소수점 계산하고 남은 금액 여가에 몰아주기
-    if (remainder.compareTo(ZERO) != 0) {
-      entertainment = entertainment.add(remainder);
+    for (Map.Entry<ConsumptionCategory, BigDecimal> entry : CATEGORY_RATIOS.entrySet()) {
+      BigDecimal allocated = allocate(variableBudget, entry.getValue());
+      result.put(entry.getKey(), allocated);
+      totalAllocated = totalAllocated.add(allocated);
     }
 
-    result.put(ConsumptionCategory.FOOD, food);
-    result.put(ConsumptionCategory.TRANSPORT, transport);
-    result.put(ConsumptionCategory.SHOPPING, shopping);
-    result.put(ConsumptionCategory.ENTERTAINMENT, entertainment);
+    BigDecimal remainder = variableBudget.subtract(totalAllocated);
+    if (remainder.compareTo(ZERO) > 0) {
+      // 소수점 계산하고 남은 금액 여가에 몰아주기
+      result.computeIfPresent(
+          ConsumptionCategory.ENTERTAINMENT, (key, value) -> value.add(remainder));
+    }
+
+    for (ConsumptionCategory category : ConsumptionCategory.values()) {
+      result.putIfAbsent(category, ZERO);
+    }
 
     return result;
   }
