@@ -19,8 +19,8 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fisa.bank.common.application.exception.ExternalApiException;
 import com.fisa.bank.common.application.util.JsonNodeMapper;
-import com.fisa.bank.common.application.util.jwt.DevAccessTokenManager;
 import com.fisa.bank.common.application.util.RequesterInfo;
+import com.fisa.bank.common.application.util.jwt.DevAccessTokenManager;
 
 @Slf4j
 @Component
@@ -61,12 +61,7 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
     }
 
     ResponseEntity<T> entity =
-        client(token)
-            .method(method)
-            .uri(url)
-            .retrieve()
-            .toEntity(responseType)
-            .block();
+        client(token).method(method).uri(url).retrieve().toEntity(responseType).block();
 
     logResponse(url, entity);
     return entity != null ? entity.getBody() : null;
@@ -160,7 +155,8 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
       }
 
       String bodyAsString = e.getResponseBodyAsString();
-      log.error("CoreBanking 호출 실패: {} {} body={}", e.getStatusCode(), e.getMessage(), bodyAsString);
+      log.error(
+          "CoreBanking 호출 실패: {} {} body={}", e.getStatusCode(), e.getMessage(), bodyAsString);
       throw new ExternalApiException(
           HttpStatus.valueOf(e.getStatusCode().value()),
           "CORE_BANK_API_ERROR",
