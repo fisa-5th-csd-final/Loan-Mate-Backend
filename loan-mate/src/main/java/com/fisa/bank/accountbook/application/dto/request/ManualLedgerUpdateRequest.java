@@ -6,9 +6,9 @@ import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 
-import com.fisa.bank.accountbook.application.model.ManualLedgerType;
+import com.fisa.bank.persistence.account.enums.ConsumptionCategory;
 
 public record ManualLedgerUpdateRequest(
-    @NotNull ManualLedgerType type,
     @NotNull @Positive @Digits(integer = 18, fraction = 2) BigDecimal amount,
-    String description) {}
+    String description,
+    ConsumptionCategory category) {}
