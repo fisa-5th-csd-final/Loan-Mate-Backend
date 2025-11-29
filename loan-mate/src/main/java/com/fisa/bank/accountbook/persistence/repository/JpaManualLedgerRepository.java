@@ -32,4 +32,7 @@ public interface JpaManualLedgerRepository extends JpaRepository<ManualLedgerEnt
       @Param("type") ManualLedgerType type,
       @Param("startDate") LocalDate startDate,
       @Param("endDate") LocalDate endDate);
+
+  List<ManualLedgerEntity> findByServiceUserIdAndTypeAndSavedAtBetween(
+      Long userId, ManualLedgerType type, LocalDate startDate, LocalDate endDate);
 }

@@ -22,4 +22,7 @@ public interface ManualLedgerRepository {
 
   BigDecimal sumAmountByUserIdAndTypeBetween(
       Long serviceUserId, ManualLedgerType type, LocalDate startDate, LocalDate endDate);
+
+  List<ManualLedgerEntry> findByUserIdAndTypeAndSavedAtBetween(
+      Long userId, ManualLedgerType type, LocalDate startDate, LocalDate endDate);
 }
