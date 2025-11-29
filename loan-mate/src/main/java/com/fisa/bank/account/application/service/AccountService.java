@@ -2,6 +2,8 @@ package com.fisa.bank.account.application.service;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.fisa.bank.account.application.model.AccountDetail;
@@ -15,8 +17,8 @@ public class AccountService {
   private final AccountDetailRepository accountDetailRepository;
   private final RequesterInfo requesterInfo;
 
-  public AccountDetail getAccount(Long accountId) {
+  public List<AccountDetail> getAccounts() {
     Long userId = requesterInfo.getCoreBankingUserId();
-    return accountDetailRepository.findAccountById(UserId.of(userId), accountId);
+    return accountDetailRepository.findAccountsByUserId(UserId.of(userId));
   }
 }
