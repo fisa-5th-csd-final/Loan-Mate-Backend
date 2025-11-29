@@ -30,6 +30,7 @@ import com.fisa.bank.persistence.account.repository.AccountRepository;
 import com.fisa.bank.persistence.user.entity.User;
 import com.fisa.bank.persistence.user.entity.id.UserId;
 import com.fisa.bank.persistence.user.repository.UserRepository;
+import com.fisa.bank.user.application.exception.UserNotFoundException;
 
 @Service
 @RequiredArgsConstructor
@@ -108,7 +109,7 @@ public class RecommendedSpendingService implements GetRecommendedSpendingUseCase
     User user =
         userRepository
             .findById(UserId.of(coreBankingUserId))
-            .orElseThrow(() -> new SalaryAccountNotFoundException(coreBankingUserId));
+            .orElseThrow(UserNotFoundException::new);
 
     return accountRepository.findAllByUser(user).stream()
         .filter(Account::isForIncome)
