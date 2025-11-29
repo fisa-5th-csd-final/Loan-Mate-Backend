@@ -19,6 +19,7 @@ public class UserMapper {
         entity.getName(),
         entity.getAddress(),
         entity.getJob(),
+        entity.getBirthday(),
         entity.getCreditLevel(),
         entity.getCustomerLevel());
   }

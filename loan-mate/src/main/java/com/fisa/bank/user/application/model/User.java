@@ -2,6 +2,8 @@ package com.fisa.bank.user.application.model;
 
 import lombok.Getter;
 
+import java.time.LocalDate;
+
 @Getter
 public class User {
 
@@ -9,6 +11,7 @@ public class User {
   private String name;
   private String address;
   private String job;
+  private LocalDate birthday;
   private CreditRating creditLevel;
   private CustomerLevel customerLevel;
 
@@ -17,12 +20,14 @@ public class User {
       String name,
       String address,
       String job,
+      LocalDate birthday,
       CreditRating creditLevel,
       CustomerLevel customerLevel) {
     this.userId = userId;
     this.name = name;
     this.address = address;
     this.job = job;
+    this.birthday = birthday;
     this.creditLevel = creditLevel;
     this.customerLevel = customerLevel;
   }
