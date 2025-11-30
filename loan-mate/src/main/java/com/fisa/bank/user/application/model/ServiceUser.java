@@ -5,7 +5,7 @@ import lombok.Getter;
 import java.time.LocalDate;
 
 @Getter
-public class User {
+public class ServiceUser {
 
   private final Long userId;
   private String name;
@@ -15,7 +15,7 @@ public class User {
   private CreditRating creditLevel;
   private CustomerLevel customerLevel;
 
-  public User(
+  public ServiceUser(
       Long userId,
       String name,
       String address,
