@@ -1,10 +1,11 @@
 package com.fisa.bank.loan.application.dto.response;
 
-import com.fisa.bank.persistence.loan.entity.id.LoanLedgerId;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+
+import com.fisa.bank.persistence.loan.entity.id.LoanLedgerId;
 
 @Getter
 @Builder
