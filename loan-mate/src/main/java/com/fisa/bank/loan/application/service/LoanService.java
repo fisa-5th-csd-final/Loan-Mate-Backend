@@ -24,19 +24,18 @@ import com.fisa.bank.loan.application.dto.response.LoanAiCommentResponse;
 import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
-import com.fisa.bank.loan.application.dto.response.LoansWithPrepaymentBenefitResponse;
 import com.fisa.bank.loan.application.dto.response.LoanRiskResponse;
+import com.fisa.bank.loan.application.dto.response.LoansWithPrepaymentBenefitResponse;
 import com.fisa.bank.loan.application.model.InterestDetail;
 import com.fisa.bank.loan.application.model.Loan;
-import com.fisa.bank.loan.application.model.LoanComment;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.model.LoanRiskDetail;
 import com.fisa.bank.loan.application.model.LoanRisks;
 import com.fisa.bank.loan.application.model.PrepaymentInfo;
 import com.fisa.bank.loan.application.service.reader.LoanReader;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
-import com.fisa.bank.persistence.loan.entity.LoanLedger;
 import com.fisa.bank.loan.persistence.enums.RiskLevel;
+import com.fisa.bank.persistence.loan.entity.LoanLedger;
 
 @Service
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
@@ -72,14 +71,11 @@ public class LoanService implements ManageLoanUseCase {
     Long userId = requesterInfo.getCoreBankingUserId();
     LoanRisks loanRisks = loanAiClient.fetchLoanRisks(userId);
 
-    return Optional.ofNullable(loanRisks)
-            .map(LoanRisks::getLoans)
-            .orElse(List.of())
-            .stream()
-            .filter(detail -> loanId.equals(detail.getLoanLedgerId()))
-            .map(detail -> new LoanAiCommentResponse(detail.getLoanLedgerId(), detail.getExplanation()))
-            .findFirst()
-            .orElse(new LoanAiCommentResponse(loanId, null));
+    return Optional.ofNullable(loanRisks).map(LoanRisks::getLoans).orElse(List.of()).stream()
+        .filter(detail -> loanId.equals(detail.getLoanLedgerId()))
+        .map(detail -> new LoanAiCommentResponse(detail.getLoanLedgerId(), detail.getExplanation()))
+        .findFirst()
+        .orElse(new LoanAiCommentResponse(loanId, null));
   }
 
   @Override
@@ -87,9 +83,11 @@ public class LoanService implements ManageLoanUseCase {
     Long userId = requesterInfo.getCoreBankingUserId();
     LoanRisks loanRisks = loanAiClient.fetchLoanRisks(userId);
 
-    BigDecimal overallRisk = Optional.ofNullable(loanRisks).map(LoanRisks::getOverallRisk).orElse(null);
+    BigDecimal overallRisk =
+        Optional.ofNullable(loanRisks).map(LoanRisks::getOverallRisk).orElse(null);
 
-    RiskLevel overallRiskLevel = Optional.ofNullable(overallRisk).map(RiskLevel::fromRiskScore).orElse(null);
+    RiskLevel overallRiskLevel =
+        Optional.ofNullable(overallRisk).map(RiskLevel::fromRiskScore).orElse(null);
 
     return new LoanRiskResponse(overallRisk, overallRiskLevel);
   }
