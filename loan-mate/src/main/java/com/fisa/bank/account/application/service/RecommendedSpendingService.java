@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +18,7 @@ import com.fisa.bank.account.application.exception.SalaryAccountNotFoundExceptio
 import com.fisa.bank.account.application.model.RecommendedSpending;
 import com.fisa.bank.account.application.repository.AccountRepository;
 import com.fisa.bank.account.application.usecase.GetRecommendedSpendingUseCase;
+import com.fisa.bank.account.application.util.SpendingRatioLoader;
 import com.fisa.bank.account.persistence.repository.JpaAccountTransactionRepository;
 import com.fisa.bank.accountbook.application.model.ManualLedgerType;
 import com.fisa.bank.accountbook.application.repository.ManualLedgerRepository;
@@ -31,7 +31,8 @@ import com.fisa.bank.persistence.account.enums.ConsumptionCategory;
 import com.fisa.bank.persistence.user.entity.User;
 import com.fisa.bank.persistence.user.entity.id.UserId;
 import com.fisa.bank.persistence.user.repository.UserRepository;
-import com.fisa.bank.user.application.exception.UserNotFoundException;
+import com.fisa.bank.user.application.exception.ServiceUserNotFoundException;
+import com.fisa.bank.user.application.model.ServiceUser;
 
 @Service
 @RequiredArgsConstructor
@@ -41,121 +42,129 @@ public class RecommendedSpendingService implements GetRecommendedSpendingUseCase
   private static final BigDecimal ZERO = BigDecimal.ZERO;
   private static final BigDecimal BUDGET_RATIO = BigDecimal.valueOf(0.4);
 
-  private static final Map<ConsumptionCategory, BigDecimal> CATEGORY_RATIOS;
-
-  static {
-    Map<ConsumptionCategory, BigDecimal> ratios = new EnumMap<>(ConsumptionCategory.class);
-    ratios.put(ConsumptionCategory.FOOD, new BigDecimal("0.4"));
-    ratios.put(ConsumptionCategory.TRANSPORT, new BigDecimal("0.15"));
-    ratios.put(ConsumptionCategory.SHOPPING, new BigDecimal("0.25"));
-    ratios.put(ConsumptionCategory.ENTERTAINMENT, new BigDecimal("0.2"));
-    CATEGORY_RATIOS = Collections.unmodifiableMap(ratios);
-  }
-
   private final RequesterInfo requesterInfo;
-  private final UserRepository userRepository;
+  private final UserRepository userRepository; // CoreBanking User
+  private final com.fisa.bank.user.application.repository.UserRepository
+      serviceUserRepository; // service User
+
   private final AccountRepository accountRepository;
   private final JpaAccountTransactionRepository accountTransactionRepository;
   private final ManualLedgerRepository manualLedgerRepository;
   private final LoanReader loanReader;
+
+  private final SpendingRatioLoader ratioLoader;
 
   @Override
   public RecommendedSpending execute(int year, int month) {
 
     validateMonth(month);
 
-    YearMonth yearMonth = YearMonth.of(year, month);
-    YearMonth previousMonth = yearMonth.minusMonths(1);
+    YearMonth currentMonth = YearMonth.of(year, month);
+    YearMonth previousMonth = currentMonth.minusMonths(1);
 
     LocalDateTime salaryStart = previousMonth.atDay(1).atStartOfDay();
     LocalDateTime salaryEnd = previousMonth.plusMonths(1).atDay(1).atStartOfDay();
 
-    LocalDateTime manualStart = yearMonth.atDay(1).atStartOfDay();
-    LocalDateTime manualEnd = yearMonth.plusMonths(1).atDay(1).atStartOfDay();
+    LocalDateTime manualStart = currentMonth.atDay(1).atStartOfDay();
+    LocalDateTime manualEnd = currentMonth.plusMonths(1).atDay(1).atStartOfDay();
 
-    Account salaryAccount = findSalaryAccount();
+    // CoreBanking User → 급여 통장 조회
+    User coreUser = getCoreBankingUser();
+
+    Account salaryAccount = findSalaryAccount(coreUser);
     AccountId accountId = salaryAccount.getAccountId();
 
     BigDecimal salaryIncome =
         safe(accountTransactionRepository.sumMonthlyIncome(accountId, salaryStart, salaryEnd));
 
-    Long serviceUserId = requesterInfo.getServiceUserId();
+    // ServiceUser → birthday 조회 → 연령대 계산
+    ServiceUser serviceUser = getServiceUser();
+
     BigDecimal manualIncome =
         safe(
             manualLedgerRepository.sumAmountByUserIdAndTypeBetween(
-                serviceUserId,
+                serviceUser.getUserId(),
                 ManualLedgerType.INCOME,
                 manualStart.toLocalDate(),
                 manualEnd.toLocalDate()));
 
     BigDecimal monthlyRepayment = sumMonthlyRepayment();
 
-    // 사용가능한 금액
     BigDecimal availableIncome =
         salaryIncome.add(manualIncome).subtract(monthlyRepayment).max(ZERO);
 
-    // 사용가능한 자유 지출
     BigDecimal variableSpendingBudget =
         availableIncome.multiply(BUDGET_RATIO).setScale(0, RoundingMode.DOWN);
 
-    // 총 카테고리별 추천 금액 계산 로직
+    // 연령대 별 추천 카테고리 비율 적용
     Map<ConsumptionCategory, BigDecimal> categoryRecommendation =
-        buildCategoryRecommendation(variableSpendingBudget);
+        buildCategoryRecommendation(variableSpendingBudget, serviceUser);
 
     return new RecommendedSpending(variableSpendingBudget, categoryRecommendation);
   }
 
   private void validateMonth(int month) {
     if (month < 1 || month > 12) {
-      throw new IllegalArgumentException("월(month)은 1에서 12 사이의 값이어야 합니다.");
+      throw new IllegalArgumentException("월은 1~12 사이여야 합니다.");
     }
   }
 
-  // 급여 통장 찾기
-  private Account findSalaryAccount() {
-    Long coreBankingUserId = requesterInfo.getCoreBankingUserId();
-    User user =
-        userRepository
-            .findById(UserId.of(coreBankingUserId))
-            .orElseThrow(UserNotFoundException::new);
-
-    return accountRepository
-        .findSalaryAccount(user)
-        .orElseThrow(() -> new SalaryAccountNotFoundException(coreBankingUserId));
+  // CoreBankingUser 조회
+  private User getCoreBankingUser() {
+    Long coreUserId = requesterInfo.getCoreBankingUserId();
+    return userRepository
+        .findById(UserId.of(coreUserId))
+        .orElseThrow(ServiceUserNotFoundException::new);
   }
 
-  // 월 상환금 더하기 (모든 대출)
-  private BigDecimal sumMonthlyRepayment() {
-    List<LoanDetail> loanDetails = loanReader.findLoanDetails();
+  // ServiceUser 조회
+  private ServiceUser getServiceUser() {
+    Long serviceUserId = requesterInfo.getServiceUserId();
+    return serviceUserRepository
+        .findById(serviceUserId)
+        .orElseThrow(ServiceUserNotFoundException::new);
+  }
 
-    return loanDetails.stream()
+  // 급여 계좌 조회
+  private Account findSalaryAccount(User coreUser) {
+    return accountRepository
+        .findSalaryAccount(coreUser)
+        .orElseThrow(() -> new SalaryAccountNotFoundException(coreUser.getUserId().getValue()));
+  }
+
+  // 월 상환금
+  private BigDecimal sumMonthlyRepayment() {
+    List<LoanDetail> loans = loanReader.findLoanDetails();
+    return loans.stream()
         .map(LoanDetail::getMonthlyRepayment)
         .filter(Objects::nonNull)
         .reduce(ZERO, BigDecimal::add);
   }
 
-  private BigDecimal safe(BigDecimal value) {
-    return value == null ? ZERO : value;
+  private BigDecimal safe(BigDecimal v) {
+    return v == null ? ZERO : v;
   }
 
-  // 카테고리별 비율을 정해 금액 도출
+  // 연령대 기반 추천 금액
   private Map<ConsumptionCategory, BigDecimal> buildCategoryRecommendation(
-      BigDecimal variableBudget) {
+      BigDecimal variableBudget, ServiceUser user) {
+
+    var ratios = ratioLoader.getRatios(user.getBirthday()); // birthday → 연령대 자동 판별
 
     Map<ConsumptionCategory, BigDecimal> result = new EnumMap<>(ConsumptionCategory.class);
     BigDecimal totalAllocated = ZERO;
 
-    for (Map.Entry<ConsumptionCategory, BigDecimal> entry : CATEGORY_RATIOS.entrySet()) {
-      BigDecimal allocated = allocate(variableBudget, entry.getValue());
+    for (var entry : ratios.entrySet()) {
+      BigDecimal allocated =
+          variableBudget.multiply(entry.getValue()).setScale(0, RoundingMode.DOWN);
+
       result.put(entry.getKey(), allocated);
       totalAllocated = totalAllocated.add(allocated);
     }
 
     BigDecimal remainder = variableBudget.subtract(totalAllocated);
     if (remainder.compareTo(ZERO) > 0) {
-      // 소수점 계산하고 남은 금액 여가에 몰아주기
-      result.computeIfPresent(
-          ConsumptionCategory.ENTERTAINMENT, (key, value) -> value.add(remainder));
+      result.computeIfPresent(ConsumptionCategory.ENTERTAINMENT, (k, v) -> v.add(remainder));
     }
 
     for (ConsumptionCategory category : ConsumptionCategory.values()) {
@@ -163,12 +172,5 @@ public class RecommendedSpendingService implements GetRecommendedSpendingUseCase
     }
 
     return result;
-  }
-
-  private BigDecimal allocate(BigDecimal total, BigDecimal ratio) {
-    if (total.compareTo(ZERO) == 0) {
-      return ZERO;
-    }
-    return total.multiply(ratio).setScale(0, RoundingMode.DOWN);
   }
 }
