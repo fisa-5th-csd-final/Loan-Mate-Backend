@@ -166,6 +166,7 @@ public class LoanService implements ManageLoanUseCase {
         .map(
             ledger ->
                 AutoDepositResponse.builder()
+                        .loanLedgerId(ledger.getLoanLedgerId())
                     .loanName(
                         ledger.getLoanProduct() != null ? ledger.getLoanProduct().getName() : null)
                     .accountBalance(
