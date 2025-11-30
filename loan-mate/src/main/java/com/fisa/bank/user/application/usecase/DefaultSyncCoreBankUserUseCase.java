@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fisa.bank.user.application.dto.UserApplicationMapper;
 import com.fisa.bank.user.application.dto.UserInfoResponse;
-import com.fisa.bank.user.application.model.User;
+import com.fisa.bank.user.application.model.ServiceUser;
 import com.fisa.bank.user.application.model.UserAuth;
 import com.fisa.bank.user.application.repository.UserAuthRepository;
 import com.fisa.bank.user.application.repository.UserRepository;
@@ -32,7 +32,7 @@ public class DefaultSyncCoreBankUserUseCase implements SyncCoreBankUserUseCase {
 
       Long userId = authOpt.get().getServiceUserId();
 
-      User existingUser =
+      ServiceUser existingUser =
           userRepository
               .findById(userId)
               .orElseThrow(() -> new IllegalStateException("UserAuth는 있는데 User가 없음"));
@@ -51,7 +51,7 @@ public class DefaultSyncCoreBankUserUseCase implements SyncCoreBankUserUseCase {
     // 신규 사용자 등록
 
     // DTO → Domain 변환
-    User newUser = mapper.toDomain(info);
+    ServiceUser newUser = mapper.toDomain(info);
 
     // User 저장 → PK(Long) 생성
     newUser = userRepository.save(newUser);

@@ -2,19 +2,19 @@ package com.fisa.bank.user.persistence;
 
 import org.springframework.stereotype.Component;
 
-import com.fisa.bank.user.application.model.User;
+import com.fisa.bank.user.application.model.ServiceUser;
 import com.fisa.bank.user.persistence.entity.UserEntity;
 import com.fisa.bank.user.persistence.entity.id.UserId;
 
 @Component
 public class UserMapper {
 
-  public User toDomain(UserEntity entity) {
+  public ServiceUser toDomain(UserEntity entity) {
     if (entity == null) {
       return null;
     }
 
-    return new User(
+    return new ServiceUser(
         entity.getUserId() != null ? entity.getUserId().getValue() : null, // UserId → Long
         entity.getName(),
         entity.getAddress(),
@@ -24,7 +24,7 @@ public class UserMapper {
         entity.getCustomerLevel());
   }
 
-  public UserEntity toEntity(User domain) {
+  public UserEntity toEntity(ServiceUser domain) {
     if (domain == null) {
       return null;
     }
