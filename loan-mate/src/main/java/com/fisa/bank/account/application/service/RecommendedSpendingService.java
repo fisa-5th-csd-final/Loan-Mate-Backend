@@ -16,7 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fisa.bank.account.application.model.IncomeBreakdown;
 import com.fisa.bank.account.application.model.RecommendedSpending;
 import com.fisa.bank.account.application.model.UserAccountContext;
+import com.fisa.bank.account.application.model.UserSpendingLimit;
 import com.fisa.bank.account.application.usecase.GetRecommendedSpendingUseCase;
+import com.fisa.bank.account.application.usecase.GetUserSpendingLimitUseCase;
 import com.fisa.bank.account.application.util.SpendingRatioLoader;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.service.reader.LoanReader;
@@ -36,6 +38,7 @@ public class RecommendedSpendingService implements GetRecommendedSpendingUseCase
   private final UserAccountContextService userAccountContextService;
   private final IncomeCalculator incomeCalculator;
   private final SpendingRatioLoader ratioLoader;
+  private final GetUserSpendingLimitUseCase getUserSpendingLimitUseCase;
 
   @Override
   public RecommendedSpending execute(int year, int month) {
@@ -58,9 +61,10 @@ public class RecommendedSpendingService implements GetRecommendedSpendingUseCase
     BigDecimal variableSpendingBudget =
         availableIncome.multiply(BUDGET_RATIO).setScale(0, RoundingMode.DOWN);
 
-    // 연령대 별 추천 카테고리 비율 적용
+    // 사용자 한도 설정이 있으면 우선 적용하고, 없으면 연령대 비율 사용
     Map<ConsumptionCategory, BigDecimal> categoryRecommendation =
-        buildCategoryRecommendation(variableSpendingBudget, userAccountContext.serviceUser());
+        buildCategoryRecommendation(
+            variableSpendingBudget, resolveCategoryRatios(userAccountContext.serviceUser()));
 
     return new RecommendedSpending(variableSpendingBudget, categoryRecommendation);
   }
@@ -80,11 +84,27 @@ public class RecommendedSpendingService implements GetRecommendedSpendingUseCase
         .reduce(ZERO, BigDecimal::add);
   }
 
-  // 연령대 기반 추천 금액
-  private Map<ConsumptionCategory, BigDecimal> buildCategoryRecommendation(
-      BigDecimal variableBudget, ServiceUser user) {
+  private Map<ConsumptionCategory, BigDecimal> resolveCategoryRatios(ServiceUser user) {
+    return getUserSpendingLimitUseCase
+        .execute()
+        .map(UserSpendingLimit::limits)
+        .filter(limits -> limits != null && !limits.isEmpty())
+        .map(this::copyLimits)
+        .orElseGet(() -> ratioLoader.getRatios(user.getBirthday()));
+  }
 
-    var ratios = ratioLoader.getRatios(user.getBirthday()); // birthday → 연령대 자동 판별
+  private Map<ConsumptionCategory, BigDecimal> copyLimits(
+      Map<ConsumptionCategory, BigDecimal> limits) {
+    Map<ConsumptionCategory, BigDecimal> copy = new EnumMap<>(ConsumptionCategory.class);
+    if (limits != null) {
+      copy.putAll(limits);
+    }
+    return copy;
+  }
+
+  // 연령대 기반 추천 금액 혹은 사용자 한도 기반 추천 금액
+  private Map<ConsumptionCategory, BigDecimal> buildCategoryRecommendation(
+      BigDecimal variableBudget, Map<ConsumptionCategory, BigDecimal> ratios) {
 
     Map<ConsumptionCategory, BigDecimal> result = new EnumMap<>(ConsumptionCategory.class);
     BigDecimal totalAllocated = ZERO;
