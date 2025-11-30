@@ -4,16 +4,15 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import com.fisa.bank.account.application.dto.request.SpendingLimitRequest;
+import com.fisa.bank.account.application.dto.response.SpendingLimitResponse;
 import com.fisa.bank.account.application.model.MonthlySpending;
 import com.fisa.bank.account.application.model.RecommendedSpending;
 import com.fisa.bank.account.application.usecase.GetMonthlySpendingUseCase;
 import com.fisa.bank.account.application.usecase.GetRecommendedSpendingUseCase;
+import com.fisa.bank.account.application.usecase.SaveUserSpendingLimitUseCase;
 
 @RestController
 @RequestMapping("/api/spending")
@@ -22,6 +21,7 @@ public class SpendingController {
 
   private final GetMonthlySpendingUseCase getMonthlySpendingUseCase;
   private final GetRecommendedSpendingUseCase getRecommendedSpendingUseCase;
+  private final SaveUserSpendingLimitUseCase saveUserSpendingLimitUseCase;
 
   @GetMapping("/{accountId}/{year}/{month}")
   public MonthlySpending getMonthlySpending(
@@ -36,5 +36,14 @@ public class SpendingController {
 
     int targetYear = year != null ? year : LocalDate.now().getYear();
     return getRecommendedSpendingUseCase.execute(targetYear, month);
+  }
+
+  @PutMapping("/limits")
+  public SpendingLimitResponse updateSpendingLimit(
+      @RequestBody(required = false) SpendingLimitRequest request) {
+
+    var saved =
+        saveUserSpendingLimitUseCase.execute(request != null ? request.userLimitRatio() : null);
+    return new SpendingLimitResponse(saved.limits());
   }
 }
