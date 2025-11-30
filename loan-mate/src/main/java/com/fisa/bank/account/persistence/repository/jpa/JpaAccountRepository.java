@@ -1,4 +1,4 @@
-package com.fisa.bank.account.persistence.repository;
+package com.fisa.bank.account.persistence.repository.jpa;
 
 import java.util.Optional;
 

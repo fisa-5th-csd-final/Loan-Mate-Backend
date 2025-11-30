@@ -2,7 +2,7 @@ package com.fisa.bank.account.application.repository;
 
 import java.util.Optional;
 
-import com.fisa.bank.account.application.model.UserSpendingLimit;
+import com.fisa.bank.account.application.model.spending.UserSpendingLimit;
 
 public interface UserSpendingLimitRepository {
 

@@ -1,4 +1,4 @@
-package com.fisa.bank.account.application.service;
+package com.fisa.bank.account.application.service.ai;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,7 +16,9 @@ import com.fisa.bank.account.application.client.AccountAiClient;
 import com.fisa.bank.account.application.dto.request.AiRecommendRequest;
 import com.fisa.bank.account.application.model.IncomeBreakdown;
 import com.fisa.bank.account.application.model.UserAccountContext;
-import com.fisa.bank.account.application.model.UserSpendingLimit;
+import com.fisa.bank.account.application.model.spending.UserSpendingLimit;
+import com.fisa.bank.account.application.service.helper.IncomeCalculator;
+import com.fisa.bank.account.application.service.helper.UserAccountContextService;
 import com.fisa.bank.account.application.usecase.GetUserSpendingLimitUseCase;
 import com.fisa.bank.account.application.util.SpendingRatioLoader;
 import com.fisa.bank.persistence.account.enums.ConsumptionCategory;
@@ -30,7 +32,7 @@ public class AiExpenditureService {
 
   private final AccountAiClient accountAiClient;
   private final GetUserSpendingLimitUseCase getUserSpendingLimitUseCase;
-  private final MonthlySpendingCalculator monthlySpendingCalculator;
+  private final IncomeCalculator.MonthlySpendingCalculator monthlySpendingCalculator;
   private final SpendingRatioLoader spendingRatioLoader;
   private final UserAccountContextService userAccountContextService;
   private final IncomeCalculator incomeCalculator;

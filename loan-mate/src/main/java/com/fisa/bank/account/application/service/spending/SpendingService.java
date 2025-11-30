@@ -1,4 +1,4 @@
-package com.fisa.bank.account.application.service;
+package com.fisa.bank.account.application.service.spending;
 
 import lombok.RequiredArgsConstructor;
 
@@ -10,8 +10,9 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import com.fisa.bank.account.application.model.CategorySpending;
-import com.fisa.bank.account.application.model.MonthlySpending;
+import com.fisa.bank.account.application.model.spending.CategorySpending;
+import com.fisa.bank.account.application.model.spending.MonthlySpending;
+import com.fisa.bank.account.application.service.helper.IncomeCalculator;
 import com.fisa.bank.account.application.usecase.GetMonthlySpendingUseCase;
 import com.fisa.bank.common.application.util.RequesterInfo;
 import com.fisa.bank.persistence.account.enums.ConsumptionCategory;
@@ -20,7 +21,7 @@ import com.fisa.bank.persistence.account.enums.ConsumptionCategory;
 @RequiredArgsConstructor
 public class SpendingService implements GetMonthlySpendingUseCase {
 
-  private final MonthlySpendingCalculator monthlySpendingCalculator;
+  private final IncomeCalculator.MonthlySpendingCalculator monthlySpendingCalculator;
   private final RequesterInfo requesterInfo;
 
   @Override

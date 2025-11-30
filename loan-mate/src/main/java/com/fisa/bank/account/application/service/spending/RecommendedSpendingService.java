@@ -1,4 +1,4 @@
-package com.fisa.bank.account.application.service;
+package com.fisa.bank.account.application.service.spending;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,9 +14,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fisa.bank.account.application.model.IncomeBreakdown;
-import com.fisa.bank.account.application.model.RecommendedSpending;
 import com.fisa.bank.account.application.model.UserAccountContext;
-import com.fisa.bank.account.application.model.UserSpendingLimit;
+import com.fisa.bank.account.application.model.spending.RecommendedSpending;
+import com.fisa.bank.account.application.model.spending.UserSpendingLimit;
+import com.fisa.bank.account.application.service.helper.IncomeCalculator;
+import com.fisa.bank.account.application.service.helper.UserAccountContextService;
 import com.fisa.bank.account.application.usecase.GetRecommendedSpendingUseCase;
 import com.fisa.bank.account.application.usecase.GetUserSpendingLimitUseCase;
 import com.fisa.bank.account.application.util.SpendingRatioLoader;

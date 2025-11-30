@@ -1,6 +1,6 @@
 package com.fisa.bank.account.application.usecase;
 
-import com.fisa.bank.account.application.model.RecommendedSpending;
+import com.fisa.bank.account.application.model.spending.RecommendedSpending;
 
 public interface GetRecommendedSpendingUseCase {
 

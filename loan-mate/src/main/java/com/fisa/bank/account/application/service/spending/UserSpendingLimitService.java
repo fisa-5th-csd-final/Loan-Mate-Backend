@@ -1,4 +1,4 @@
-package com.fisa.bank.account.application.service;
+package com.fisa.bank.account.application.service.spending;
 
 import lombok.RequiredArgsConstructor;
 
@@ -10,7 +10,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fisa.bank.account.application.model.UserSpendingLimit;
+import com.fisa.bank.account.application.model.spending.UserSpendingLimit;
 import com.fisa.bank.account.application.repository.UserSpendingLimitRepository;
 import com.fisa.bank.account.application.usecase.GetUserSpendingLimitUseCase;
 import com.fisa.bank.account.application.usecase.SaveUserSpendingLimitUseCase;

@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.fisa.bank.account.application.dto.request.SpendingLimitRequest;
 import com.fisa.bank.account.application.dto.response.SpendingLimitResponse;
-import com.fisa.bank.account.application.model.MonthlySpending;
-import com.fisa.bank.account.application.model.RecommendedSpending;
+import com.fisa.bank.account.application.model.spending.MonthlySpending;
+import com.fisa.bank.account.application.model.spending.RecommendedSpending;
 import com.fisa.bank.account.application.usecase.GetMonthlySpendingUseCase;
 import com.fisa.bank.account.application.usecase.GetRecommendedSpendingUseCase;
 import com.fisa.bank.account.application.usecase.SaveUserSpendingLimitUseCase;

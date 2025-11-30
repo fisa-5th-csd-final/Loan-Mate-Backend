@@ -1,4 +1,4 @@
-package com.fisa.bank.account.persistence.repository;
+package com.fisa.bank.account.persistence.repository.impl;
 
 import lombok.RequiredArgsConstructor;
 
@@ -6,10 +6,11 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import com.fisa.bank.account.application.model.UserSpendingLimit;
+import com.fisa.bank.account.application.model.spending.UserSpendingLimit;
 import com.fisa.bank.account.application.repository.UserSpendingLimitRepository;
-import com.fisa.bank.account.persistence.UserSpendingLimitMapper;
 import com.fisa.bank.account.persistence.entity.UserSpendingLimitEntity;
+import com.fisa.bank.account.persistence.mapper.UserSpendingLimitMapper;
+import com.fisa.bank.account.persistence.repository.jpa.JpaUserSpendingLimitRepository;
 
 @Repository
 @RequiredArgsConstructor

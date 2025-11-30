@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fisa.bank.account.application.service.AiExpenditureService;
+import com.fisa.bank.account.application.service.ai.AiExpenditureService;
 
 @RestController
 @RequestMapping("/api/ai")

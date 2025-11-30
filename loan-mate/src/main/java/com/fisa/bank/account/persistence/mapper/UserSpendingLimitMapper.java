@@ -1,11 +1,11 @@
-package com.fisa.bank.account.persistence;
+package com.fisa.bank.account.persistence.mapper;
 
 import java.util.EnumMap;
 import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
-import com.fisa.bank.account.application.model.UserSpendingLimit;
+import com.fisa.bank.account.application.model.spending.UserSpendingLimit;
 import com.fisa.bank.account.persistence.entity.UserSpendingLimitEntity;
 import com.fisa.bank.persistence.account.enums.ConsumptionCategory;
 
