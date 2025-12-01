@@ -34,6 +34,7 @@ public class UserMapper {
         .name(domain.getName())
         .address(domain.getAddress())
         .job(domain.getJob())
+        .birthday(domain.getBirthday())
         .creditLevel(domain.getCreditLevel())
         .customerLevel(domain.getCustomerLevel())
         .build();
