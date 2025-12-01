@@ -7,7 +7,6 @@ import java.math.RoundingMode;
 import java.time.YearMonth;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,10 +16,9 @@ import com.fisa.bank.account.application.client.AccountAiClient;
 import com.fisa.bank.account.application.dto.request.AiRecommendRequest;
 import com.fisa.bank.account.application.model.IncomeBreakdown;
 import com.fisa.bank.account.application.model.UserAccountContext;
-import com.fisa.bank.account.application.model.spending.UserSpendingLimit;
 import com.fisa.bank.account.application.service.helper.IncomeCalculator;
 import com.fisa.bank.account.application.service.helper.UserAccountContextService;
-import com.fisa.bank.account.application.usecase.GetUserSpendingLimitUseCase;
+import com.fisa.bank.account.application.service.helper.UserSpendingLimitResolver;
 import com.fisa.bank.account.application.util.SpendingRatioLoader;
 import com.fisa.bank.persistence.account.enums.ConsumptionCategory;
 
@@ -32,11 +30,11 @@ public class AiExpenditureService {
   private static final BigDecimal ZERO = BigDecimal.ZERO;
 
   private final AccountAiClient accountAiClient;
-  private final GetUserSpendingLimitUseCase getUserSpendingLimitUseCase;
   private final IncomeCalculator.MonthlySpendingCalculator monthlySpendingCalculator;
   private final SpendingRatioLoader spendingRatioLoader;
   private final UserAccountContextService userAccountContextService;
   private final IncomeCalculator incomeCalculator;
+  private final UserSpendingLimitResolver userSpendingLimitResolver;
 
   public JsonNode requestExpenditure(Integer year, Integer month) {
 
@@ -46,7 +44,8 @@ public class AiExpenditureService {
 
     Map<ConsumptionCategory, BigDecimal> ageGroupRatio =
         spendingRatioLoader.getRatios(userAccountContext.serviceUser().getBirthday());
-    Map<ConsumptionCategory, BigDecimal> userLimitRatio = resolveUserLimitRatio(ageGroupRatio);
+    Map<ConsumptionCategory, BigDecimal> userLimitRatio =
+        userSpendingLimitResolver.resolveLimitRatio(ageGroupRatio);
 
     Long serviceUserId = userAccountContext.serviceUser().getUserId();
     var accountId = userAccountContext.salaryAccount().getAccountId();
@@ -72,55 +71,6 @@ public class AiExpenditureService {
             new AiRecommendRequest.UserLimitRatio(userLimitRatio));
 
     return accountAiClient.fetchRecommendation(aiRequest);
-  }
-
-  private Map<ConsumptionCategory, BigDecimal> resolveUserLimitRatio(
-      Map<ConsumptionCategory, BigDecimal> ageGroupRatio) {
-    return getUserSpendingLimitUseCase
-        .execute()
-        .map(UserSpendingLimit::limits)
-        .filter(limits -> limits != null && !limits.isEmpty())
-        .map(this::convertAmountToRatio)
-        .filter(ratios -> !ratios.isEmpty())
-        .orElseGet(() -> copyLimits(ageGroupRatio));
-  }
-
-  private Map<ConsumptionCategory, BigDecimal> copyLimits(
-      Map<ConsumptionCategory, BigDecimal> limits) {
-    Map<ConsumptionCategory, BigDecimal> copy = new EnumMap<>(ConsumptionCategory.class);
-    if (limits != null) {
-      copy.putAll(limits);
-    }
-    return copy;
-  }
-
-  // DB에 비율로 저장하므로 ai에 보낼 때, 다시 비율로 바꿔줘야 함
-  private Map<ConsumptionCategory, BigDecimal> convertAmountToRatio(
-      Map<ConsumptionCategory, BigDecimal> limits) {
-    Map<ConsumptionCategory, BigDecimal> ratios = new EnumMap<>(ConsumptionCategory.class);
-    if (limits == null) {
-      return ratios;
-    }
-
-    BigDecimal total =
-        limits.values().stream().filter(Objects::nonNull).reduce(ZERO, BigDecimal::add);
-
-    if (total.compareTo(ZERO) <= 0) {
-      return ratios;
-    }
-
-    limits.forEach(
-        (category, amount) -> {
-          if (category != null && amount != null) {
-            ratios.put(category, amount.divide(total, 4, RoundingMode.HALF_UP));
-          }
-        });
-
-    for (ConsumptionCategory category : ConsumptionCategory.values()) {
-      ratios.putIfAbsent(category, ZERO);
-    }
-
-    return ratios;
   }
 
   private YearMonth resolveYearMonth(Integer year, Integer month) {

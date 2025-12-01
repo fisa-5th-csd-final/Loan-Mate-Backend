@@ -16,17 +16,15 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fisa.bank.account.application.model.IncomeBreakdown;
 import com.fisa.bank.account.application.model.UserAccountContext;
 import com.fisa.bank.account.application.model.spending.RecommendedSpending;
-import com.fisa.bank.account.application.model.spending.UserSpendingLimit;
 import com.fisa.bank.account.application.service.helper.IncomeCalculator;
 import com.fisa.bank.account.application.service.helper.UserAccountContextService;
+import com.fisa.bank.account.application.service.helper.UserSpendingLimitResolver;
 import com.fisa.bank.account.application.usecase.GetRecommendedSpendingUseCase;
-import com.fisa.bank.account.application.usecase.GetUserSpendingLimitUseCase;
 import com.fisa.bank.account.application.util.SpendingRatioLoader;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.service.reader.LoanReader;
 import com.fisa.bank.persistence.account.entity.id.AccountId;
 import com.fisa.bank.persistence.account.enums.ConsumptionCategory;
-import com.fisa.bank.user.application.model.ServiceUser;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +38,7 @@ public class RecommendedSpendingService implements GetRecommendedSpendingUseCase
   private final UserAccountContextService userAccountContextService;
   private final IncomeCalculator incomeCalculator;
   private final SpendingRatioLoader ratioLoader;
-  private final GetUserSpendingLimitUseCase getUserSpendingLimitUseCase;
+  private final UserSpendingLimitResolver userSpendingLimitResolver;
 
   @Override
   public RecommendedSpending execute(int year, int month) {
@@ -58,13 +56,11 @@ public class RecommendedSpendingService implements GetRecommendedSpendingUseCase
 
     // 사용자가 직접 설정한 금액 한도가 있으면 그대로 반환
     var userLimitsOpt =
-        getUserSpendingLimitUseCase
-            .execute()
-            .map(UserSpendingLimit::limits)
-            .map(this::normalizeAmounts)
-            .filter(limits -> !limits.isEmpty());
+        userSpendingLimitResolver
+            .findUserLimitAmounts()
+            .map(userSpendingLimitResolver::fillMissing);
     if (userLimitsOpt.isPresent()) {
-      Map<ConsumptionCategory, BigDecimal> userLimits = fillMissing(userLimitsOpt.get());
+      Map<ConsumptionCategory, BigDecimal> userLimits = userLimitsOpt.get();
       BigDecimal totalBudget =
           userLimits.values().stream().reduce(ZERO, BigDecimal::add).setScale(0, RoundingMode.DOWN);
       return new RecommendedSpending(totalBudget, userLimits);
@@ -78,7 +74,9 @@ public class RecommendedSpendingService implements GetRecommendedSpendingUseCase
     // 사용자 한도 설정이 있으면 우선 적용하고, 없으면 연령대 비율 사용
     Map<ConsumptionCategory, BigDecimal> categoryRecommendation =
         buildCategoryRecommendation(
-            variableSpendingBudget, resolveCategoryRatios(userAccountContext.serviceUser()));
+            variableSpendingBudget,
+            userSpendingLimitResolver.resolveLimitRatio(
+                ratioLoader.getRatios(userAccountContext.serviceUser().getBirthday())));
 
     return new RecommendedSpending(variableSpendingBudget, categoryRecommendation);
   }
@@ -96,10 +94,6 @@ public class RecommendedSpendingService implements GetRecommendedSpendingUseCase
         .map(LoanDetail::getMonthlyRepayment)
         .filter(Objects::nonNull)
         .reduce(ZERO, BigDecimal::add);
-  }
-
-  private Map<ConsumptionCategory, BigDecimal> resolveCategoryRatios(ServiceUser user) {
-    return ratioLoader.getRatios(user.getBirthday());
   }
 
   // 연령대 기반 추천 금액 혹은 사용자 한도 기반 추천 금액
@@ -126,31 +120,6 @@ public class RecommendedSpendingService implements GetRecommendedSpendingUseCase
       result.putIfAbsent(category, ZERO);
     }
 
-    return result;
-  }
-
-  private Map<ConsumptionCategory, BigDecimal> normalizeAmounts(
-      Map<ConsumptionCategory, BigDecimal> limits) {
-    Map<ConsumptionCategory, BigDecimal> result = new EnumMap<>(ConsumptionCategory.class);
-    if (limits == null) {
-      return result;
-    }
-    limits.forEach(
-        (category, value) -> {
-          if (category != null && value != null) {
-            result.put(category, value.max(ZERO));
-          }
-        });
-    return result;
-  }
-
-  private Map<ConsumptionCategory, BigDecimal> fillMissing(
-      Map<ConsumptionCategory, BigDecimal> limits) {
-    Map<ConsumptionCategory, BigDecimal> result = new EnumMap<>(ConsumptionCategory.class);
-    result.putAll(limits);
-    for (ConsumptionCategory category : ConsumptionCategory.values()) {
-      result.putIfAbsent(category, ZERO);
-    }
     return result;
   }
 }
