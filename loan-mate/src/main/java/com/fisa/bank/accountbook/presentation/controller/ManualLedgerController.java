@@ -1,5 +1,6 @@
 package com.fisa.bank.accountbook.presentation.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,7 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fisa.bank.accountbook.application.dto.request.ManualLedgerRequest;
+import com.fisa.bank.accountbook.application.dto.request.ManualLedgerCreateRequest;
+import com.fisa.bank.accountbook.application.dto.request.ManualLedgerUpdateRequest;
 import com.fisa.bank.accountbook.application.dto.response.ManualLedgerResponse;
 import com.fisa.bank.accountbook.application.model.ManualLedgerType;
 import com.fisa.bank.accountbook.application.usecase.ManageManualLedgerUseCase;
@@ -34,7 +36,7 @@ public class ManualLedgerController {
 
   @PostMapping
   public ApiResponse<SuccessBody<ManualLedgerResponse>> addEntry(
-      @RequestBody ManualLedgerRequest request) {
+      @Valid @RequestBody ManualLedgerCreateRequest request) {
     log.info("사용자가 수입/지출 등록 요청");
     ManualLedgerResponse response = manageManualLedgerUseCase.addEntry(request);
     return ApiResponseGenerator.success(ResponseCode.CREATE, response);
@@ -50,7 +52,7 @@ public class ManualLedgerController {
 
   @PutMapping("/{entryId}")
   public ApiResponse<SuccessBody<ManualLedgerResponse>> updateEntry(
-      @PathVariable Long entryId, @RequestBody ManualLedgerRequest request) {
+      @PathVariable Long entryId, @Valid @RequestBody ManualLedgerUpdateRequest request) {
     log.info("사용자가 수입/지출 수정 요청, id={}", entryId);
     ManualLedgerResponse response = manageManualLedgerUseCase.updateEntry(entryId, request);
     return ApiResponseGenerator.success(ResponseCode.UPDATE, response);

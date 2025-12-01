@@ -235,4 +235,8 @@ public class CoreBankingClientProdImpl implements CoreBankingClient {
           bodyString);
     }
   }
+
+  public <T> T post(String endpoint, Object body, Class<T> responseType) {
+    return callApi(endpoint, HttpMethod.POST, body, responseType);
+  }
 }

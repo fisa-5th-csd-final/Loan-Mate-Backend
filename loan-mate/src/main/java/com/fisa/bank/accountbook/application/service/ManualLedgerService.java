@@ -2,23 +2,22 @@ package com.fisa.bank.accountbook.application.service;
 
 import lombok.RequiredArgsConstructor;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 
-import com.fisa.bank.accountbook.application.dto.request.ManualLedgerRequest;
+import com.fisa.bank.accountbook.application.dto.request.ManualLedgerCreateRequest;
+import com.fisa.bank.accountbook.application.dto.request.ManualLedgerUpdateRequest;
 import com.fisa.bank.accountbook.application.dto.response.ManualLedgerResponse;
 import com.fisa.bank.accountbook.application.exception.ManualLedgerAccessDeniedException;
-import com.fisa.bank.accountbook.application.exception.ManualLedgerInvalidRequestException;
 import com.fisa.bank.accountbook.application.exception.ManualLedgerNotFoundException;
 import com.fisa.bank.accountbook.application.model.ManualLedgerEntry;
 import com.fisa.bank.accountbook.application.model.ManualLedgerType;
 import com.fisa.bank.accountbook.application.repository.ManualLedgerRepository;
 import com.fisa.bank.accountbook.application.usecase.ManageManualLedgerUseCase;
 import com.fisa.bank.common.application.util.RequesterInfo;
+import com.fisa.bank.persistence.account.enums.ConsumptionCategory;
 
 @Service
 @RequiredArgsConstructor
@@ -28,8 +27,7 @@ public class ManualLedgerService implements ManageManualLedgerUseCase {
   private final RequesterInfo requesterInfo;
 
   @Override
-  public ManualLedgerResponse addEntry(ManualLedgerRequest request) {
-    validate(request);
+  public ManualLedgerResponse addEntry(ManualLedgerCreateRequest request) {
 
     Long userId = requesterInfo.getServiceUserId();
     ManualLedgerEntry entry =
@@ -39,7 +37,8 @@ public class ManualLedgerService implements ManageManualLedgerUseCase {
             request.type(),
             request.amount(),
             trimDescription(request.description()),
-            request.savedAt());
+            request.savedAt(),
+            resolveCategory(request.type(), request.category()));
 
     ManualLedgerEntry saved = manualLedgerRepository.save(entry);
     return ManualLedgerResponse.from(saved);
@@ -57,8 +56,7 @@ public class ManualLedgerService implements ManageManualLedgerUseCase {
   }
 
   @Override
-  public ManualLedgerResponse updateEntry(Long entryId, ManualLedgerRequest request) {
-    validate(request);
+  public ManualLedgerResponse updateEntry(Long entryId, ManualLedgerUpdateRequest request) {
     Long userId = requesterInfo.getServiceUserId();
     ManualLedgerEntry ownedEntry = getOwnedEntry(entryId, userId);
 
@@ -66,10 +64,11 @@ public class ManualLedgerService implements ManageManualLedgerUseCase {
         new ManualLedgerEntry(
             ownedEntry.id(),
             ownedEntry.serviceUserId(),
-            request.type(),
+            ownedEntry.type(),
             request.amount(),
             trimDescription(request.description()),
-            request.savedAt());
+            ownedEntry.savedAt(),
+            resolveCategory(ownedEntry.type(), request.category()));
 
     ManualLedgerEntry saved = manualLedgerRepository.save(updatedEntry);
     return ManualLedgerResponse.from(saved);
@@ -82,31 +81,20 @@ public class ManualLedgerService implements ManageManualLedgerUseCase {
     manualLedgerRepository.deleteById(ownedEntry.id());
   }
 
-  private void validate(ManualLedgerRequest request) {
-    if (request == null) {
-      throw new ManualLedgerInvalidRequestException("요청 데이터가 비어 있습니다.");
-    }
-    validate(request.type(), request.amount(), request.savedAt());
-  }
-
-  private void validate(ManualLedgerType type, BigDecimal amount, LocalDate savedAt) {
-    if (type == null) {
-      throw new ManualLedgerInvalidRequestException("수입/지출 유형을 선택해야 합니다.");
-    }
-    if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0 || amount.scale() > 2) {
-      throw new ManualLedgerInvalidRequestException("금액은 0보다 큰 값이어야 하며 소수점 둘째 자리까지 입력 가능합니다.");
-    }
-    if (savedAt == null) {
-      throw new ManualLedgerInvalidRequestException("저장 일자를 입력해야 합니다.");
-    }
-  }
-
   private String trimDescription(String description) {
     if (description == null) {
       return null;
     }
     String trimmed = description.trim();
     return trimmed.isEmpty() ? null : trimmed;
+  }
+
+  private ConsumptionCategory resolveCategory(
+      ManualLedgerType type, ConsumptionCategory consumptionCategory) {
+    if (type == ManualLedgerType.INCOME) {
+      return null;
+    }
+    return consumptionCategory;
   }
 
   private ManualLedgerEntry getOwnedEntry(Long entryId, Long userId) {
