@@ -43,6 +43,12 @@ public class LoanController {
     return ApiResponseGenerator.success(ResponseCode.GET, manageLoanUseCase.getAiComment(loanId));
   }
 
+  @GetMapping("/risk")
+  public ApiResponse<SuccessBody<LoanRiskResponse>> getRisk() {
+    log.info("전체 대출 위험도 조회");
+    return ApiResponseGenerator.success(ResponseCode.GET, manageLoanUseCase.getLoanRisk());
+  }
+
   @GetMapping("/ledgers/{loanId}/auto-deposit")
   public ApiResponse<SuccessBody<LoanAutoDepositResponse>> getAutoDeposit(
       @PathVariable Long loanId) {
