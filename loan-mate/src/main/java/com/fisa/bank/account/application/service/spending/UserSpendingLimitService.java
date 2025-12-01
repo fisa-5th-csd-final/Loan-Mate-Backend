@@ -32,13 +32,7 @@ public class UserSpendingLimitService
 
     Map<ConsumptionCategory, BigDecimal> normalized = normalize(limits);
 
-    UserSpendingLimit toSave =
-        userSpendingLimitRepository
-            .findByServiceUserId(serviceUserId)
-            .map(existing -> new UserSpendingLimit(existing.id(), serviceUserId, normalized))
-            .orElseGet(() -> new UserSpendingLimit(null, serviceUserId, normalized));
-
-    return userSpendingLimitRepository.save(toSave);
+    return userSpendingLimitRepository.save(new UserSpendingLimit(null, serviceUserId, normalized));
   }
 
   @Override

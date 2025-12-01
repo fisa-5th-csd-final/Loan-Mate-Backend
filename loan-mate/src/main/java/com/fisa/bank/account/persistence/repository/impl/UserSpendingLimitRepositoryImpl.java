@@ -21,8 +21,17 @@ public class UserSpendingLimitRepositoryImpl implements UserSpendingLimitReposit
 
   @Override
   public UserSpendingLimit save(UserSpendingLimit limit) {
-    UserSpendingLimitEntity saved = jpaRepository.save(mapper.toEntity(limit));
-    return mapper.toDomain(saved);
+    UserSpendingLimitEntity entity =
+        jpaRepository
+            .findByServiceUserId(limit.serviceUserId())
+            .map(
+                existing -> {
+                  existing.updateLimits(limit.limits());
+                  return existing;
+                })
+            .orElseGet(() -> mapper.toEntity(limit));
+
+    return mapper.toDomain(jpaRepository.save(entity));
   }
 
   @Override
