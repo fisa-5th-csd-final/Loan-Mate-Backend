@@ -198,7 +198,7 @@ public class LoanService implements ManageLoanUseCase {
 
   @Override
   public AiSimulationResponse processAiSimulation(AiSimulationRequest request) {
-    request.setUserId(requesterInfo.getCoreBankingUserId());
+    request.setUser_id(requesterInfo.getCoreBankingUserId());
     return loanAiClient.processAiSimulation(request);
   }
 }

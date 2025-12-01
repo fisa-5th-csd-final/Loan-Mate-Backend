@@ -1,19 +1,21 @@
 package com.fisa.bank.loan.application.dto.response;
 
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
 public class AiSimulationResponse {
   @JsonProperty("base_risk_score")
-  private final BigDecimal baseRiskScore;
+  private BigDecimal baseRiskScore;
 
   @JsonProperty("simulated_risk_score")
-  private final BigDecimal simulatedRiskScore;
+  private BigDecimal simulatedRiskScore;
 
-  private final BigDecimal delta;
-  private final String explanation;
+  private BigDecimal delta;
+  private String explanation;
 }

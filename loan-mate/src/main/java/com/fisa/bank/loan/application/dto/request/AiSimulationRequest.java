@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Getter
 public class AiSimulationRequest {
-  @Setter private Long userId;
+  @Setter private Long user_id;
 
   private final List<ChangeItem> changes;
 
