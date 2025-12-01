@@ -10,4 +10,6 @@ public interface CoreBankingClient {
   public void delete(String endpoint);
 
   void patch(String endpoint, Object body);
+
+  <T> T post(String endpoint, Object body, Class<T> responseType);
 }

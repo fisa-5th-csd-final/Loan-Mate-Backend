@@ -2,6 +2,8 @@ package com.fisa.bank.accountbook.persistence.repository;
 
 import lombok.RequiredArgsConstructor;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,5 +54,23 @@ public class ManualLedgerRepositoryImpl implements ManualLedgerRepository {
   @Override
   public void deleteById(Long id) {
     jpaManualLedgerRepository.deleteById(id);
+  }
+
+  @Override
+  public BigDecimal sumAmountByUserIdAndTypeBetween(
+      Long serviceUserId, ManualLedgerType type, LocalDate startDate, LocalDate endDate) {
+
+    return jpaManualLedgerRepository.sumAmountByUserIdAndTypeBetween(
+        serviceUserId, type, startDate, endDate);
+  }
+
+  @Override
+  public List<ManualLedgerEntry> findByUserIdAndTypeAndSavedAtBetween(
+      Long userId, ManualLedgerType type, LocalDate startDate, LocalDate endDate) {
+    return jpaManualLedgerRepository
+        .findByServiceUserIdAndTypeAndSavedAtBetween(userId, type, startDate, endDate)
+        .stream()
+        .map(mapper::toDomain)
+        .toList();
   }
 }

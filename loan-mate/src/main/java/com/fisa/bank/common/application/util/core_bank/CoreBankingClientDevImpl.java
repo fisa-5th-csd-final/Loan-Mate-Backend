@@ -187,4 +187,8 @@ public class CoreBankingClientDevImpl implements CoreBankingClient {
     logResponse(url, entity);
     return entity != null ? entity.getBody() : null;
   }
+
+  public <T> T post(String endpoint, Object body, Class<T> responseType) {
+    return callApi(endpoint, HttpMethod.POST, body, responseType);
+  }
 }

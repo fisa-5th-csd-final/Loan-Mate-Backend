@@ -18,7 +18,8 @@ public class ManualLedgerMapper {
         entity.getType(),
         entity.getAmount(),
         entity.getDescription(),
-        entity.getSavedAt());
+        entity.getSavedAt(),
+        entity.getCategory());
   }
 
   public ManualLedgerEntity toEntity(ManualLedgerEntry entry) {
@@ -32,6 +33,7 @@ public class ManualLedgerMapper {
         .amount(entry.amount())
         .description(entry.description())
         .savedAt(entry.savedAt())
+        .category(entry.category())
         .build();
   }
 }
