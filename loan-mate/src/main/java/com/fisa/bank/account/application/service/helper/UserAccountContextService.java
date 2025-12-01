@@ -9,45 +9,37 @@ import com.fisa.bank.account.application.model.UserAccountContext;
 import com.fisa.bank.account.application.repository.AccountRepository;
 import com.fisa.bank.common.application.util.RequesterInfo;
 import com.fisa.bank.persistence.account.entity.Account;
-import com.fisa.bank.persistence.user.entity.User;
 import com.fisa.bank.persistence.user.entity.id.UserId;
-import com.fisa.bank.persistence.user.repository.UserRepository;
 import com.fisa.bank.user.application.exception.ServiceUserNotFoundException;
 import com.fisa.bank.user.application.model.ServiceUser;
+import com.fisa.bank.user.application.repository.UserRepository;
 
 @Component
 @RequiredArgsConstructor
 public class UserAccountContextService {
 
   private final RequesterInfo requesterInfo;
-  private final UserRepository coreUserRepository;
-  private final com.fisa.bank.user.application.repository.UserRepository serviceUserRepository;
+  private final UserRepository serviceUserRepository;
   private final AccountRepository accountRepository;
 
+  /** ServiceUser + CoreUserId + SalaryAccount 로 구성된 Context 로드 */
   public UserAccountContext loadContext() {
-    ServiceUser serviceUser = getServiceUser();
-    User coreUser = getCoreUser();
-    Account salaryAccount = findSalaryAccount(coreUser);
-    return new UserAccountContext(serviceUser, coreUser, salaryAccount);
-  }
 
-  private ServiceUser getServiceUser() {
-    Long serviceUserId = requesterInfo.getServiceUserId();
-    return serviceUserRepository
-        .findById(serviceUserId)
-        .orElseThrow(ServiceUserNotFoundException::new);
-  }
-
-  private User getCoreUser() {
     Long coreUserId = requesterInfo.getCoreBankingUserId();
-    return coreUserRepository
-        .findById(UserId.of(coreUserId))
-        .orElseThrow(ServiceUserNotFoundException::new);
-  }
+    Long serviceUserId = requesterInfo.getServiceUserId();
 
-  private Account findSalaryAccount(User coreUser) {
-    return accountRepository
-        .findSalaryAccount(coreUser)
-        .orElseThrow(() -> new SalaryAccountNotFoundException(coreUser.getUserId().getValue()));
+    // ServiceUser 조회 (서비스 DB)
+    ServiceUser serviceUser =
+        serviceUserRepository
+            .findById(serviceUserId)
+            .orElseThrow(ServiceUserNotFoundException::new);
+
+    // Salary Account 조회 (core user ID 기반)
+    Account salaryAccount =
+        accountRepository
+            .findSalaryAccount(UserId.of(coreUserId))
+            .orElseThrow(() -> new SalaryAccountNotFoundException(coreUserId));
+
+    return new UserAccountContext(serviceUser, coreUserId, salaryAccount);
   }
 }
