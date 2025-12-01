@@ -7,6 +7,7 @@ import java.math.RoundingMode;
 import java.time.YearMonth;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +46,7 @@ public class AiExpenditureService {
 
     Map<ConsumptionCategory, BigDecimal> ageGroupRatio =
         spendingRatioLoader.getRatios(userAccountContext.serviceUser().getBirthday());
-    Map<ConsumptionCategory, BigDecimal> userLimit = resolveUserLimit(ageGroupRatio);
+    Map<ConsumptionCategory, BigDecimal> userLimitRatio = resolveUserLimitRatio(ageGroupRatio);
 
     Long serviceUserId = userAccountContext.serviceUser().getUserId();
     var accountId = userAccountContext.salaryAccount().getAccountId();
@@ -68,18 +69,19 @@ public class AiExpenditureService {
         new AiRecommendRequest(
             new AiRecommendRequest.SpendingRatio(spendingRatio, totalIncome),
             ageGroupRatio,
-            new AiRecommendRequest.UserLimitRatio(userLimit));
+            new AiRecommendRequest.UserLimitRatio(userLimitRatio));
 
     return accountAiClient.fetchRecommendation(aiRequest);
   }
 
-  private Map<ConsumptionCategory, BigDecimal> resolveUserLimit(
+  private Map<ConsumptionCategory, BigDecimal> resolveUserLimitRatio(
       Map<ConsumptionCategory, BigDecimal> ageGroupRatio) {
     return getUserSpendingLimitUseCase
         .execute()
         .map(UserSpendingLimit::limits)
         .filter(limits -> limits != null && !limits.isEmpty())
-        .map(this::copyLimits)
+        .map(this::convertAmountToRatio)
+        .filter(ratios -> !ratios.isEmpty())
         .orElseGet(() -> copyLimits(ageGroupRatio));
   }
 
@@ -90,6 +92,35 @@ public class AiExpenditureService {
       copy.putAll(limits);
     }
     return copy;
+  }
+
+  // DB에 비율로 저장하므로 ai에 보낼 때, 다시 비율로 바꿔줘야 함
+  private Map<ConsumptionCategory, BigDecimal> convertAmountToRatio(
+      Map<ConsumptionCategory, BigDecimal> limits) {
+    Map<ConsumptionCategory, BigDecimal> ratios = new EnumMap<>(ConsumptionCategory.class);
+    if (limits == null) {
+      return ratios;
+    }
+
+    BigDecimal total =
+        limits.values().stream().filter(Objects::nonNull).reduce(ZERO, BigDecimal::add);
+
+    if (total.compareTo(ZERO) <= 0) {
+      return ratios;
+    }
+
+    limits.forEach(
+        (category, amount) -> {
+          if (category != null && amount != null) {
+            ratios.put(category, amount.divide(total, 4, RoundingMode.HALF_UP));
+          }
+        });
+
+    for (ConsumptionCategory category : ConsumptionCategory.values()) {
+      ratios.putIfAbsent(category, ZERO);
+    }
+
+    return ratios;
   }
 
   private YearMonth resolveYearMonth(Integer year, Integer month) {

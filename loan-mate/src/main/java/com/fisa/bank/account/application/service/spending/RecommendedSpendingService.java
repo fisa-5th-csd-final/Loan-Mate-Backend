@@ -56,10 +56,22 @@ public class RecommendedSpendingService implements GetRecommendedSpendingUseCase
         incomeCalculator.calculatePreviousSalaryCurrentManual(
             accountId, userAccountContext.serviceUser().getUserId(), currentMonth);
 
+    // 사용자가 직접 설정한 금액 한도가 있으면 그대로 반환
+    var userLimitsOpt =
+        getUserSpendingLimitUseCase
+            .execute()
+            .map(UserSpendingLimit::limits)
+            .map(this::normalizeAmounts)
+            .filter(limits -> !limits.isEmpty());
+    if (userLimitsOpt.isPresent()) {
+      Map<ConsumptionCategory, BigDecimal> userLimits = fillMissing(userLimitsOpt.get());
+      BigDecimal totalBudget =
+          userLimits.values().stream().reduce(ZERO, BigDecimal::add).setScale(0, RoundingMode.DOWN);
+      return new RecommendedSpending(totalBudget, userLimits);
+    }
+
     BigDecimal monthlyRepayment = sumMonthlyRepayment();
-
     BigDecimal availableIncome = income.total().subtract(monthlyRepayment).max(ZERO);
-
     BigDecimal variableSpendingBudget =
         availableIncome.multiply(BUDGET_RATIO).setScale(0, RoundingMode.DOWN);
 
@@ -87,21 +99,7 @@ public class RecommendedSpendingService implements GetRecommendedSpendingUseCase
   }
 
   private Map<ConsumptionCategory, BigDecimal> resolveCategoryRatios(ServiceUser user) {
-    return getUserSpendingLimitUseCase
-        .execute()
-        .map(UserSpendingLimit::limits)
-        .filter(limits -> limits != null && !limits.isEmpty())
-        .map(this::copyLimits)
-        .orElseGet(() -> ratioLoader.getRatios(user.getBirthday()));
-  }
-
-  private Map<ConsumptionCategory, BigDecimal> copyLimits(
-      Map<ConsumptionCategory, BigDecimal> limits) {
-    Map<ConsumptionCategory, BigDecimal> copy = new EnumMap<>(ConsumptionCategory.class);
-    if (limits != null) {
-      copy.putAll(limits);
-    }
-    return copy;
+    return ratioLoader.getRatios(user.getBirthday());
   }
 
   // 연령대 기반 추천 금액 혹은 사용자 한도 기반 추천 금액
@@ -128,6 +126,31 @@ public class RecommendedSpendingService implements GetRecommendedSpendingUseCase
       result.putIfAbsent(category, ZERO);
     }
 
+    return result;
+  }
+
+  private Map<ConsumptionCategory, BigDecimal> normalizeAmounts(
+      Map<ConsumptionCategory, BigDecimal> limits) {
+    Map<ConsumptionCategory, BigDecimal> result = new EnumMap<>(ConsumptionCategory.class);
+    if (limits == null) {
+      return result;
+    }
+    limits.forEach(
+        (category, value) -> {
+          if (category != null && value != null) {
+            result.put(category, value.max(ZERO));
+          }
+        });
+    return result;
+  }
+
+  private Map<ConsumptionCategory, BigDecimal> fillMissing(
+      Map<ConsumptionCategory, BigDecimal> limits) {
+    Map<ConsumptionCategory, BigDecimal> result = new EnumMap<>(ConsumptionCategory.class);
+    result.putAll(limits);
+    for (ConsumptionCategory category : ConsumptionCategory.values()) {
+      result.putIfAbsent(category, ZERO);
+    }
     return result;
   }
 }

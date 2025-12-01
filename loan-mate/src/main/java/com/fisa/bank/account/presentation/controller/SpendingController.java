@@ -42,7 +42,7 @@ public class SpendingController {
       @RequestBody(required = false) SpendingLimitRequest request) {
 
     var saved =
-        saveUserSpendingLimitUseCase.execute(request != null ? request.userLimitRatio() : null);
+        saveUserSpendingLimitUseCase.execute(request != null ? request.userLimitAmount() : null);
     return new SpendingLimitResponse(saved.limits());
   }
 }

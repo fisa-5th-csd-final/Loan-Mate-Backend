@@ -65,7 +65,7 @@ public class UserSpendingLimitService
     limits.forEach(
         (category, value) -> {
           if (category != null && value != null) {
-            result.put(category, value);
+            result.put(category, value.max(BigDecimal.ZERO));
           }
         });
     return result;

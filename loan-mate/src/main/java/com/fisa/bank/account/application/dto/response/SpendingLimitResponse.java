@@ -7,4 +7,4 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fisa.bank.persistence.account.enums.ConsumptionCategory;
 
 public record SpendingLimitResponse(
-    @JsonProperty("user_limit_ratio") Map<ConsumptionCategory, BigDecimal> userLimitRatio) {}
+    @JsonProperty("user_limit_amount") Map<ConsumptionCategory, BigDecimal> userLimitAmount) {}
