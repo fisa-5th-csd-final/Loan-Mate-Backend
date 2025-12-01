@@ -23,11 +23,10 @@ public class SpendingController {
   private final GetRecommendedSpendingUseCase getRecommendedSpendingUseCase;
   private final SaveUserSpendingLimitUseCase saveUserSpendingLimitUseCase;
 
-  @GetMapping("/{accountId}/{year}/{month}")
-  public MonthlySpending getMonthlySpending(
-      @PathVariable Long accountId, @PathVariable int year, @PathVariable int month) {
+  @GetMapping("/{year}/{month}")
+  public MonthlySpending getMonthlySpending(@PathVariable int year, @PathVariable int month) {
 
-    return getMonthlySpendingUseCase.execute(accountId, year, month);
+    return getMonthlySpendingUseCase.execute(year, month);
   }
 
   @GetMapping("/recommended")

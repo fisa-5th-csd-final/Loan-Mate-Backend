@@ -7,7 +7,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -65,12 +67,26 @@ public class IncomeCalculator {
     public Map<ConsumptionCategory, BigDecimal> collectWithManualLedger(
         Long accountId, Long serviceUserId, int year, int month) {
 
+      return collectWithManualLedger(List.of(accountId), serviceUserId, year, month);
+    }
+
+    public Map<ConsumptionCategory, BigDecimal> collectWithManualLedger(
+        List<Long> accountIds, Long serviceUserId, int year, int month) {
+
       LocalDate startDate = LocalDate.of(year, month, 1);
       LocalDate endDate = startDate.plusMonths(1);
 
-      // 실제 거래내역에 찍힌 사용자 지출 가져옴
-      Map<ConsumptionCategory, BigDecimal> spending =
-          new EnumMap<>(spendingRepository.getMonthlySpending(accountId, year, month));
+      Map<ConsumptionCategory, BigDecimal> spending = new EnumMap<>(ConsumptionCategory.class);
+
+      if (accountIds != null) {
+        accountIds.stream()
+            .filter(Objects::nonNull)
+            .distinct()
+            .forEach(
+                id ->
+                    mergeSpending(
+                        spendingRepository.getMonthlySpending(id, year, month), spending));
+      }
 
       // 수기 입력 지출 가져옴.
       mergeManualLedgerSpending(serviceUserId, startDate, endDate, spending);
@@ -99,6 +115,12 @@ public class IncomeCalculator {
                           Collectors.reducing(ZERO, BigDecimal::add))));
 
       manualSpending.forEach((category, amount) -> target.merge(category, amount, BigDecimal::add));
+    }
+
+    private void mergeSpending(
+        Map<ConsumptionCategory, BigDecimal> source, Map<ConsumptionCategory, BigDecimal> target) {
+
+      source.forEach((category, amount) -> target.merge(category, amount, BigDecimal::add));
     }
   }
 }
