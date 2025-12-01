@@ -5,8 +5,10 @@ import lombok.RequiredArgsConstructor;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,9 @@ import com.fisa.bank.persistence.user.entity.id.UserId;
 @Service
 @RequiredArgsConstructor
 public class SpendingService implements GetMonthlySpendingUseCase {
+
+  private static final Set<ConsumptionCategory> EXCLUDED =
+      EnumSet.of(ConsumptionCategory.TRANSFER, ConsumptionCategory.ETC);
 
   private final IncomeCalculator.MonthlySpendingCalculator monthlySpendingCalculator;
   private final UserAccountContextService userAccountContextService;
@@ -46,10 +51,24 @@ public class SpendingService implements GetMonthlySpendingUseCase {
     Map<ConsumptionCategory, BigDecimal> categoryMap =
         monthlySpendingCalculator.collectWithManualLedger(accountIds, serviceUserId, year, month);
 
-    BigDecimal totalSpent = categoryMap.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+    EXCLUDED.forEach(categoryMap::remove);
+
+    for (ConsumptionCategory category : ConsumptionCategory.values()) {
+      if (EXCLUDED.contains(category)) {
+        continue;
+      }
+      categoryMap.putIfAbsent(category, BigDecimal.ZERO);
+    }
+
+    BigDecimal totalSpent =
+        categoryMap.entrySet().stream()
+            .filter(entry -> !EXCLUDED.contains(entry.getKey()))
+            .map(Map.Entry::getValue)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
 
     List<CategorySpending> categories =
         categoryMap.entrySet().stream()
+            .filter(entry -> !EXCLUDED.contains(entry.getKey()))
             .map(
                 e ->
                     new CategorySpending(
