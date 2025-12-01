@@ -67,7 +67,7 @@ pipeline {
                    string(credentialsId: 'DEPLOY_HOST', variable: 'DEPLOY_HOST')]){
                        sshagent(['from-jenkins-to-aws-ec2-access-key']) {
                            sh '''
-                               ssh -o StrictHostKeyChecking=no $SSH_USER@$DEPLOY_HOST "
+                               ssh -o StrictHostKeyChecking=yes $SSH_USER@$DEPLOY_HOST "
                                    cd ~/Loan-Mate-Backend
                                    chmod +x deploy.sh
                                    ./deploy.sh
