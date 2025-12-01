@@ -8,6 +8,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import com.fisa.bank.common.application.util.ai.AiClient;
+import com.fisa.bank.loan.application.dto.request.AiSimulationRequest;
+import com.fisa.bank.loan.application.dto.response.AiSimulationResponse;
 import com.fisa.bank.loan.application.model.LoanComment;
 import com.fisa.bank.loan.application.model.LoanRisks;
 
@@ -16,6 +18,7 @@ import com.fisa.bank.loan.application.model.LoanRisks;
 public class LoanAiClient {
   private static final String PREDICT_URL = "/predict";
   private static final String LOAN_COMMENT_URL = "/insight/loan";
+  private static final String AI_SIMULATION_URL = "/simulation";
 
   private static final String AI_REQUEST_KEY_USER_ID = "user_id";
   private static final String AI_REQUEST_KEY_LOAN_LEDGER_ID = "loan_ledger_id";
@@ -35,5 +38,9 @@ public class LoanAiClient {
   public LoanComment fetchLoanComment(Long loanLedgerId) {
     return aiClient.fetchOne(
         LOAN_COMMENT_URL, Map.of(AI_REQUEST_KEY_LOAN_LEDGER_ID, loanLedgerId), LoanComment.class);
+  }
+
+  public AiSimulationResponse processAiSimulation(AiSimulationRequest body) {
+    return aiClient.fetchOne(AI_SIMULATION_URL, body, AiSimulationResponse.class);
   }
 }

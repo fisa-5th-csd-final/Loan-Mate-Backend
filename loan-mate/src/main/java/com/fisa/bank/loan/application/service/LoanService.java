@@ -19,12 +19,15 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fisa.bank.common.application.util.RequesterInfo;
 import com.fisa.bank.loan.application.client.LoanAiClient;
 import com.fisa.bank.loan.application.client.LoanCoreBankingClient;
+import com.fisa.bank.loan.application.dto.request.AiSimulationRequest;
+import com.fisa.bank.loan.application.dto.response.*;
 import com.fisa.bank.loan.application.dto.response.AutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanAiCommentResponse;
 import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
 import com.fisa.bank.loan.application.dto.response.LoansWithPrepaymentBenefitResponse;
+import com.fisa.bank.loan.application.model.*;
 import com.fisa.bank.loan.application.model.InterestDetail;
 import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.model.LoanComment;
@@ -166,7 +169,7 @@ public class LoanService implements ManageLoanUseCase {
         .map(
             ledger ->
                 AutoDepositResponse.builder()
-                        .loanLedgerId(ledger.getLoanLedgerId())
+                    .loanLedgerId(ledger.getLoanLedgerId())
                     .loanName(
                         ledger.getLoanProduct() != null ? ledger.getLoanProduct().getName() : null)
                     .accountBalance(
@@ -191,5 +194,11 @@ public class LoanService implements ManageLoanUseCase {
                 })
             .toList();
     return responseList;
+  }
+
+  @Override
+  public AiSimulationResponse processAiSimulation(AiSimulationRequest request) {
+    request.setUser_id(requesterInfo.getCoreBankingUserId());
+    return loanAiClient.processAiSimulation(request);
   }
 }
