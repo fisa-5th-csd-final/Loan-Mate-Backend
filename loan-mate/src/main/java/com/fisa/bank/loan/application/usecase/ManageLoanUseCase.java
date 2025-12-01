@@ -25,9 +25,7 @@ public interface ManageLoanUseCase {
 
   LoanAiCommentResponse getAiComment(Long loanLedgerId);
 
-
   LoanRiskResponse getLoanRisk();
 
   AiSimulationResponse processAiSimulation(AiSimulationRequest request);
-
 }
