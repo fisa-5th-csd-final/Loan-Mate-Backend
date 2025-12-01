@@ -83,13 +83,10 @@ public class LoanService implements ManageLoanUseCase {
     Long userId = requesterInfo.getCoreBankingUserId();
     LoanRisks loanRisks = loanAiClient.fetchLoanRisks(userId);
 
-    BigDecimal overallRisk =
-        Optional.ofNullable(loanRisks).map(LoanRisks::getOverallRisk).orElse(null);
-
-    RiskLevel overallRiskLevel =
-        Optional.ofNullable(overallRisk).map(RiskLevel::fromRiskScore).orElse(null);
-
-    return new LoanRiskResponse(overallRisk, overallRiskLevel);
+      return Optional.ofNullable(loanRisks)
+              .map(LoanRisks::getOverallRisk)
+              .map(risk -> new LoanRiskResponse(risk, RiskLevel.fromRiskScore(risk)))
+              .orElse(new LoanRiskResponse(null, null));
   }
 
   @Override
