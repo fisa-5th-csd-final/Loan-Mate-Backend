@@ -163,7 +163,8 @@ public class LoanService implements ManageLoanUseCase {
       if (earlyRepayment.compareTo(remainInterests) < 0) {
         BigDecimal benefit = remainInterests.subtract(earlyRepayment);
         loansWithPrepaymentBenefitResponses.add(
-            LoansWithPrepaymentBenefitResponse.from(prepaymentInfo.getLoanProductName(), benefit));
+            LoansWithPrepaymentBenefitResponse.from(
+                prepaymentInfo.getLoanProductName(), benefit, prepaymentInfo.getMustPaidAmount()));
       }
     }
     return loansWithPrepaymentBenefitResponses;
