@@ -3,8 +3,6 @@ pipeline {
 
     environment {
         GRADLE_USER_HOME = "${WORKSPACE}/.gradle"
-        DEPLOY_HOST = "${DEPLOY_HOST}"
-        SSH_USER="${SSH_USER}"
     }
 
     stages {
@@ -65,15 +63,17 @@ pipeline {
                }
                steps {
                    echo 'Deploying to EC2...'
-                   sshagent(credentials: ['from-jenkins-to-aws-ec2-access-key']) {
-                       sh """
-                           scp -o StrictHostKeyChecking=yes deploy.sh ${env.SSH_USER}@${env.DEPLOY_HOST}:/home/${env.SSH_USER}/deploy.sh
-
-                           ssh -o StrictHostKeyChecking=yes ${env.SSH_USER}@${env.DEPLOY_HOST} "
-                               chmod +x /home/${env.SSH_USER}/deploy.sh
-                               /home/${env.SSH_USER}/deploy.sh
-                           "
-                       """
+                   withCredentials([string(credentialsId: 'SSH_USER', variable: 'SSH_USER'),
+                   string(credentialsId: 'DEPLOY_HOST', variable: 'DEPLOY_HOST')]){
+                       sshagent(['from-jenkins-to-aws-ec2-access-key']) {
+                           sh '''
+                               ssh -o StrictHostKeyChecking=yes $SSH_USER@$DEPLOY_HOST "
+                                   cd ~/Loan-Mate-Backend
+                                   chmod +x deploy.sh
+                                   ./deploy.sh
+                               "
+                           '''
+                       }
                    }
                }
         }

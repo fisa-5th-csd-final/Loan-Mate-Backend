@@ -33,7 +33,7 @@ public class LoanCoreBankingClient {
   // LoanDetail 리스트 조회 (사용자별)
   @Cacheable(cacheNames = "loanDetails", key = "@springRequesterInfo.coreBankingUserId")
   public List<LoanDetail> fetchLoanDetails() {
-    return coreBankingClient.fetchList(LOANS_BASE_PATH + "/ledgers", LoanDetail.class);
+    return coreBankingClient.fetchList(LOANS_BASE_PATH + "/ledgers/details", LoanDetail.class);
   }
 
   // 조기 상환 정보 캐싱

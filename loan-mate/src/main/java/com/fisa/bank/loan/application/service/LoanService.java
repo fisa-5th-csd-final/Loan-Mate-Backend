@@ -19,21 +19,25 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fisa.bank.common.application.util.RequesterInfo;
 import com.fisa.bank.loan.application.client.LoanAiClient;
 import com.fisa.bank.loan.application.client.LoanCoreBankingClient;
+import com.fisa.bank.loan.application.dto.request.AiSimulationRequest;
+import com.fisa.bank.loan.application.dto.response.*;
 import com.fisa.bank.loan.application.dto.response.AutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanAiCommentResponse;
 import com.fisa.bank.loan.application.dto.response.LoanAutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanDetailResponse;
 import com.fisa.bank.loan.application.dto.response.LoanListResponse;
+import com.fisa.bank.loan.application.dto.response.LoanRiskResponse;
 import com.fisa.bank.loan.application.dto.response.LoansWithPrepaymentBenefitResponse;
+import com.fisa.bank.loan.application.model.*;
 import com.fisa.bank.loan.application.model.InterestDetail;
 import com.fisa.bank.loan.application.model.Loan;
-import com.fisa.bank.loan.application.model.LoanComment;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.model.LoanRiskDetail;
 import com.fisa.bank.loan.application.model.LoanRisks;
 import com.fisa.bank.loan.application.model.PrepaymentInfo;
 import com.fisa.bank.loan.application.service.reader.LoanReader;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
+import com.fisa.bank.loan.persistence.enums.RiskLevel;
 import com.fisa.bank.persistence.loan.entity.LoanLedger;
 
 @Service
@@ -67,9 +71,25 @@ public class LoanService implements ManageLoanUseCase {
 
   @Override
   public LoanAiCommentResponse getAiComment(Long loanId) {
-    LoanComment loanComment = loanAiClient.fetchLoanComment(loanId);
+    Long userId = requesterInfo.getCoreBankingUserId();
+    LoanRisks loanRisks = loanAiClient.fetchLoanRisks(userId);
 
-    return new LoanAiCommentResponse(loanComment.getLoanLedgerId(), loanComment.getComment());
+    return Optional.ofNullable(loanRisks).map(LoanRisks::getLoans).orElse(List.of()).stream()
+        .filter(detail -> loanId.equals(detail.getLoanLedgerId()))
+        .map(detail -> new LoanAiCommentResponse(detail.getLoanLedgerId(), detail.getExplanation()))
+        .findFirst()
+        .orElse(new LoanAiCommentResponse(loanId, null));
+  }
+
+  @Override
+  public LoanRiskResponse getLoanRisk() {
+    Long userId = requesterInfo.getCoreBankingUserId();
+    LoanRisks loanRisks = loanAiClient.fetchLoanRisks(userId);
+
+    return Optional.ofNullable(loanRisks)
+        .map(LoanRisks::getOverallRisk)
+        .map(risk -> new LoanRiskResponse(risk, RiskLevel.fromRiskScore(risk)))
+        .orElse(new LoanRiskResponse(null, null));
   }
 
   @Override
@@ -166,6 +186,7 @@ public class LoanService implements ManageLoanUseCase {
         .map(
             ledger ->
                 AutoDepositResponse.builder()
+                    .loanLedgerId(ledger.getLoanLedgerId())
                     .loanName(
                         ledger.getLoanProduct() != null ? ledger.getLoanProduct().getName() : null)
                     .accountBalance(
@@ -190,5 +211,11 @@ public class LoanService implements ManageLoanUseCase {
                 })
             .toList();
     return responseList;
+  }
+
+  @Override
+  public AiSimulationResponse processAiSimulation(AiSimulationRequest request) {
+    request.setUser_id(requesterInfo.getCoreBankingUserId());
+    return loanAiClient.processAiSimulation(request);
   }
 }

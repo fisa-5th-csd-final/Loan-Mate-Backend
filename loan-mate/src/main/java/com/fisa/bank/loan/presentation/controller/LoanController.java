@@ -12,6 +12,7 @@ import com.fisa.bank.common.presentation.response.ApiResponse;
 import com.fisa.bank.common.presentation.response.ApiResponseGenerator;
 import com.fisa.bank.common.presentation.response.body.SuccessBody;
 import com.fisa.bank.common.presentation.response.code.ResponseCode;
+import com.fisa.bank.loan.application.dto.request.AiSimulationRequest;
 import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
 import com.fisa.bank.loan.application.dto.response.*;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
@@ -40,6 +41,12 @@ public class LoanController {
   public ApiResponse<SuccessBody<LoanAiCommentResponse>> getComment(@PathVariable Long loanId) {
     log.info("대출 AI 코멘트 조회");
     return ApiResponseGenerator.success(ResponseCode.GET, manageLoanUseCase.getAiComment(loanId));
+  }
+
+  @GetMapping("/risk")
+  public ApiResponse<SuccessBody<LoanRiskResponse>> getRisk() {
+    log.info("전체 대출 위험도 조회");
+    return ApiResponseGenerator.success(ResponseCode.GET, manageLoanUseCase.getLoanRisk());
   }
 
   @GetMapping("/ledgers/{loanId}/auto-deposit")
@@ -90,5 +97,13 @@ public class LoanController {
     log.info("모든 대출 세부 정보 조회");
     List<LoanDetailResponse> loanDetails = manageLoanUseCase.getLoanDetails();
     return ApiResponseGenerator.success(ResponseCode.GET, loanDetails);
+  }
+
+  @PostMapping("/ai-simulation")
+  public ApiResponse<SuccessBody<AiSimulationResponse>> processAiSimulation(
+      @RequestBody AiSimulationRequest request) {
+    log.info("AI Simulation 실행");
+    AiSimulationResponse aiSimulationResponse = manageLoanUseCase.processAiSimulation(request);
+    return ApiResponseGenerator.success(ResponseCode.GET, aiSimulationResponse);
   }
 }

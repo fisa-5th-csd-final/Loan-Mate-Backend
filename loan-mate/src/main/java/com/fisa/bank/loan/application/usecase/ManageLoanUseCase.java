@@ -2,6 +2,7 @@ package com.fisa.bank.loan.application.usecase;
 
 import java.util.List;
 
+import com.fisa.bank.loan.application.dto.request.AiSimulationRequest;
 import com.fisa.bank.loan.application.dto.response.*;
 
 public interface ManageLoanUseCase {
@@ -23,4 +24,8 @@ public interface ManageLoanUseCase {
   List<LoanDetailResponse> getLoanDetails();
 
   LoanAiCommentResponse getAiComment(Long loanLedgerId);
+
+  LoanRiskResponse getLoanRisk();
+
+  AiSimulationResponse processAiSimulation(AiSimulationRequest request);
 }
