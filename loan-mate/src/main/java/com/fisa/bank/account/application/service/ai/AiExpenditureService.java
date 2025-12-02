@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fisa.bank.account.application.client.AccountAiClient;
 import com.fisa.bank.account.application.dto.request.AiRecommendRequest;
+import com.fisa.bank.account.application.dto.response.AiExpenditureResponse;
 import com.fisa.bank.account.application.model.IncomeBreakdown;
 import com.fisa.bank.account.application.model.UserAccountContext;
 import com.fisa.bank.account.application.service.helper.IncomeCalculator;
@@ -36,7 +37,7 @@ public class AiExpenditureService {
   private final IncomeCalculator incomeCalculator;
   private final UserSpendingLimitResolver userSpendingLimitResolver;
 
-  public JsonNode requestExpenditure(Integer year, Integer month) {
+  public AiExpenditureResponse requestExpenditure(Integer year, Integer month) {
 
     YearMonth targetMonth = resolveYearMonth(year, month);
 
@@ -70,7 +71,9 @@ public class AiExpenditureService {
             ageGroupRatio,
             new AiRecommendRequest.UserLimitRatio(userLimitRatio));
 
-    return accountAiClient.fetchRecommendation(aiRequest);
+    JsonNode recommendation = accountAiClient.fetchRecommendation(aiRequest);
+
+    return new AiExpenditureResponse(recommendation);
   }
 
   private YearMonth resolveYearMonth(Integer year, Integer month) {

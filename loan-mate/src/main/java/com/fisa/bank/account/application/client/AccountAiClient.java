@@ -12,7 +12,7 @@ import com.fisa.bank.common.application.util.ai.AiClient;
 @RequiredArgsConstructor
 public class AccountAiClient {
 
-  private static final String RECOMMEND_ENDPOINT = "/api/ai/recommend";
+  private static final String RECOMMEND_ENDPOINT = "/recommend";
 
   private final AiClient aiClient;
 

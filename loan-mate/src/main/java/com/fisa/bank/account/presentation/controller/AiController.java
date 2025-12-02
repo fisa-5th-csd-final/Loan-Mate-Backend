@@ -2,13 +2,17 @@ package com.fisa.bank.account.presentation.controller;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fisa.bank.account.application.dto.response.AiExpenditureResponse;
 import com.fisa.bank.account.application.service.ai.AiExpenditureService;
+import com.fisa.bank.common.presentation.response.ApiResponse;
+import com.fisa.bank.common.presentation.response.ApiResponseGenerator;
+import com.fisa.bank.common.presentation.response.body.SuccessBody;
+import com.fisa.bank.common.presentation.response.code.ResponseCode;
 
 @RestController
 @RequestMapping("/api/ai")
@@ -17,10 +21,11 @@ public class AiController {
 
   private final AiExpenditureService aiExpenditureService;
 
-  @PostMapping("/expenditure")
-  public JsonNode expenditure(
+  @GetMapping("/expenditure")
+  public ApiResponse<SuccessBody<AiExpenditureResponse>> expenditure(
       @RequestParam(required = false) Integer year, @RequestParam(required = false) Integer month) {
 
-    return aiExpenditureService.requestExpenditure(year, month);
+    AiExpenditureResponse response = aiExpenditureService.requestExpenditure(year, month);
+    return ApiResponseGenerator.success(ResponseCode.GET, response);
   }
 }
