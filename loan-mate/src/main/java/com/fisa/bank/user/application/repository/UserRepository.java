@@ -2,11 +2,11 @@ package com.fisa.bank.user.application.repository;
 
 import java.util.Optional;
 
-import com.fisa.bank.user.application.model.User;
+import com.fisa.bank.user.application.model.ServiceUser;
 
 public interface UserRepository {
 
-  Optional<User> findById(Long userId);
+  Optional<ServiceUser> findById(Long userId);
 
-  User save(User user);
+  ServiceUser save(ServiceUser user);
 }

@@ -3,6 +3,8 @@ package com.fisa.bank.user.persistence.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+
 import org.hibernate.annotations.JavaType;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -34,9 +36,8 @@ public class UserEntity extends BaseEntity {
   @Column(nullable = false)
   private String address;
 
-  /*
   @Column(nullable = false)
-  private LocalDate birthday; */
+  private LocalDate birthday;
 
   @Column(nullable = false)
   private String job;

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import com.fisa.bank.account.application.model.AccountDetail;
 import com.fisa.bank.account.application.repository.AccountDetailRepository;
+import com.fisa.bank.account.persistence.repository.jpa.JpaAccountRepository;
 import com.fisa.bank.persistence.account.entity.Account;
 import com.fisa.bank.persistence.user.entity.id.UserId;
 
@@ -18,7 +19,7 @@ public class AccountDetailRepositoryImpl implements AccountDetailRepository {
 
   @Override
   public List<AccountDetail> findAccountsByUserId(UserId userId) {
-    return jpaAccountRepository.findAllByUserId(userId).stream()
+    return jpaAccountRepository.findByUser_UserId(userId).stream()
         .map(AccountDetailRepositoryImpl::toDomain)
         .toList();
   }
