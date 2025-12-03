@@ -20,6 +20,7 @@ import com.fisa.bank.common.application.util.RequesterInfo;
 import com.fisa.bank.loan.application.client.LoanAiClient;
 import com.fisa.bank.loan.application.client.LoanCoreBankingClient;
 import com.fisa.bank.loan.application.dto.request.AiSimulationRequest;
+import com.fisa.bank.loan.application.dto.request.LoanMonthlyRepayRequest;
 import com.fisa.bank.loan.application.dto.response.*;
 import com.fisa.bank.loan.application.dto.response.AutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanAiCommentResponse;
@@ -223,5 +224,11 @@ public class LoanService implements ManageLoanUseCase {
   public AiSimulationResponse processAiSimulation(AiSimulationRequest request) {
     request.setUser_id(requesterInfo.getCoreBankingUserId());
     return loanAiClient.processAiSimulation(request);
+  }
+
+  @Override
+  @Transactional
+  public LoanMonthlyRepayResponse repayMonthlyLoan(Long loanId, LoanMonthlyRepayRequest request) {
+    return loanCoreBankingClient.repayMonthlyLoan(loanId, request);
   }
 }

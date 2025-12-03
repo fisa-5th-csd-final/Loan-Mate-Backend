@@ -14,6 +14,7 @@ import com.fisa.bank.common.presentation.response.body.SuccessBody;
 import com.fisa.bank.common.presentation.response.code.ResponseCode;
 import com.fisa.bank.loan.application.dto.request.AiSimulationRequest;
 import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
+import com.fisa.bank.loan.application.dto.request.LoanMonthlyRepayRequest;
 import com.fisa.bank.loan.application.dto.response.*;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
 
@@ -105,5 +106,14 @@ public class LoanController {
     log.info("AI Simulation 실행");
     AiSimulationResponse aiSimulationResponse = manageLoanUseCase.processAiSimulation(request);
     return ApiResponseGenerator.success(ResponseCode.GET, aiSimulationResponse);
+  }
+
+  @PostMapping("/{loanId:\\d+}/repayment")
+  public ApiResponse<SuccessBody<LoanMonthlyRepayResponse>> repayMonthlyLoan(
+      @PathVariable Long loanId, @RequestBody LoanMonthlyRepayRequest request) {
+
+    LoanMonthlyRepayResponse response = manageLoanUseCase.repayMonthlyLoan(loanId, request);
+
+    return ApiResponseGenerator.success(ResponseCode.UPDATE, response);
   }
 }
