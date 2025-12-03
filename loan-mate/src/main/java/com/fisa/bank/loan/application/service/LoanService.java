@@ -20,6 +20,7 @@ import com.fisa.bank.common.application.util.RequesterInfo;
 import com.fisa.bank.loan.application.client.LoanAiClient;
 import com.fisa.bank.loan.application.client.LoanCoreBankingClient;
 import com.fisa.bank.loan.application.dto.request.AiSimulationRequest;
+import com.fisa.bank.loan.application.dto.request.LoanMonthlyRepayRequest;
 import com.fisa.bank.loan.application.dto.response.*;
 import com.fisa.bank.loan.application.dto.response.AutoDepositResponse;
 import com.fisa.bank.loan.application.dto.response.LoanAiCommentResponse;
@@ -223,5 +224,24 @@ public class LoanService implements ManageLoanUseCase {
   public AiSimulationResponse processAiSimulation(AiSimulationRequest request) {
     request.setUser_id(requesterInfo.getCoreBankingUserId());
     return loanAiClient.processAiSimulation(request);
+  }
+
+  @Override
+  @Transactional
+  public LoanMonthlyRepayResponse repayMonthlyLoan(Long loanId, LoanMonthlyRepayRequest request) {
+
+    // CoreBanking 호출
+    LoanMonthlyRepayResponse coreRes = loanCoreBankingClient.repayMonthlyLoan(loanId, request);
+
+    // Loan 서비스 Response 변환
+    return LoanMonthlyRepayResponse.builder()
+        .trxLId(coreRes.getTrxLId())
+        .date(coreRes.getDate())
+        .transactionType(coreRes.getTransactionType())
+        .amount(coreRes.getAmount())
+        .remainPrincipal(coreRes.getRemainPrincipal())
+        .repaymentInterestAmount(coreRes.getRepaymentInterestAmount())
+        .repaymentPrincipalAmount(coreRes.getRepaymentPrincipalAmount())
+        .build();
   }
 }

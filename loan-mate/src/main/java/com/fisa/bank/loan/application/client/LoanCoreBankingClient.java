@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 
 import com.fisa.bank.common.application.util.core_bank.CoreBankingClient;
 import com.fisa.bank.loan.application.dto.request.AutoDepositUpdateRequest;
+import com.fisa.bank.loan.application.dto.request.LoanMonthlyRepayRequest;
+import com.fisa.bank.loan.application.dto.response.LoanMonthlyRepayResponse;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.model.PrepaymentInfo;
 
@@ -73,5 +75,23 @@ public class LoanCoreBankingClient {
     coreBankingClient.patch(
         LOANS_BASE_PATH + "/" + loanId + "/auto-deposit",
         new AutoDepositUpdateRequest(autoDepositEnabled));
+  }
+
+  // 대출 상환 API 호출
+  @Caching(
+      evict = {
+        @CacheEvict(
+            cacheNames = "loanDetail",
+            key = "@springRequesterInfo.coreBankingUserId + ':' + #loanId"),
+        @CacheEvict(cacheNames = "loanDetails", key = "@springRequesterInfo.coreBankingUserId"),
+        @CacheEvict(cacheNames = "prePaymentInfo", key = "@springRequesterInfo.coreBankingUserId"),
+        @CacheEvict(cacheNames = "loanComment", key = "#loanId"),
+        @CacheEvict(cacheNames = "loanRisks", key = "@springRequesterInfo.coreBankingUserId")
+      })
+  public LoanMonthlyRepayResponse repayMonthlyLoan(Long loanId, LoanMonthlyRepayRequest request) {
+
+    String path = LOANS_BASE_PATH + "/" + loanId + "/repayment";
+
+    return coreBankingClient.post(path, request, LoanMonthlyRepayResponse.class);
   }
 }
