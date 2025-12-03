@@ -16,4 +16,5 @@ public class PrepaymentInfo {
   private BigDecimal mustPaidAmount;
   private List<InterestDetail> interestDetailResponses;
     private BigDecimal balance;
+    private String accountNumber;
 }
