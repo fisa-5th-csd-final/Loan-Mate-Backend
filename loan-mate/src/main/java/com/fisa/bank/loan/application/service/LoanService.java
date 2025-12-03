@@ -229,19 +229,6 @@ public class LoanService implements ManageLoanUseCase {
   @Override
   @Transactional
   public LoanMonthlyRepayResponse repayMonthlyLoan(Long loanId, LoanMonthlyRepayRequest request) {
-
-    // CoreBanking 호출
-    LoanMonthlyRepayResponse coreRes = loanCoreBankingClient.repayMonthlyLoan(loanId, request);
-
-    // Loan 서비스 Response 변환
-    return LoanMonthlyRepayResponse.builder()
-        .trxLId(coreRes.getTrxLId())
-        .date(coreRes.getDate())
-        .transactionType(coreRes.getTransactionType())
-        .amount(coreRes.getAmount())
-        .remainPrincipal(coreRes.getRemainPrincipal())
-        .repaymentInterestAmount(coreRes.getRepaymentInterestAmount())
-        .repaymentPrincipalAmount(coreRes.getRepaymentPrincipalAmount())
-        .build();
+    return loanCoreBankingClient.repayMonthlyLoan(loanId, request);
   }
 }
