@@ -7,11 +7,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +34,6 @@ import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.model.LoanRiskDetail;
 import com.fisa.bank.loan.application.model.LoanRisks;
-import com.fisa.bank.loan.application.model.PrepaymentInfo;
 import com.fisa.bank.loan.application.service.reader.LoanReader;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
 import com.fisa.bank.loan.persistence.enums.RiskLevel;
@@ -145,34 +144,35 @@ public class LoanService implements ManageLoanUseCase {
 
   @Override
   public List<LoansWithPrepaymentBenefitResponse> getLoansWithPrepaymentBenefit() {
-    List<LoansWithPrepaymentBenefitResponse> loansWithPrepaymentBenefitResponses =
-        new ArrayList<>();
+    return loanReader.findPrepaymentInfos().stream()
+        .flatMap(
+            info -> {
+              // 남은 이자 합
+              BigDecimal remainInterests =
+                  info.getInterestDetailResponses().stream()
+                      .map(InterestDetail::getInterest)
+                      .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-    List<PrepaymentInfo> prepaymentInfos = loanReader.findPrepaymentInfos();
+              // 선납 이득 여부 판단
+              if (info.getEarlyRepayment().compareTo(remainInterests) < 0) {
+                BigDecimal benefit = remainInterests.subtract(info.getEarlyRepayment());
 
-    for (PrepaymentInfo prepaymentInfo : prepaymentInfos) {
-      List<InterestDetail> interestDetails = prepaymentInfo.getInterestDetailResponses();
-      BigDecimal earlyRepayment = prepaymentInfo.getEarlyRepayment();
+                LoansWithPrepaymentBenefitResponse response =
+                    LoansWithPrepaymentBenefitResponse.builder()
+                        .loanLedgerId(info.getLoanLedgerId())
+                        .balance(info.getBalance())
+                        .loanName(info.getLoanProductName())
+                        .benefit(benefit)
+                        .mustPaidAmount(info.getMustPaidAmount())
+                        .accountNumber(info.getAccountNumber())
+                        .build();
 
-      BigDecimal remainInterests =
-          interestDetails.stream()
-              .map(InterestDetail::getInterest)
-              .reduce(BigDecimal.ZERO, BigDecimal::add); // 초기값, 합산 연산
+                return Stream.of(response);
+              }
 
-      // 선납 이득인지 확인 - 중도 상환 수수료가 남은 이자 합보다 더 적다면 리스트에 추가
-      if (earlyRepayment.compareTo(remainInterests) < 0) {
-        BigDecimal benefit = remainInterests.subtract(earlyRepayment);
-        loansWithPrepaymentBenefitResponses.add(
-            LoansWithPrepaymentBenefitResponse.from(
-                prepaymentInfo.getLoanLedgerId(),
-                prepaymentInfo.getBalance(),
-                prepaymentInfo.getLoanProductName(),
-                benefit,
-                prepaymentInfo.getMustPaidAmount(),
-                prepaymentInfo.getAccountNumber()));
-      }
-    }
-    return loansWithPrepaymentBenefitResponses;
+              return Stream.empty();
+            })
+        .toList(); // Java 16 미만이면 collect(Collectors.toList())
   }
 
   @Override
