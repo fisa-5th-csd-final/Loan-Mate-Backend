@@ -7,4 +7,6 @@ import com.fisa.bank.persistence.account.enums.ConsumptionCategory;
 
 public record RecommendedSpending(
     BigDecimal variableSpendingBudget,
-    Map<ConsumptionCategory, BigDecimal> categoryRecommendation) {}
+    Map<ConsumptionCategory, BigDecimal> categoryRecommendation,
+    boolean isCustomized,
+    Map<ConsumptionCategory, BigDecimal> aiOriginalValues) {}
