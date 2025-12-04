@@ -44,9 +44,9 @@ public class AiExpenditureService {
     UserAccountContext userAccountContext = userAccountContextService.loadContext();
 
     Map<ConsumptionCategory, BigDecimal> ageGroupRatio =
-        spendingRatioLoader.getRatios(userAccountContext.serviceUser().getBirthday());
+        roundRatios(spendingRatioLoader.getRatios(userAccountContext.serviceUser().getBirthday()));
     Map<ConsumptionCategory, BigDecimal> userLimitRatio =
-        userSpendingLimitResolver.resolveLimitRatio(ageGroupRatio);
+        roundRatios(userSpendingLimitResolver.resolveLimitRatio(ageGroupRatio));
 
     Long serviceUserId = userAccountContext.serviceUser().getUserId();
     var accountId = userAccountContext.salaryAccount().getAccountId();
@@ -62,12 +62,14 @@ public class AiExpenditureService {
         incomeCalculator.calculatePreviousSalaryCurrentManual(
             accountId, serviceUserId, targetMonth);
     BigDecimal totalIncome = income.total();
+    BigDecimal roundedIncome = roundValue(totalIncome);
 
-    Map<ConsumptionCategory, BigDecimal> spendingRatio = buildSpendingRatio(spending, totalIncome);
+    Map<ConsumptionCategory, BigDecimal> spendingRatio =
+        roundRatios(buildSpendingRatio(spending, totalIncome));
 
     AiRecommendRequest aiRequest =
         new AiRecommendRequest(
-            new AiRecommendRequest.SpendingRatio(spendingRatio, totalIncome),
+            new AiRecommendRequest.SpendingRatio(spendingRatio, roundedIncome),
             ageGroupRatio,
             new AiRecommendRequest.UserLimitRatio(userLimitRatio));
 
@@ -105,5 +107,30 @@ public class AiExpenditureService {
     }
 
     return ratios;
+  }
+
+  private Map<ConsumptionCategory, BigDecimal> roundRatios(
+      Map<ConsumptionCategory, BigDecimal> ratios) {
+    Map<ConsumptionCategory, BigDecimal> rounded = new EnumMap<>(ConsumptionCategory.class);
+    if (ratios == null) {
+      return rounded;
+    }
+
+    for (ConsumptionCategory category : ConsumptionCategory.values()) {
+      BigDecimal value = ratios.get(category);
+      if (value == null) {
+        value = ZERO;
+      }
+      rounded.put(category, value.setScale(1, RoundingMode.HALF_UP));
+    }
+
+    return rounded;
+  }
+
+  private BigDecimal roundValue(BigDecimal value) {
+    if (value == null) {
+      return ZERO.setScale(1);
+    }
+    return value.setScale(1, RoundingMode.HALF_UP);
   }
 }
