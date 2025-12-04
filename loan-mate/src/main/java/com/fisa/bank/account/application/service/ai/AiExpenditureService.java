@@ -117,10 +117,7 @@ public class AiExpenditureService {
     }
 
     for (ConsumptionCategory category : ConsumptionCategory.values()) {
-      BigDecimal value = ratios.get(category);
-      if (value == null) {
-        value = ZERO;
-      }
+      BigDecimal value = ratios.getOrDefault(category, ZERO);
       rounded.put(category, value.setScale(1, RoundingMode.HALF_UP));
     }
 
