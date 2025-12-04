@@ -112,15 +112,10 @@ public class AiExpenditureService {
   private Map<ConsumptionCategory, BigDecimal> roundRatios(
       Map<ConsumptionCategory, BigDecimal> ratios) {
     Map<ConsumptionCategory, BigDecimal> rounded = new EnumMap<>(ConsumptionCategory.class);
-    if (ratios == null) {
-      return rounded;
-    }
-
     for (ConsumptionCategory category : ConsumptionCategory.values()) {
-      BigDecimal value = ratios.getOrDefault(category, ZERO);
+      BigDecimal value = (ratios != null) ? ratios.getOrDefault(category, ZERO) : ZERO;
       rounded.put(category, value.setScale(1, RoundingMode.HALF_UP));
     }
-
     return rounded;
   }
 
