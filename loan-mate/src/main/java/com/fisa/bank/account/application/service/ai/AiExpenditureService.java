@@ -126,7 +126,7 @@ public class AiExpenditureService {
 
   private BigDecimal roundValue(BigDecimal value) {
     if (value == null) {
-      return ZERO.setScale(1);
+      return ZERO.setScale(1, RoundingMode.HALF_UP);
     }
     return value.setScale(1, RoundingMode.HALF_UP);
   }
