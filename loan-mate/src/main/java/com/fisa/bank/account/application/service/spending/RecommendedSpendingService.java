@@ -54,31 +54,27 @@ public class RecommendedSpendingService implements GetRecommendedSpendingUseCase
         incomeCalculator.calculatePreviousSalaryCurrentManual(
             accountId, userAccountContext.serviceUser().getUserId(), currentMonth);
 
-    // 사용자가 직접 설정한 금액 한도가 있으면 그대로 반환
-    var userLimitsOpt =
-        userSpendingLimitResolver
-            .findUserLimitAmounts()
-            .map(userSpendingLimitResolver::fillMissing);
-    if (userLimitsOpt.isPresent()) {
-      Map<ConsumptionCategory, BigDecimal> userLimits = userLimitsOpt.get();
-      BigDecimal totalBudget =
-          userLimits.values().stream().reduce(ZERO, BigDecimal::add).setScale(0, RoundingMode.DOWN);
-      return new RecommendedSpending(totalBudget, userLimits);
-    }
-
     BigDecimal monthlyRepayment = sumMonthlyRepayment();
     BigDecimal availableIncome = income.total().subtract(monthlyRepayment).max(ZERO);
     BigDecimal variableSpendingBudget =
         availableIncome.multiply(BUDGET_RATIO).setScale(0, RoundingMode.DOWN);
 
-    // 사용자 한도 설정이 있으면 우선 적용하고, 없으면 연령대 비율 사용
-    Map<ConsumptionCategory, BigDecimal> categoryRecommendation =
+    Map<ConsumptionCategory, BigDecimal> aiOriginalValues =
         buildCategoryRecommendation(
             variableSpendingBudget,
-            userSpendingLimitResolver.resolveLimitRatio(
-                ratioLoader.getRatios(userAccountContext.serviceUser().getBirthday())));
+            ratioLoader.getRatios(userAccountContext.serviceUser().getBirthday()));
 
-    return new RecommendedSpending(variableSpendingBudget, categoryRecommendation);
+    // 사용자가 직접 설정한 금액 한도가 있으면 함께 내려주고, 추천 금액은 aiOriginalValues에 담아 반환
+    var userLimitsOpt =
+        userSpendingLimitResolver
+            .findUserLimitAmounts()
+            .map(userSpendingLimitResolver::fillMissing);
+    boolean isCustomized = userLimitsOpt.isPresent();
+    Map<ConsumptionCategory, BigDecimal> categoryRecommendation =
+        userLimitsOpt.orElseGet(() -> new EnumMap<>(aiOriginalValues));
+
+    return new RecommendedSpending(
+        variableSpendingBudget, categoryRecommendation, isCustomized, aiOriginalValues);
   }
 
   private void validateMonth(int month) {
