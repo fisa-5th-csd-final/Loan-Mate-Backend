@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,6 +40,11 @@ import com.fisa.bank.loan.application.service.reader.LoanReader;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
 import com.fisa.bank.loan.persistence.enums.RiskLevel;
 import com.fisa.bank.persistence.loan.entity.LoanLedger;
+import com.fisa.bank.user.application.exception.ServiceUserNotFoundException;
+import com.fisa.bank.user.application.model.ServiceUser;
+import com.fisa.bank.user.application.repository.UserRepository;
+import com.fisa.bank.calculator.CalculatorService;
+import com.fisa.bank.model.MonthlyRepayment;
 
 @Service
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
@@ -48,6 +54,8 @@ public class LoanService implements ManageLoanUseCase {
   private final LoanCoreBankingClient loanCoreBankingClient;
   private final LoanAiClient loanAiClient;
   private final RequesterInfo requesterInfo;
+  private final UserRepository userRepository;
+  private final CalculatorService calculatorService;
 
   @Override
   @Transactional
@@ -221,6 +229,27 @@ public class LoanService implements ManageLoanUseCase {
   }
 
   @Override
+  public LoanRepaymentRatioResponse getRepaymentIncomeRatio() {
+    ServiceUser serviceUser =
+        userRepository
+            .findById(requesterInfo.getServiceUserId())
+            .orElseThrow(ServiceUserNotFoundException::new);
+
+    BigDecimal monthlyIncome = Optional.ofNullable(serviceUser.getIncome()).orElse(BigDecimal.ZERO);
+    BigDecimal totalMonthlyRepayment = sumMonthlyRepayment();
+
+    BigDecimal ratio = calculateRepaymentRatio(totalMonthlyRepayment, monthlyIncome);
+    BigDecimal peerAverageRatio =
+        Optional.ofNullable(serviceUser)
+            .map(ServiceUser::getBirthday)
+            .map(birthday -> loanReader.calculatePeerAverageRepaymentRatio(birthday, 5))
+            .orElse(BigDecimal.ZERO);
+
+    return new LoanRepaymentRatioResponse(
+        monthlyIncome, totalMonthlyRepayment, ratio, peerAverageRatio);
+  }
+
+  @Override
   public AiSimulationResponse processAiSimulation(AiSimulationRequest request) {
     request.setUser_id(requesterInfo.getCoreBankingUserId());
     return loanAiClient.processAiSimulation(request);
@@ -230,5 +259,31 @@ public class LoanService implements ManageLoanUseCase {
   @Transactional
   public LoanMonthlyRepayResponse repayMonthlyLoan(Long loanId, LoanMonthlyRepayRequest request) {
     return loanCoreBankingClient.repayMonthlyLoan(loanId, request);
+  }
+
+  private BigDecimal sumMonthlyRepayment() {
+    Long userId = requesterInfo.getCoreBankingUserId();
+    return loanReader.findAllByUserId(userId).stream()
+        .map(calculatorService::calculate)
+        .filter(Objects::nonNull)
+        .map(this::firstMonthlyRepaymentAmount)
+        .filter(Objects::nonNull)
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
+  }
+
+  private BigDecimal firstMonthlyRepaymentAmount(List<MonthlyRepayment> repayments) {
+    return repayments.stream()
+        .findFirst()
+        .map(MonthlyRepayment::getMonthlyPayment)
+        .orElse(BigDecimal.ZERO);
+  }
+
+  private BigDecimal calculateRepaymentRatio(
+      BigDecimal totalMonthlyRepayment, BigDecimal monthlyIncome) {
+    if (monthlyIncome == null || monthlyIncome.compareTo(BigDecimal.ZERO) <= 0) {
+      return BigDecimal.ZERO;
+    }
+
+    return totalMonthlyRepayment.divide(monthlyIncome, 4, RoundingMode.HALF_UP);
   }
 }

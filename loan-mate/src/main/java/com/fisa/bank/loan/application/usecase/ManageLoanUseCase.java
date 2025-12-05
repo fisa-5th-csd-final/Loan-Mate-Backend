@@ -31,4 +31,6 @@ public interface ManageLoanUseCase {
   AiSimulationResponse processAiSimulation(AiSimulationRequest request);
 
   LoanMonthlyRepayResponse repayMonthlyLoan(Long loanId, LoanMonthlyRepayRequest request);
+
+  LoanRepaymentRatioResponse getRepaymentIncomeRatio();
 }

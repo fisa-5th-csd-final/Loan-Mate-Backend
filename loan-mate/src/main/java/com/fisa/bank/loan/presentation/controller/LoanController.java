@@ -50,6 +50,15 @@ public class LoanController {
     return ApiResponseGenerator.success(ResponseCode.GET, manageLoanUseCase.getLoanRisk());
   }
 
+  @GetMapping("/repayment-ratio")
+  public ApiResponse<SuccessBody<LoanRepaymentRatioResponse>> getRepaymentIncomeRatio() {
+    log.info("월 상환/소득 비율 조회");
+
+    LoanRepaymentRatioResponse response = manageLoanUseCase.getRepaymentIncomeRatio();
+
+    return ApiResponseGenerator.success(ResponseCode.GET, response);
+  }
+
   @GetMapping("/ledgers/{loanId}/auto-deposit")
   public ApiResponse<SuccessBody<LoanAutoDepositResponse>> getAutoDeposit(
       @PathVariable Long loanId) {
