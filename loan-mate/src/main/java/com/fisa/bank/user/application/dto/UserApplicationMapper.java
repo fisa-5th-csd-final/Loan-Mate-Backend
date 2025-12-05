@@ -15,6 +15,7 @@ public class UserApplicationMapper {
         info.job(),
         info.birthday(),
         info.creditLevel(),
-        info.customerLevel());
+        info.customerLevel(),
+        info.income());
   }
 }

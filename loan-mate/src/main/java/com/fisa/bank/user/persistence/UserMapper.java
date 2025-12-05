@@ -21,7 +21,8 @@ public class UserMapper {
         entity.getJob(),
         entity.getBirthday(),
         entity.getCreditLevel(),
-        entity.getCustomerLevel());
+        entity.getCustomerLevel(),
+        entity.getIncome());
   }
 
   public UserEntity toEntity(ServiceUser domain) {
@@ -37,6 +38,7 @@ public class UserMapper {
         .birthday(domain.getBirthday())
         .creditLevel(domain.getCreditLevel())
         .customerLevel(domain.getCustomerLevel())
+        .income(domain.getIncome())
         .build();
   }
 }

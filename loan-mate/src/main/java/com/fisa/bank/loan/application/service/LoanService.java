@@ -1,5 +1,8 @@
 package com.fisa.bank.loan.application.service;
 
+import static com.fisa.bank.loan.application.service.RepaymentConstants.PEER_AGE_RANGE_YEARS;
+import static com.fisa.bank.loan.application.service.RepaymentConstants.RATIO_SCALE;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -16,6 +19,7 @@ import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fisa.bank.calculator.CalculatorService;
 import com.fisa.bank.common.application.util.RequesterInfo;
 import com.fisa.bank.loan.application.client.LoanAiClient;
 import com.fisa.bank.loan.application.client.LoanCoreBankingClient;
@@ -39,6 +43,9 @@ import com.fisa.bank.loan.application.service.reader.LoanReader;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
 import com.fisa.bank.loan.persistence.enums.RiskLevel;
 import com.fisa.bank.persistence.loan.entity.LoanLedger;
+import com.fisa.bank.user.application.exception.ServiceUserNotFoundException;
+import com.fisa.bank.user.application.model.ServiceUser;
+import com.fisa.bank.user.application.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
@@ -48,6 +55,8 @@ public class LoanService implements ManageLoanUseCase {
   private final LoanCoreBankingClient loanCoreBankingClient;
   private final LoanAiClient loanAiClient;
   private final RequesterInfo requesterInfo;
+  private final UserRepository userRepository;
+  private final CalculatorService calculatorService;
 
   @Override
   @Transactional
@@ -221,6 +230,29 @@ public class LoanService implements ManageLoanUseCase {
   }
 
   @Override
+  public LoanRepaymentRatioResponse getRepaymentIncomeRatio() {
+    ServiceUser serviceUser =
+        userRepository
+            .findById(requesterInfo.getServiceUserId())
+            .orElseThrow(ServiceUserNotFoundException::new);
+
+    BigDecimal monthlyIncome = Optional.ofNullable(serviceUser.getIncome()).orElse(BigDecimal.ZERO);
+    BigDecimal totalMonthlyRepayment = sumMonthlyRepayment();
+
+    BigDecimal ratio = calculateRepaymentRatio(totalMonthlyRepayment, monthlyIncome);
+    BigDecimal peerAverageRatio =
+        Optional.ofNullable(serviceUser)
+            .map(ServiceUser::getBirthday)
+            .map(
+                birthday ->
+                    loanReader.calculatePeerAverageRepaymentRatio(birthday, PEER_AGE_RANGE_YEARS))
+            .orElse(BigDecimal.ZERO);
+
+    return new LoanRepaymentRatioResponse(
+        monthlyIncome, totalMonthlyRepayment, ratio, peerAverageRatio);
+  }
+
+  @Override
   public AiSimulationResponse processAiSimulation(AiSimulationRequest request) {
     request.setUser_id(requesterInfo.getCoreBankingUserId());
     return loanAiClient.processAiSimulation(request);
@@ -230,5 +262,22 @@ public class LoanService implements ManageLoanUseCase {
   @Transactional
   public LoanMonthlyRepayResponse repayMonthlyLoan(Long loanId, LoanMonthlyRepayRequest request) {
     return loanCoreBankingClient.repayMonthlyLoan(loanId, request);
+  }
+
+  private BigDecimal sumMonthlyRepayment() {
+    Long userId = requesterInfo.getCoreBankingUserId();
+    return loanReader.findAllByUserId(userId).stream()
+        .map(calculatorService::calculate)
+        .map(MonthlyRepaymentUtils::firstMonthlyPaymentOrZero)
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
+  }
+
+  private BigDecimal calculateRepaymentRatio(
+      BigDecimal totalMonthlyRepayment, BigDecimal monthlyIncome) {
+    if (monthlyIncome == null || monthlyIncome.compareTo(BigDecimal.ZERO) <= 0) {
+      return BigDecimal.ZERO;
+    }
+
+    return totalMonthlyRepayment.divide(monthlyIncome, RATIO_SCALE, RoundingMode.HALF_UP);
   }
 }
