@@ -15,6 +15,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.fisa.bank.loan.application.service.RepaymentConstants.RATIO_SCALE;
+
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -101,7 +103,7 @@ public class LoanReader {
     }
 
     BigDecimal total = ratios.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-    return total.divide(BigDecimal.valueOf(ratios.size()), 4, RoundingMode.HALF_UP);
+    return total.divide(BigDecimal.valueOf(ratios.size()), RATIO_SCALE, RoundingMode.HALF_UP);
   }
 
   private BigDecimal toRepaymentRatioIfInRange(
@@ -135,7 +137,7 @@ public class LoanReader {
       return null;
     }
 
-    return monthlyRepayment.divide(income, 4, RoundingMode.HALF_UP);
+    return monthlyRepayment.divide(income, RATIO_SCALE, RoundingMode.HALF_UP);
   }
 
   private BigDecimal firstMonthlyRepaymentAmount(List<MonthlyRepayment> repayments) {

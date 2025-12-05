@@ -17,6 +17,9 @@ import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.fisa.bank.loan.application.service.RepaymentConstants.PEER_AGE_RANGE_YEARS;
+import static com.fisa.bank.loan.application.service.RepaymentConstants.RATIO_SCALE;
+
 import com.fisa.bank.calculator.CalculatorService;
 import com.fisa.bank.common.application.util.RequesterInfo;
 import com.fisa.bank.loan.application.client.LoanAiClient;
@@ -242,7 +245,10 @@ public class LoanService implements ManageLoanUseCase {
     BigDecimal peerAverageRatio =
         Optional.ofNullable(serviceUser)
             .map(ServiceUser::getBirthday)
-            .map(birthday -> loanReader.calculatePeerAverageRepaymentRatio(birthday, 5))
+            .map(
+                birthday ->
+                    loanReader.calculatePeerAverageRepaymentRatio(
+                        birthday, PEER_AGE_RANGE_YEARS))
             .orElse(BigDecimal.ZERO);
 
     return new LoanRepaymentRatioResponse(
@@ -282,6 +288,6 @@ public class LoanService implements ManageLoanUseCase {
       return BigDecimal.ZERO;
     }
 
-    return totalMonthlyRepayment.divide(monthlyIncome, 4, RoundingMode.HALF_UP);
+    return totalMonthlyRepayment.divide(monthlyIncome, RATIO_SCALE, RoundingMode.HALF_UP);
   }
 }
