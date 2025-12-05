@@ -6,8 +6,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -16,12 +16,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.fisa.bank.calculator.CalculatorService;
 import com.fisa.bank.common.application.util.RequesterInfo;
 import com.fisa.bank.loan.application.client.LoanAiClient;
 import com.fisa.bank.loan.application.client.LoanCoreBankingClient;
 import com.fisa.bank.loan.application.dto.response.LoanRepaymentRatioResponse;
 import com.fisa.bank.loan.application.service.reader.LoanReader;
-import com.fisa.bank.calculator.CalculatorService;
 import com.fisa.bank.model.MonthlyRepayment;
 import com.fisa.bank.persistence.loan.entity.LoanLedger;
 import com.fisa.bank.user.application.model.CreditRating;

@@ -12,12 +12,14 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fisa.bank.calculator.CalculatorService;
 import com.fisa.bank.loan.application.client.LoanCoreBankingClient;
 import com.fisa.bank.loan.application.exception.LoanLedgerNotFoundException;
 import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.model.PrepaymentInfo;
 import com.fisa.bank.loan.application.repository.LoanRepository;
+import com.fisa.bank.model.MonthlyRepayment;
 import com.fisa.bank.persistence.common.id.BaseId;
 import com.fisa.bank.persistence.loan.entity.LoanLedger;
 import com.fisa.bank.persistence.loan.repository.LoanLedgerRepository;
@@ -25,8 +27,6 @@ import com.fisa.bank.persistence.user.entity.User;
 import com.fisa.bank.persistence.user.entity.id.UserId;
 import com.fisa.bank.user.application.model.ServiceUser;
 import com.fisa.bank.user.application.repository.UserRepository;
-import com.fisa.bank.calculator.CalculatorService;
-import com.fisa.bank.model.MonthlyRepayment;
 
 @Component
 @RequiredArgsConstructor
@@ -124,9 +124,6 @@ public class LoanReader {
   }
 
   private BigDecimal firstMonthlyRepaymentAmount(List<MonthlyRepayment> repayments) {
-    return repayments.stream()
-        .findFirst()
-        .map(MonthlyRepayment::getMonthlyPayment)
-        .orElse(null);
+    return repayments.stream().findFirst().map(MonthlyRepayment::getMonthlyPayment).orElse(null);
   }
 }

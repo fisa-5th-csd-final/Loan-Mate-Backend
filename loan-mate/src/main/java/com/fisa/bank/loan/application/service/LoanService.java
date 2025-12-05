@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fisa.bank.calculator.CalculatorService;
 import com.fisa.bank.common.application.util.RequesterInfo;
 import com.fisa.bank.loan.application.client.LoanAiClient;
 import com.fisa.bank.loan.application.client.LoanCoreBankingClient;
@@ -39,12 +40,11 @@ import com.fisa.bank.loan.application.model.LoanRisks;
 import com.fisa.bank.loan.application.service.reader.LoanReader;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
 import com.fisa.bank.loan.persistence.enums.RiskLevel;
+import com.fisa.bank.model.MonthlyRepayment;
 import com.fisa.bank.persistence.loan.entity.LoanLedger;
 import com.fisa.bank.user.application.exception.ServiceUserNotFoundException;
 import com.fisa.bank.user.application.model.ServiceUser;
 import com.fisa.bank.user.application.repository.UserRepository;
-import com.fisa.bank.calculator.CalculatorService;
-import com.fisa.bank.model.MonthlyRepayment;
 
 @Service
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
