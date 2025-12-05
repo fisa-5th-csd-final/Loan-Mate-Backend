@@ -9,8 +9,11 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,10 +88,11 @@ public class LoanReader {
     }
 
     List<LoanLedger> loanLedgers = findLoanLedgersByUserIds(toPersistenceUserIds(userIdsInRange));
+    Map<Long, ServiceUser> serviceUsers = loadServiceUsers(loanLedgers);
 
     List<BigDecimal> ratios =
         loanLedgers.stream()
-            .map(ledger -> toRepaymentRatioIfInRange(ledger, start, end))
+            .map(ledger -> toRepaymentRatioIfInRange(ledger, start, end, serviceUsers))
             .filter(Objects::nonNull)
             .toList();
 
@@ -101,7 +105,7 @@ public class LoanReader {
   }
 
   private BigDecimal toRepaymentRatioIfInRange(
-      LoanLedger loanLedger, LocalDate start, LocalDate end) {
+      LoanLedger loanLedger, LocalDate start, LocalDate end, Map<Long, ServiceUser> users) {
 
     if (loanLedger == null || loanLedger.getUser() == null) {
       return null;
@@ -113,8 +117,7 @@ public class LoanReader {
             .map(BaseId::getValue)
             .orElse(null);
 
-    ServiceUser serviceUser =
-        serviceUserId != null ? userRepository.findById(serviceUserId).orElse(null) : null;
+    ServiceUser serviceUser = serviceUserId != null ? users.get(serviceUserId) : null;
 
     LocalDate birth = serviceUser != null ? serviceUser.getBirthday() : null;
 
@@ -156,5 +159,23 @@ public class LoanReader {
         .filter(Objects::nonNull)
         .map(UserId::of)
         .toList();
+  }
+
+  private Map<Long, ServiceUser> loadServiceUsers(List<LoanLedger> loanLedgers) {
+    Set<Long> userIds =
+        loanLedgers.stream()
+            .map(LoanLedger::getUser)
+            .filter(Objects::nonNull)
+            .map(User::getUserId)
+            .map(BaseId::getValue)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+
+    if (userIds.isEmpty()) {
+      return Collections.emptyMap();
+    }
+
+    return userRepository.findAllByIds(userIds.stream().toList()).stream()
+        .collect(Collectors.toMap(ServiceUser::getUserId, user -> user, (a, b) -> a));
   }
 }

@@ -2,6 +2,7 @@ package com.fisa.bank.user.persistence.repository;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
@@ -27,5 +28,15 @@ public class UserRepositoryImpl implements UserRepository {
   public ServiceUser save(ServiceUser user) {
     UserEntity saved = jpaRepo.save(mapper.toEntity(user));
     return mapper.toDomain(saved);
+  }
+
+  @Override
+  public List<ServiceUser> findAllByIds(List<Long> ids) {
+    if (ids == null || ids.isEmpty()) {
+      return List.of();
+    }
+
+    List<UserId> userIds = ids.stream().map(UserId::of).toList();
+    return jpaRepo.findAllById(userIds).stream().map(mapper::toDomain).toList();
   }
 }
