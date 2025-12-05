@@ -1,7 +1,7 @@
 package com.fisa.bank.loan.application.service.reader;
 
-import com.fisa.bank.loan.application.service.MonthlyRepaymentUtils;
-import com.fisa.bank.model.MonthlyRepayment;
+import static com.fisa.bank.loan.application.service.RepaymentConstants.RATIO_SCALE;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +17,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.fisa.bank.loan.application.service.RepaymentConstants.RATIO_SCALE;
-import static com.fisa.bank.loan.application.service.MonthlyRepaymentUtils.firstMonthlyPaymentOrZero;
-
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +27,7 @@ import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.model.PrepaymentInfo;
 import com.fisa.bank.loan.application.repository.LoanRepository;
+import com.fisa.bank.loan.application.service.MonthlyRepaymentUtils;
 import com.fisa.bank.persistence.common.id.BaseId;
 import com.fisa.bank.persistence.loan.entity.LoanLedger;
 import com.fisa.bank.persistence.loan.repository.LoanLedgerRepository;
@@ -148,17 +146,13 @@ public class LoanReader {
     }
 
     return entityManager
-        .createQuery(
-            "SELECT l FROM LoanLedger l WHERE l.user.userId IN :userIds", LoanLedger.class)
+        .createQuery("SELECT l FROM LoanLedger l WHERE l.user.userId IN :userIds", LoanLedger.class)
         .setParameter("userIds", userIds)
         .getResultList();
   }
 
   private List<UserId> toPersistenceUserIds(List<Long> userIds) {
-    return userIds.stream()
-        .filter(Objects::nonNull)
-        .map(UserId::of)
-        .toList();
+    return userIds.stream().filter(Objects::nonNull).map(UserId::of).toList();
   }
 
   private Map<Long, ServiceUser> loadServiceUsers(List<LoanLedger> loanLedgers) {

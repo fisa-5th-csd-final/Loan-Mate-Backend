@@ -1,7 +1,7 @@
 package com.fisa.bank.user.application.repository;
 
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 
 import com.fisa.bank.user.application.model.ServiceUser;
 

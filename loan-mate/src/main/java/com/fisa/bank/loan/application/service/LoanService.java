@@ -1,5 +1,8 @@
 package com.fisa.bank.loan.application.service;
 
+import static com.fisa.bank.loan.application.service.RepaymentConstants.PEER_AGE_RANGE_YEARS;
+import static com.fisa.bank.loan.application.service.RepaymentConstants.RATIO_SCALE;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -9,16 +12,12 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import static com.fisa.bank.loan.application.service.RepaymentConstants.PEER_AGE_RANGE_YEARS;
-import static com.fisa.bank.loan.application.service.RepaymentConstants.RATIO_SCALE;
 
 import com.fisa.bank.calculator.CalculatorService;
 import com.fisa.bank.common.application.util.RequesterInfo;
@@ -43,7 +42,6 @@ import com.fisa.bank.loan.application.model.LoanRisks;
 import com.fisa.bank.loan.application.service.reader.LoanReader;
 import com.fisa.bank.loan.application.usecase.ManageLoanUseCase;
 import com.fisa.bank.loan.persistence.enums.RiskLevel;
-import com.fisa.bank.model.MonthlyRepayment;
 import com.fisa.bank.persistence.loan.entity.LoanLedger;
 import com.fisa.bank.user.application.exception.ServiceUserNotFoundException;
 import com.fisa.bank.user.application.model.ServiceUser;
@@ -247,8 +245,7 @@ public class LoanService implements ManageLoanUseCase {
             .map(ServiceUser::getBirthday)
             .map(
                 birthday ->
-                    loanReader.calculatePeerAverageRepaymentRatio(
-                        birthday, PEER_AGE_RANGE_YEARS))
+                    loanReader.calculatePeerAverageRepaymentRatio(birthday, PEER_AGE_RANGE_YEARS))
             .orElse(BigDecimal.ZERO);
 
     return new LoanRepaymentRatioResponse(
