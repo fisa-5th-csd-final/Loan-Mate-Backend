@@ -265,9 +265,7 @@ public class LoanService implements ManageLoanUseCase {
     Long userId = requesterInfo.getCoreBankingUserId();
     return loanReader.findAllByUserId(userId).stream()
         .map(calculatorService::calculate)
-        .filter(Objects::nonNull)
         .map(this::firstMonthlyRepaymentAmount)
-        .filter(Objects::nonNull)
         .reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 
