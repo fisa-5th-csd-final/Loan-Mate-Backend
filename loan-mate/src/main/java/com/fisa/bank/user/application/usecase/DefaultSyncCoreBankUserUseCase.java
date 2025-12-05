@@ -39,7 +39,7 @@ public class DefaultSyncCoreBankUserUseCase implements SyncCoreBankUserUseCase {
 
       // 기존 도메인 객체 값 변경
       existingUser.updateProfile(info.name(), info.address(), info.job());
-
+      existingUser.updatePersonalData(info.birthday(), info.income());
       existingUser.updateCreditRating(info.creditLevel());
       existingUser.upgradeCustomerLevel(info.customerLevel());
 

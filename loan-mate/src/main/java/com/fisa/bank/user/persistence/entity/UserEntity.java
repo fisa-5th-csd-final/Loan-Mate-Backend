@@ -3,6 +3,7 @@ package com.fisa.bank.user.persistence.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import org.hibernate.annotations.JavaType;
@@ -42,9 +43,8 @@ public class UserEntity extends BaseEntity {
   @Column(nullable = false)
   private String job;
 
-  /*
   @Column(nullable = false)
-  private BigDecimal income; */
+  private BigDecimal income;
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)

@@ -2,6 +2,7 @@ package com.fisa.bank.user.application.model;
 
 import lombok.Getter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -14,6 +15,7 @@ public class ServiceUser {
   private LocalDate birthday;
   private CreditRating creditLevel;
   private CustomerLevel customerLevel;
+  private BigDecimal income;
 
   public ServiceUser(
       Long userId,
@@ -22,7 +24,8 @@ public class ServiceUser {
       String job,
       LocalDate birthday,
       CreditRating creditLevel,
-      CustomerLevel customerLevel) {
+      CustomerLevel customerLevel,
+      BigDecimal income) {
     this.userId = userId;
     this.name = name;
     this.address = address;
@@ -30,6 +33,7 @@ public class ServiceUser {
     this.birthday = birthday;
     this.creditLevel = creditLevel;
     this.customerLevel = customerLevel;
+    this.income = income;
   }
 
   /** 이름 / 주소 / 직업 업데이트 */
@@ -40,11 +44,10 @@ public class ServiceUser {
   }
 
   /** 생일 / 소득 업데이트 */
-  /*
   public void updatePersonalData(LocalDate birthday, BigDecimal income) {
     this.birthday = birthday;
     this.income = income;
-  } */
+  }
 
   /** 신용등급 변경 */
   public void updateCreditRating(CreditRating newRating) {
