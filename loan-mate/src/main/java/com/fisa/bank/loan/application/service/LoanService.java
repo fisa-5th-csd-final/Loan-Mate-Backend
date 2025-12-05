@@ -271,15 +271,8 @@ public class LoanService implements ManageLoanUseCase {
     Long userId = requesterInfo.getCoreBankingUserId();
     return loanReader.findAllByUserId(userId).stream()
         .map(calculatorService::calculate)
-        .map(this::firstMonthlyRepaymentAmount)
+        .map(MonthlyRepaymentUtils::firstMonthlyPaymentOrZero)
         .reduce(BigDecimal.ZERO, BigDecimal::add);
-  }
-
-  private BigDecimal firstMonthlyRepaymentAmount(List<MonthlyRepayment> repayments) {
-    return repayments.stream()
-        .findFirst()
-        .map(MonthlyRepayment::getMonthlyPayment)
-        .orElse(BigDecimal.ZERO);
   }
 
   private BigDecimal calculateRepaymentRatio(

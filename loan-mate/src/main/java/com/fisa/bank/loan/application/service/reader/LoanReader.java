@@ -1,5 +1,7 @@
 package com.fisa.bank.loan.application.service.reader;
 
+import com.fisa.bank.loan.application.service.MonthlyRepaymentUtils;
+import com.fisa.bank.model.MonthlyRepayment;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.fisa.bank.loan.application.service.RepaymentConstants.RATIO_SCALE;
+import static com.fisa.bank.loan.application.service.MonthlyRepaymentUtils.firstMonthlyPaymentOrZero;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +30,6 @@ import com.fisa.bank.loan.application.model.Loan;
 import com.fisa.bank.loan.application.model.LoanDetail;
 import com.fisa.bank.loan.application.model.PrepaymentInfo;
 import com.fisa.bank.loan.application.repository.LoanRepository;
-import com.fisa.bank.model.MonthlyRepayment;
 import com.fisa.bank.persistence.common.id.BaseId;
 import com.fisa.bank.persistence.loan.entity.LoanLedger;
 import com.fisa.bank.persistence.loan.repository.LoanLedgerRepository;
@@ -129,19 +131,15 @@ public class LoanReader {
 
     BigDecimal monthlyRepayment =
         Optional.ofNullable(calculatorService.calculate(loanLedger))
-            .map(this::firstMonthlyRepaymentAmount)
-            .orElse(null);
+            .map(MonthlyRepaymentUtils::firstMonthlyPaymentOrZero)
+            .orElse(BigDecimal.ZERO);
     BigDecimal income = serviceUser != null ? serviceUser.getIncome() : null;
 
-    if (monthlyRepayment == null || income == null || income.compareTo(BigDecimal.ZERO) <= 0) {
+    if (income == null || income.compareTo(BigDecimal.ZERO) <= 0) {
       return null;
     }
 
     return monthlyRepayment.divide(income, RATIO_SCALE, RoundingMode.HALF_UP);
-  }
-
-  private BigDecimal firstMonthlyRepaymentAmount(List<MonthlyRepayment> repayments) {
-    return repayments.stream().findFirst().map(MonthlyRepayment::getMonthlyPayment).orElse(null);
   }
 
   private List<LoanLedger> findLoanLedgersByUserIds(List<UserId> userIds) {
