@@ -78,6 +78,8 @@ class LoanServiceTest {
     LoanLedger loanLedger2 = mock(LoanLedger.class);
 
     when(loanReader.findAllByUserId(1L)).thenReturn(List.of(loanLedger1, loanLedger2));
+    LocalDateTime fixedDateTime = LocalDateTime.of(2024, 1, 1, 0, 0);
+
     when(calculatorService.calculate(loanLedger1))
         .thenReturn(
             List.of(
@@ -87,7 +89,7 @@ class LoanServiceTest {
                     BigDecimal.ZERO,
                     new BigDecimal("100"),
                     BigDecimal.ZERO,
-                    LocalDateTime.now())));
+                    fixedDateTime)));
     when(calculatorService.calculate(loanLedger2))
         .thenReturn(
             List.of(
@@ -97,7 +99,7 @@ class LoanServiceTest {
                     BigDecimal.ZERO,
                     new BigDecimal("300"),
                     BigDecimal.ZERO,
-                    LocalDateTime.now())));
+                    fixedDateTime)));
     when(loanReader.calculatePeerAverageRepaymentRatio(eq(birthday), eq(5)))
         .thenReturn(new BigDecimal("0.3000"));
 
