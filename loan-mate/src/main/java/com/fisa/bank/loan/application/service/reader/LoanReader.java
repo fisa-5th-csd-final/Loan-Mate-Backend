@@ -1,10 +1,13 @@
 package com.fisa.bank.loan.application.service.reader;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -27,6 +30,7 @@ import com.fisa.bank.persistence.user.entity.User;
 import com.fisa.bank.persistence.user.entity.id.UserId;
 import com.fisa.bank.user.application.model.ServiceUser;
 import com.fisa.bank.user.application.repository.UserRepository;
+import com.fisa.bank.user.persistence.repository.JpaUserRepository;
 
 @Component
 @RequiredArgsConstructor
@@ -37,6 +41,9 @@ public class LoanReader {
   private final LoanCoreBankingClient loanCoreBankingClient;
   private final UserRepository userRepository;
   private final CalculatorService calculatorService;
+  private final JpaUserRepository jpaUserRepository;
+
+  @PersistenceContext private EntityManager entityManager;
 
   public LoanDetail findLoanDetail(Long loanId) { // 특정 LoanLedger의 정보
     return loanCoreBankingClient.fetchLoanDetail(loanId);
@@ -72,7 +79,12 @@ public class LoanReader {
     LocalDate start = birthday.minusYears(ageRangeYears);
     LocalDate end = birthday.plusYears(ageRangeYears);
 
-    List<LoanLedger> loanLedgers = loanLedgerRepository.findAll();
+    List<Long> userIdsInRange = jpaUserRepository.findIdsByBirthdayBetween(start, end);
+    if (userIdsInRange.isEmpty()) {
+      return BigDecimal.ZERO;
+    }
+
+    List<LoanLedger> loanLedgers = findLoanLedgersByUserIds(toPersistenceUserIds(userIdsInRange));
 
     List<BigDecimal> ratios =
         loanLedgers.stream()
@@ -125,5 +137,24 @@ public class LoanReader {
 
   private BigDecimal firstMonthlyRepaymentAmount(List<MonthlyRepayment> repayments) {
     return repayments.stream().findFirst().map(MonthlyRepayment::getMonthlyPayment).orElse(null);
+  }
+
+  private List<LoanLedger> findLoanLedgersByUserIds(List<UserId> userIds) {
+    if (userIds == null || userIds.isEmpty()) {
+      return Collections.emptyList();
+    }
+
+    return entityManager
+        .createQuery(
+            "SELECT l FROM LoanLedger l WHERE l.user.userId IN :userIds", LoanLedger.class)
+        .setParameter("userIds", userIds)
+        .getResultList();
+  }
+
+  private List<UserId> toPersistenceUserIds(List<Long> userIds) {
+    return userIds.stream()
+        .filter(Objects::nonNull)
+        .map(UserId::of)
+        .toList();
   }
 }
