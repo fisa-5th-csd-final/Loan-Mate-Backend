@@ -2,9 +2,11 @@ package com.fisa.bank.accountbook.application.service;
 
 import lombok.RequiredArgsConstructor;
 
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Objects;
 
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
 import com.fisa.bank.accountbook.application.dto.request.ManualLedgerCreateRequest;
@@ -25,6 +27,7 @@ public class ManualLedgerService implements ManageManualLedgerUseCase {
 
   private final ManualLedgerRepository manualLedgerRepository;
   private final RequesterInfo requesterInfo;
+  private final CacheManager cacheManager;
 
   @Override
   public ManualLedgerResponse addEntry(ManualLedgerCreateRequest request) {
@@ -41,6 +44,7 @@ public class ManualLedgerService implements ManageManualLedgerUseCase {
             resolveCategory(request.type(), request.category()));
 
     ManualLedgerEntry saved = manualLedgerRepository.save(entry);
+    evictAiExpenditureCache(userId, entry.savedAt());
     return ManualLedgerResponse.from(saved);
   }
 
@@ -71,6 +75,7 @@ public class ManualLedgerService implements ManageManualLedgerUseCase {
             resolveCategory(ownedEntry.type(), request.category()));
 
     ManualLedgerEntry saved = manualLedgerRepository.save(updatedEntry);
+    evictAiExpenditureCache(userId, ownedEntry.savedAt());
     return ManualLedgerResponse.from(saved);
   }
 
@@ -78,6 +83,7 @@ public class ManualLedgerService implements ManageManualLedgerUseCase {
   public void deleteEntry(Long entryId) {
     Long userId = requesterInfo.getServiceUserId();
     ManualLedgerEntry ownedEntry = getOwnedEntry(entryId, userId);
+    evictAiExpenditureCache(userId, ownedEntry.savedAt());
     manualLedgerRepository.deleteById(ownedEntry.id());
   }
 
@@ -108,5 +114,13 @@ public class ManualLedgerService implements ManageManualLedgerUseCase {
     }
 
     return entry;
+  }
+
+  private void evictAiExpenditureCache(Long serviceUserId, java.time.LocalDate savedAt) {
+    var cache = cacheManager.getCache("aiExpenditure");
+    if (cache == null) {
+      return;
+    }
+    cache.evict(serviceUserId + ":" + YearMonth.from(savedAt));
   }
 }
