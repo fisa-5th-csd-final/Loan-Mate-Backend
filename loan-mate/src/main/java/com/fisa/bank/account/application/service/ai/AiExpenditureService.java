@@ -73,7 +73,8 @@ public class AiExpenditureService {
             ageGroupRatio,
             new AiRecommendRequest.UserLimitRatio(userLimitRatio));
 
-    JsonNode recommendation = accountAiClient.fetchRecommendation(aiRequest);
+    JsonNode recommendation =
+        accountAiClient.fetchRecommendation(aiRequest, serviceUserId, targetMonth);
 
     return new AiExpenditureResponse(recommendation);
   }

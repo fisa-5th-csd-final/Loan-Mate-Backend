@@ -2,6 +2,9 @@ package com.fisa.bank.account.application.client;
 
 import lombok.RequiredArgsConstructor;
 
+import java.time.YearMonth;
+
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,7 +19,13 @@ public class AccountAiClient {
 
   private final AiClient aiClient;
 
-  public JsonNode fetchRecommendation(AiRecommendRequest request) {
+  @Cacheable(
+      cacheNames = "aiExpenditure",
+      key =
+          "T(com.fisa.bank.account.application.service.ai.AiExpenditureCacheKey).of("
+              + "#serviceUserId, #targetMonth)")
+  public JsonNode fetchRecommendation(
+      AiRecommendRequest request, Long serviceUserId, YearMonth targetMonth) {
     return aiClient.fetchOne(RECOMMEND_ENDPOINT, request, JsonNode.class);
   }
 }
