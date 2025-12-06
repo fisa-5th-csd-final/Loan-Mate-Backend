@@ -6,9 +6,9 @@ import java.time.YearMonth;
 import java.util.List;
 import java.util.Objects;
 
-import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
+import com.fisa.bank.account.application.service.ai.AiExpenditureCacheEvictor;
 import com.fisa.bank.accountbook.application.dto.request.ManualLedgerCreateRequest;
 import com.fisa.bank.accountbook.application.dto.request.ManualLedgerUpdateRequest;
 import com.fisa.bank.accountbook.application.dto.response.ManualLedgerResponse;
@@ -27,7 +27,7 @@ public class ManualLedgerService implements ManageManualLedgerUseCase {
 
   private final ManualLedgerRepository manualLedgerRepository;
   private final RequesterInfo requesterInfo;
-  private final CacheManager cacheManager;
+  private final AiExpenditureCacheEvictor aiExpenditureCacheEvictor;
 
   @Override
   public ManualLedgerResponse addEntry(ManualLedgerCreateRequest request) {
@@ -117,10 +117,6 @@ public class ManualLedgerService implements ManageManualLedgerUseCase {
   }
 
   private void evictAiExpenditureCache(Long serviceUserId, java.time.LocalDate savedAt) {
-    var cache = cacheManager.getCache("aiExpenditure");
-    if (cache == null) {
-      return;
-    }
-    cache.evict(serviceUserId + ":" + YearMonth.from(savedAt));
+    aiExpenditureCacheEvictor.evict(serviceUserId, YearMonth.from(savedAt));
   }
 }
