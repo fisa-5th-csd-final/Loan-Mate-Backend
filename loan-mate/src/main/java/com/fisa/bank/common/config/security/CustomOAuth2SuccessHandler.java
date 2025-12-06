@@ -100,7 +100,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
     ResponseCookie refreshCookie =
         cookieUtil.createHttpOnlyCookie(
-            "refreshToken", refreshToken, (int) (accessTokenExpiration / 1000L));
+            "refreshToken", refreshToken, (int) (refreshTokenExpiration / 1000L));
 
     response.addHeader("Set-Cookie", accessCookie.toString());
     response.addHeader("Set-Cookie", refreshCookie.toString());
