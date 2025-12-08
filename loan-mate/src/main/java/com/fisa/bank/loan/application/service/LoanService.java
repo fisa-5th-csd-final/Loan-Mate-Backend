@@ -3,6 +3,7 @@ package com.fisa.bank.loan.application.service;
 import static com.fisa.bank.loan.application.service.RepaymentConstants.PEER_AGE_RANGE_YEARS;
 import static com.fisa.bank.loan.application.service.RepaymentConstants.RATIO_SCALE;
 
+import com.fisa.bank.persistence.loan.enums.RepaymentStatus;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -199,6 +200,7 @@ public class LoanService implements ManageLoanUseCase {
     List<LoanLedger> loanLedgers = loanReader.findAllByUserId(userId);
 
     return loanLedgers.stream()
+            .filter(loanLedger -> loanLedger.getRepaymentStatus() == RepaymentStatus.OVERDUE || loanLedger.getRepaymentStatus() == RepaymentStatus.NORMAL)
         .map(
             ledger ->
                 AutoDepositResponse.builder()
