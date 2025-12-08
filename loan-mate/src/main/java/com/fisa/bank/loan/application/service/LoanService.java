@@ -3,6 +3,7 @@ package com.fisa.bank.loan.application.service;
 import static com.fisa.bank.loan.application.service.RepaymentConstants.PEER_AGE_RANGE_YEARS;
 import static com.fisa.bank.loan.application.service.RepaymentConstants.RATIO_SCALE;
 
+import com.fisa.bank.persistence.loan.enums.RepaymentStatus;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -64,7 +65,7 @@ public class LoanService implements ManageLoanUseCase {
   public List<LoanListResponse> getLoans() {
     Long userId = requesterInfo.getCoreBankingUserId();
     // db에서 대출 리스트 조회
-    List<Loan> loans = loanReader.findLoans(userId);
+    List<Loan> loans = loanReader.findLoansNonTerminated(userId);
 
     // 위험도 fetch
     LoanRisks loanRisks = loanAiClient.fetchLoanRisks(userId);
@@ -199,6 +200,7 @@ public class LoanService implements ManageLoanUseCase {
     List<LoanLedger> loanLedgers = loanReader.findAllByUserId(userId);
 
     return loanLedgers.stream()
+            .filter(loanLedger -> loanLedger.getRepaymentStatus() == RepaymentStatus.OVERDUE || loanLedger.getRepaymentStatus() == RepaymentStatus.NORMAL)
         .map(
             ledger ->
                 AutoDepositResponse.builder()
@@ -214,7 +216,11 @@ public class LoanService implements ManageLoanUseCase {
 
   @Override
   public List<LoanDetailResponse> getLoanDetails() {
-    List<LoanDetail> loanDetails = loanReader.findLoanDetails();
+    List<LoanDetail> loanDetails = loanReader.findLoanDetails()
+            .stream()
+            .filter(loanDetail -> loanDetail.getRepaymentStatus() == RepaymentStatus.NORMAL ||
+                    loanDetail.getRepaymentStatus() == RepaymentStatus.OVERDUE)
+            .toList();
 
     List<LoanDetailResponse> responseList =
         loanDetails.stream()
@@ -267,6 +273,8 @@ public class LoanService implements ManageLoanUseCase {
   private BigDecimal sumMonthlyRepayment() {
     Long userId = requesterInfo.getCoreBankingUserId();
     return loanReader.findAllByUserId(userId).stream()
+            .filter(loanLedger -> loanLedger.getRepaymentStatus() == RepaymentStatus.NORMAL ||
+                    loanLedger.getRepaymentStatus() == RepaymentStatus.OVERDUE)
         .map(calculatorService::calculate)
         .map(MonthlyRepaymentUtils::firstMonthlyPaymentOrZero)
         .reduce(BigDecimal.ZERO, BigDecimal::add);

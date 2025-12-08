@@ -10,5 +10,7 @@ public interface LoanRepository {
 
   List<Loan> getLoans(UserId userId);
 
+  List<Loan> getLoansNonTerminated(UserId userId);
+
   Optional<Loan> findById(Long loanId);
 }
