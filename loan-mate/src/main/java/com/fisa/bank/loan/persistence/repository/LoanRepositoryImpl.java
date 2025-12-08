@@ -1,5 +1,6 @@
 package com.fisa.bank.loan.persistence.repository;
 
+import com.fisa.bank.persistence.loan.enums.RepaymentStatus;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -19,7 +20,19 @@ import com.fisa.bank.persistence.user.entity.id.UserId;
 public class LoanRepositoryImpl implements LoanRepository {
   private final LoanLedgerRepository loanLedgerRepository;
 
-  @Override
+    @Override
+    public List<Loan> getLoansNonTerminated(UserId userId) {
+        List<LoanLedger> loanLedgers = loanLedgerRepository.findAllByUser_UserId(userId);
+
+
+        return loanLedgers.stream()
+                .filter(loanLedger -> loanLedger.getRepaymentStatus() == RepaymentStatus.NORMAL
+                || loanLedger.getRepaymentStatus() == RepaymentStatus.OVERDUE)
+                .map(LoanRepositoryImpl::toDomain)
+                .toList();
+    }
+
+    @Override
   public List<Loan> getLoans(UserId userId) {
     // TODO: Persistence에서만 값 객체 쓰기, 서비스 서버 유저 id로 조회하기
     List<Loan> loans =

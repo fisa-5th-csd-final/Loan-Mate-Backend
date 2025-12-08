@@ -65,7 +65,7 @@ public class LoanService implements ManageLoanUseCase {
   public List<LoanListResponse> getLoans() {
     Long userId = requesterInfo.getCoreBankingUserId();
     // db에서 대출 리스트 조회
-    List<Loan> loans = loanReader.findLoans(userId);
+    List<Loan> loans = loanReader.findLoansNonTerminated(userId);
 
     // 위험도 fetch
     LoanRisks loanRisks = loanAiClient.fetchLoanRisks(userId);
@@ -269,6 +269,8 @@ public class LoanService implements ManageLoanUseCase {
   private BigDecimal sumMonthlyRepayment() {
     Long userId = requesterInfo.getCoreBankingUserId();
     return loanReader.findAllByUserId(userId).stream()
+            .filter(loanLedger -> loanLedger.getRepaymentStatus() == RepaymentStatus.NORMAL ||
+                    loanLedger.getRepaymentStatus() == RepaymentStatus.OVERDUE)
         .map(calculatorService::calculate)
         .map(MonthlyRepaymentUtils::firstMonthlyPaymentOrZero)
         .reduce(BigDecimal.ZERO, BigDecimal::add);

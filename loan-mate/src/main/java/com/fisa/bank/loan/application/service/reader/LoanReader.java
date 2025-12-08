@@ -62,6 +62,10 @@ public class LoanReader {
     return loanRepository.getLoans(UserId.of(userId));
   }
 
+  public List<Loan> findLoansNonTerminated(Long userId){
+      return loanRepository.getLoansNonTerminated(UserId.of(userId));
+  }
+
   public Loan findLoanById(Long loanId) {
     return loanRepository
         .findById(loanId)
