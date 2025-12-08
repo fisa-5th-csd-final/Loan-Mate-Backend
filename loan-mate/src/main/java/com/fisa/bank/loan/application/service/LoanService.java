@@ -216,7 +216,11 @@ public class LoanService implements ManageLoanUseCase {
 
   @Override
   public List<LoanDetailResponse> getLoanDetails() {
-    List<LoanDetail> loanDetails = loanReader.findLoanDetails();
+    List<LoanDetail> loanDetails = loanReader.findLoanDetails()
+            .stream()
+            .filter(loanDetail -> loanDetail.getRepaymentStatus() == RepaymentStatus.NORMAL ||
+                    loanDetail.getRepaymentStatus() == RepaymentStatus.OVERDUE)
+            .toList();
 
     List<LoanDetailResponse> responseList =
         loanDetails.stream()
